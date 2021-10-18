@@ -1,0 +1,63 @@
+{
+    "measurement records": {
+        "tcbinfo": [
+            {
+                "//": "Hash of layer 1 (mutable firmware)",
+                "vendor": "intel.com",
+                "model": "Stratix10",
+                "layer": "1",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "153C3348F49C3FC35166B29E1D6810639097ED74D2F44B46C148D59F8E0C7FDA9B164CAE8904003A24BD0BE285350117"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded IO section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.2",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "664AAD52B52B717A2597CBFE0D1BF43FD5860DB48EFEDA21C9C2D892828BA70BE61162A273A8A7156337CD8343CA24FE"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded CORE section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.3",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "5D04018373C58AB309644118599094F7A5CF759F9C2F14759B2435F3387F4DAF9B05DBF6BC25D215F16BC81FB93F9F2B"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded PR section 0x01000000",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.6",
+                "layer": "2",
+                "index": 16777216,
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "CBF9E12CDF8ED22F9752574E440A5964458AAEFFDE7533EF16368DE4551F90282AC2A890BE1C42796B3385686AC3CB81"
+                    }
+                ]
+            },
+            {
+                "//": "Device state flags",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.1",
+                "layer": "2",
+                "vendorInfo": "0002000002020200",
+                "vendorInfoMask": "FFFFFFFF00000000"
+            }
+        ]
+    }
+}

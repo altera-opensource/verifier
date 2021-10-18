@@ -1,0 +1,74 @@
+{
+    "measurement records": {
+        "tcbinfo": [
+            {
+                "//": "Hash of layer 1 (mutable firmware)",
+                "vendor": "intel.com",
+                "model": "Agilex",
+                "layer": "1",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "407288D765E29E5AA5DD2CC044815B80519E5C3329E1B5054A8EF59212F3C885C7B5D158AAEDDED08BB556D1C68DB279"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of layer 0 (immutable firmware)",
+                "vendor": "intel.com",
+                "model": "Agilex",
+                "layer": "0",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "B0C5586D865C5C71F203CF905D0160A15407276D7CAF65AE2D299F486E207D0AA8BE820309281C6CA6CE99319204C4F2"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded IO section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.2",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "F2C49C56225FC7B82543D84D540A37C45514B6C467290E05F7DF5564B7F0DCBC44ACCA9BC4A149DF5C728C84CA8BAD61"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded HPS section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.5",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "A0BE2DCE3A892148D568C670BE9D402A95D59EA52E17989B871D83466DFEF3C835EA2172E47779830BB4690F67578D73"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded CORE section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.3",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "F2A481D3C2EF5EC02B2AAEF5F3F3A7BF3568A97FFC74B2912FB8742ABCE364FB62F146291DF64D6746962FB8C1F33E88"
+                    }
+                ]
+            },
+            {
+                "//": "Device state flags",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.1",
+                "layer": "2",
+                "vendorInfo": "0000000003000000",
+                "vendorInfoMask": "FFFFFFFF000000FF"
+            }
+        ]
+    }
+}

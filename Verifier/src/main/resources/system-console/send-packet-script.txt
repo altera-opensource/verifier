@@ -1,0 +1,5 @@
+set p [claim_packet_service]
+puts "COMMAND = !!COMMAND!!"
+set response [sdm_send_command_debug $p {!!COMMAND!!}]
+puts "COMMAND_RESULT = $response"
+close_packet_service $p

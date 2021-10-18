@@ -1,0 +1,19 @@
+package require systemconsole 20.3
+proc claim_packet_service {} {
+    set p [lindex [get_service_paths packet] !!TRANSPORT_ID!!]
+    set p [claim_service packet $p ""]
+    return $p
+}
+
+proc close_packet_service {p} {
+    close_service packet $p
+}
+
+proc sdm_send_command_debug {service_path command} {
+    set response_hex {}
+    set response [packet_send_command -format 32 $service_path $command]
+    foreach resp $response {
+        lappend response_hex [format 0x%08x [expr $resp & 0xffffffff]];
+    }
+    return $response_hex
+}

@@ -1,0 +1,96 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+        Signature Algorithm: sha1WithRSAEncryption
+        Issuer: C=NO, O=Green AS, OU=Green Certificate Authority, CN=Green Email CA
+        Validity
+            Not Before: Apr 27 20:39:01 2021 GMT
+            Not After : Apr 27 20:39:01 2023 GMT
+        Subject: C=NO, O=Green AS, CN=green
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:be:b8:98:5a:8a:2c:21:a9:d2:b5:5d:30:d0:30:
+                    1d:53:43:3d:b9:c9:d1:30:c5:1c:74:ba:95:0e:91:
+                    cb:8e:75:d2:4e:41:b5:cc:a8:8a:bd:7b:2d:e9:01:
+                    47:45:ff:7b:8e:27:d0:62:41:1e:d6:9b:60:ea:20:
+                    b4:b0:c4:01:75:09:58:f0:f2:03:7e:ae:33:f7:7d:
+                    3f:1f:93:64:d5:eb:f0:97:d2:b2:b9:6f:6a:03:d2:
+                    3c:69:bd:e9:83:55:3b:01:23:38:19:57:b6:9b:46:
+                    ee:e8:39:ee:82:c4:d0:b3:87:6d:c7:b2:ec:35:15:
+                    0b:06:88:e0:8a:47:67:8a:5a:19:aa:2d:37:b7:76:
+                    d3:19:2e:12:88:04:e9:27:5b:48:5b:8b:07:dd:81:
+                    08:e9:e3:ab:86:9e:dc:64:95:c3:c4:c9:45:07:12:
+                    17:9c:f3:2f:c4:d6:21:8f:90:e7:c1:5e:19:31:c1:
+                    f9:9f:65:62:89:92:3b:0b:b9:7b:e4:8e:90:bf:b9:
+                    ac:7e:53:4f:b4:2c:d7:8d:01:d9:47:42:9f:47:cd:
+                    04:b3:19:ee:dd:7d:26:ad:8e:bf:5e:cc:36:0e:ac:
+                    bb:dd:e8:85:4d:4e:59:28:22:d7:b8:05:3a:4a:6d:
+                    9a:11:d3:58:40:5d:1f:43:62:12:a3:0b:51:84:3d:
+                    b9:e7
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Extended Key Usage: 
+                E-mail Protection, TLS Web Client Authentication, Any Extended Key Usage
+            X509v3 Subject Key Identifier: 
+                F6:46:CF:6D:F6:44:1A:0B:F9:BA:32:5D:9F:A7:9B:84:5B:5E:43:88
+            X509v3 Authority Key Identifier: 
+                keyid:F5:E0:9F:AE:9D:E7:F5:7E:33:46:96:EA:3A:74:5B:A0:31:2D:C7:29
+
+            Authority Information Access: 
+                CA Issuers - URI:http://green.no/ca/email-ca.cer
+
+            X509v3 CRL Distribution Points: 
+
+                Full Name:
+                  URI:http://green.no/ca/email-ca.crl
+
+            X509v3 Subject Alternative Name: 
+                <EMPTY>
+
+    Signature Algorithm: sha1WithRSAEncryption
+         0b:51:6e:f2:1f:67:44:f8:d9:9a:51:a9:8d:87:0b:53:17:8f:
+         c6:09:5f:81:3f:eb:15:9c:97:39:13:c2:50:d9:eb:2f:86:f3:
+         12:43:cb:31:1a:4a:54:49:33:66:74:4d:f0:0a:8b:98:34:3f:
+         ab:f2:21:4d:26:d1:96:8c:1c:a0:35:85:65:4b:a3:f3:06:e4:
+         b7:71:32:d9:63:e3:70:ce:d2:7a:79:c5:7b:a8:ac:c1:b8:7a:
+         e3:f2:6c:bc:80:fd:a9:ff:6d:cc:f9:49:81:87:bd:1d:5b:99:
+         36:55:26:7a:48:03:45:f7:84:92:52:2b:7a:ef:7d:7b:a3:57:
+         d3:41:39:f7:09:bb:75:fc:7c:8c:db:0b:1c:ca:ac:bb:8e:11:
+         0f:22:a8:40:eb:9b:a4:d9:4c:78:73:ae:e9:88:8a:59:f3:c9:
+         a2:97:4d:8d:a6:18:e6:2f:2e:11:43:20:32:d8:db:a6:fd:5d:
+         db:c7:74:3f:89:f3:a6:87:64:65:18:1f:0a:d3:37:98:0f:36:
+         c2:ca:c7:c1:69:27:be:8d:d0:7a:90:2d:5a:ba:4f:9c:08:2a:
+         0a:2d:bb:ad:5f:12:45:99:af:71:e2:38:4c:20:82:12:dd:f4:
+         ae:40:f2:4d:d3:19:ee:96:8c:cb:bc:f4:3a:72:d5:e2:41:d7:
+         fa:bf:1b:ef
+-----BEGIN CERTIFICATE-----
+MIIECDCCAvCgAwIBAgIBATANBgkqhkiG9w0BAQUFADBfMQswCQYDVQQGEwJOTzER
+MA8GA1UECgwIR3JlZW4gQVMxJDAiBgNVBAsMG0dyZWVuIENlcnRpZmljYXRlIEF1
+dGhvcml0eTEXMBUGA1UEAwwOR3JlZW4gRW1haWwgQ0EwHhcNMjEwNDI3MjAzOTAx
+WhcNMjMwNDI3MjAzOTAxWjAwMQswCQYDVQQGEwJOTzERMA8GA1UECgwIR3JlZW4g
+QVMxDjAMBgNVBAMMBWdyZWVuMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
+AQEAvriYWoosIanStV0w0DAdU0M9ucnRMMUcdLqVDpHLjnXSTkG1zKiKvXst6QFH
+Rf97jifQYkEe1ptg6iC0sMQBdQlY8PIDfq4z930/H5Nk1evwl9KyuW9qA9I8ab3p
+g1U7ASM4GVe2m0bu6DnugsTQs4dtx7LsNRULBojgikdniloZqi03t3bTGS4SiATp
+J1tIW4sH3YEI6eOrhp7cZJXDxMlFBxIXnPMvxNYhj5DnwV4ZMcH5n2ViiZI7C7l7
+5I6Qv7msflNPtCzXjQHZR0KfR80Esxnu3X0mrY6/Xsw2Dqy73eiFTU5ZKCLXuAU6
+Sm2aEdNYQF0fQ2ISowtRhD255wIDAQABo4H9MIH6MA4GA1UdDwEB/wQEAwIFoDAJ
+BgNVHRMEAjAAMCMGA1UdJQQcMBoGCCsGAQUFBwMEBggrBgEFBQcDAgYEVR0lADAd
+BgNVHQ4EFgQU9kbPbfZEGgv5ujJdn6ebhFteQ4gwHwYDVR0jBBgwFoAU9eCfrp3n
+9X4zRpbqOnRboDEtxykwOwYIKwYBBQUHAQEELzAtMCsGCCsGAQUFBzAChh9odHRw
+Oi8vZ3JlZW4ubm8vY2EvZW1haWwtY2EuY2VyMDAGA1UdHwQpMCcwJaAjoCGGH2h0
+dHA6Ly9ncmVlbi5uby9jYS9lbWFpbC1jYS5jcmwwCQYDVR0RBAIwADANBgkqhkiG
+9w0BAQUFAAOCAQEAC1Fu8h9nRPjZmlGpjYcLUxePxglfgT/rFZyXORPCUNnrL4bz
+EkPLMRpKVEkzZnRN8AqLmDQ/q/IhTSbRlowcoDWFZUuj8wbkt3Ey2WPjcM7SennF
+e6iswbh64/JsvID9qf9tzPlJgYe9HVuZNlUmekgDRfeEklIreu99e6NX00E59wm7
+dfx8jNsLHMqsu44RDyKoQOubpNlMeHOu6YiKWfPJopdNjaYY5i8uEUMgMtjbpv1d
+28d0P4nzpodkZRgfCtM3mA82wsrHwWknvo3QepAtWrpPnAgqCi27rV8SRZmvceI4
+TCCCEt30rkDyTdMZ7paMy7z0OnLV4kHX+r8b7w==
+-----END CERTIFICATE-----
