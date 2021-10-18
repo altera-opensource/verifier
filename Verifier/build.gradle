@@ -1,0 +1,149 @@
+/*
+ * This project is licensed as below.
+ *
+ * **************************************************************************
+ *
+ * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * **************************************************************************
+ *
+ */
+
+plugins {
+    id 'io.freefair.lombok'
+    id 'com.github.gmazzo.sqlite' version "${sqlite_plugin_version}"
+    id 'java-library'
+    id 'idea'
+}
+
+generateLombokConfig.enabled = false
+generateLombokConfig.outputFile.set(file("${rootDir}/lombok.config"))
+
+jar {
+    archiveBaseName.set('Verifier')
+    manifest {
+        attributes(
+            'Sealed': 'true'
+        )
+    }
+}
+
+configurations {
+    fatjar {
+        extendsFrom implementation
+    }
+}
+
+task releaseJar(type: Jar) {
+    dependsOn configurations.fatjar
+    from {
+        configurations.fatjar.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    with jar
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+group = 'com.intel.bkp'
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntimeOnly
+}
+
+task integrationTest(type: Test) {
+    useJUnitPlatform()
+    setTestClassesDirs(sourceSets.integrationTest.output.getClassesDirs())
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    implementation "org.apache.commons:commons-lang3:${commons_lang3_version}"
+    implementation "commons-codec:commons-codec:${commons_codec_version}"
+    implementation "commons-io:commons-io:${commons_io_version}"
+    implementation "commons-dbutils:commons-dbutils:${dbutils_version}"
+
+    implementation "javax.validation:validation-api:${validation_api_version}"
+    implementation "org.slf4j:slf4j-api:${slf4j_version}"
+    implementation "ch.qos.logback:logback-classic:${logback_version}"
+    implementation "ch.qos.logback:logback-core:${logback_version}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jackson_version}"
+    implementation "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
+    implementation "org.bouncycastle:bcpkix-jdk15on:${bouncycastle_version}"
+    implementation "net.jodah:failsafe:${failsafe_version}"
+
+    sqlite {
+        driverDependency "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
+    }
+
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junit5_version}"
+    testImplementation "org.mockito:mockito-core:${mockito_version}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockito_version}"
+    testImplementation "org.junit.platform:junit-platform-launcher:${junit5_platform_version}"
+}
+
+task createSqliteDatabase {
+    def databaseFile = file("${projectDir}/src/main/resources/verifier_core.sqlite")
+
+    outputs.file databaseFile
+
+    doLast {
+        openSQLiteDatabase(databaseFile)
+    }
+}
+
+task deploy(dependsOn: jar, type: Copy) {
+    from layout.buildDirectory.dir("${buildDir}/libs"), layout.buildDirectory.dir("${buildDir}/resources/main")
+    include "*.jar", "config.properties"
+    into "${projectDir}/../out"
+}
+
+compileJava.dependsOn createSqliteDatabase

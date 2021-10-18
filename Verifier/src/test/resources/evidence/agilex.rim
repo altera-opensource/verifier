@@ -1,0 +1,100 @@
+{
+    "measurement records": {
+        "tcbinfo": [
+            {
+                "//": "Hash of layer 1 (mutable firmware)",
+                "vendor": "intel.com",
+                "model": "Agilex",
+                "layer": "1",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded IO section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.2",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "664AAD52B52B717A2597CBFE0D1BF43FD5860DB48EFEDA21C9C2D892828BA70BE61162A273A8A7156337CD8343CA24FE"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded CORE section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.3",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "5D04018373C58AB309644118599094F7A5CF759F9C2F14759B2435F3387F4DAF9B05DBF6BC25D215F16BC81FB93F9F2B"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded PR section 0x01000000",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.6",
+                "layer": "2",
+                "index": 16777216,
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "CBF9E12CDF8ED22F9752574E440A5964458AAEFFDE7533EF16368DE4551F90282AC2A890BE1C42796B3385686AC3CB81"
+                    }
+                ]
+            },
+            {
+                "//": "Device state flags",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.1",
+                "layer": "2",
+                "vendorInfo": "0000000003000000",
+                "vendorInfoMask": "FFFFFFFF000000FF"
+            },
+            {
+               "//": "Hash of loaded PR section 0x02000000",
+               "vendor": "intel.com",
+               "type": "2.16.840.1.113741.1.15.4.6",
+               "layer": "2",
+               "index": 33554432,
+               "fwids": [
+                   {
+                       "hashAlg": "2.16.840.1.101.3.4.2.2",
+                       "digest": "EDCB0F4721E6578D900E4C24AD4B19E194AB6C87F8243BFC6B11754DD8B0BBDE4F30B1D18197932B6376DA004DCD97C4"
+                   }
+               ]
+            },
+            {
+               "//": "Hash of layer 0 (immutable firmware)",
+               "vendor": "intel.com",
+               "model": "Agilex",
+               "layer": "0",
+               "fwids": [
+                   {
+                       "hashAlg": "2.16.840.1.101.3.4.2.2",
+                       "digest": "CB00753F45A35E8BB5A03D699AC65007272C32AB0EDED1631A8B605A43FF5BED8086072BA1E7CC2358BAECA134C825A7"
+                   }
+               ]
+             },
+             {
+                  "//": "Hash of layer 2 (base design)",
+                  "vendor": "intel.com",
+                  "type": "2.16.840.1.113741.1.15.4.12",
+                  "layer": "2",
+                  "fwids": [
+                      {
+                          "hashAlg": "2.16.840.1.101.3.4.2.2",
+                          "digest": "180C325CCCB299E76EC6C03A5B5A7755AF8EF499906DBF531F18D0CA509E4871B0805CAC0F122B962D54BADC6119F3CF"
+                      }
+                  ]
+             }
+        ]
+    }
+}
