@@ -44,7 +44,6 @@ import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyRe
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.exceptions.UnknownCommandException;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
@@ -53,8 +52,7 @@ import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
 import com.intel.bkp.verifier.sigma.CreateAttestationSubKeyVerifier;
 import com.intel.bkp.verifier.sigma.SigmaM2DeviceIdVerifier;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
@@ -62,15 +60,23 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 
 @Slf4j
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class CreateDeviceAttestationSubKeyComponent {
 
-    private CreateAttestationSubKeyMessageSender createSubKeyMessageSender = new CreateAttestationSubKeyMessageSender();
-    private TeardownMessageSender teardownMessageSender = new TeardownMessageSender();
-    private CreateAttestationSubKeyVerifier createSubKeyVerifier = new CreateAttestationSubKeyVerifier();
-    private S10AttestationRevocationService s10AttestationRevocationService = new S10AttestationRevocationService();
-    private SigmaM2DeviceIdVerifier deviceIdVerifier = new SigmaM2DeviceIdVerifier();
+    private final CreateAttestationSubKeyMessageSender createSubKeyMessageSender;
+    private final TeardownMessageSender teardownMessageSender;
+    private final CreateAttestationSubKeyVerifier createSubKeyVerifier;
+    private final S10AttestationRevocationService s10AttestationRevocationService;
+    private final SigmaM2DeviceIdVerifier deviceIdVerifier;
+
+    public CreateDeviceAttestationSubKeyComponent() {
+        this(new CreateAttestationSubKeyMessageSender(),
+            new TeardownMessageSender(),
+            new CreateAttestationSubKeyVerifier(),
+            new S10AttestationRevocationService(),
+            new SigmaM2DeviceIdVerifier()
+        );
+    }
 
     public VerifierExchangeResponse perform(String context, PufType pufType, byte[] deviceId) {
 
@@ -95,8 +101,6 @@ public class CreateDeviceAttestationSubKeyComponent {
             .withActor(EndianessActor.SERVICE)
             .build();
 
-        final IpcsDistributionPoint dp = appContext.getLibConfig().getIpcsDistributionPoint();
-        s10AttestationRevocationService.withDistributionPoint(dp);
         final PublicKey pufAttestationPubKey = s10AttestationRevocationService.checkAndRetrieve(deviceId,
             PufType.getPufTypeHex(pufType));
 

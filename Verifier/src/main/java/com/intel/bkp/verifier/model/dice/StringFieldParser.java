@@ -36,12 +36,10 @@ package com.intel.bkp.verifier.model.dice;
 import com.intel.bkp.verifier.interfaces.ITcbInfoFieldParser;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
-import java.util.Locale;
-
 public class StringFieldParser extends BaseExtensionParser implements ITcbInfoFieldParser<String> {
 
     @Override
     public String parse(ASN1TaggedObject object) {
-        return new String(parseOctetString(object)).toUpperCase(Locale.ROOT);
+        return new String(parseOctetString(object));
     }
 }

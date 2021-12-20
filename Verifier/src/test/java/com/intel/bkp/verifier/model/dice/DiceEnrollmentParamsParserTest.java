@@ -46,7 +46,7 @@ class DiceEnrollmentParamsParserTest {
 
     private static final String TEST_FOLDER = "responses/";
     private static final String DEVICE_ID_ENROLLMENT_CERT = "device_id_enrollment_certificate.der";
-    private static final String EXPECTED_SKIER = "V97RVDQhiAUvGGca4JULu9ceUzo=";
+    private static final String EXPECTED_SKI = "V97RVDQhiAUvGGca4JULu9ceUzo";
     private static final String EXPECTED_SVN = "00";
     private static final X509CertificateParser X509_PARSER = new X509CertificateParser();
 
@@ -71,10 +71,10 @@ class DiceEnrollmentParamsParserTest {
     @Test
     void parse() {
         // when
-        sut.parse(deviceIdEnrollmentCert);
+        final DiceEnrollmentParams result = sut.parse(deviceIdEnrollmentCert);
 
         // then
-        Assertions.assertEquals(EXPECTED_SKIER, sut.getDiceEnrollmentParams().getSkiER());
-        Assertions.assertEquals(EXPECTED_SVN, sut.getDiceEnrollmentParams().getSvn());
+        Assertions.assertEquals(EXPECTED_SKI, result.getSki());
+        Assertions.assertEquals(EXPECTED_SVN, result.getSvn());
     }
 }

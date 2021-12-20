@@ -34,12 +34,12 @@
 package com.intel.bkp.verifier.service.sender;
 
 import com.intel.bkp.verifier.command.logger.SigmaLogger;
-import com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType;
-import com.intel.bkp.verifier.command.messages.attestation.GetCertificateMessage;
-import com.intel.bkp.verifier.command.messages.attestation.GetCertificateMessageBuilder;
-import com.intel.bkp.verifier.command.responses.attestation.GetCertificateResponseBuilder;
+import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessage;
+import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessageBuilder;
+import com.intel.bkp.verifier.command.responses.chip.GetCertificateResponseBuilder;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
+import com.intel.bkp.verifier.model.CertificateRequestType;
 import com.intel.bkp.verifier.model.CommandIdentifier;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,7 +53,7 @@ public class GetCertificateMessageSender {
 
     public byte[] send(
         TransportLayer transportLayer, CommandLayer commandLayer,
-        AttestationCertificateRequestType requestType) {
+        CertificateRequestType requestType) {
         log.info("Preparing GET_ATTESTATION_CERTIFICATE with type {} ...", requestType.name());
         final GetCertificateMessage message = getCertificateMessageBuilder
             .withType(requestType)

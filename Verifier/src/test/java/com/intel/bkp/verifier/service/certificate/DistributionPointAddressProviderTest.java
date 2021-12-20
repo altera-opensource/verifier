@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
 import com.intel.bkp.verifier.model.dice.DiceEnrollmentParams;
 import com.intel.bkp.verifier.model.dice.DiceParams;
 import com.intel.bkp.verifier.model.s10.S10Params;
@@ -46,15 +45,15 @@ class DistributionPointAddressProviderTest {
 
     private static final S10Params S10_PARAMS = new S10Params("deviceId", "pufType");
     private static final DiceParams DICE_PARAMS = new DiceParams("skiInBase64", "UID");
-    private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS = new DiceEnrollmentParams("skiERinBase64", "SVN");
+    private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS =
+        new DiceEnrollmentParams("skiERinBase64", "SVN", "UID");
 
     private static final String EXPECTED_ATTESTATION_PATH = PATH_CER + "attestation_DEVICEID_PUFTYPE.cer";
     private static final String EXPECTED_DEVICE_ID_PATH = PATH_CER + "deviceid_uid_skiInBase64.cer";
     private static final String EXPECTED_ENROLLMENT_PATH = PATH_CER + "enrollment_uid_svn_skiERinBase64.cer";
     private static final String EXPECTED_IID_UDS_PATH = PATH_CER + "iiduds_uid_skiInBase64.cer";
 
-    private static final IpcsDistributionPoint DP = new IpcsDistributionPoint(PATH_CER, null, "", 0);
-    private DistributionPointAddressProvider sut = new DistributionPointAddressProvider(DP);
+    private DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_CER);
 
     @Test
     void getAttestationCertFilename() {
@@ -77,7 +76,7 @@ class DistributionPointAddressProviderTest {
     @Test
     void getEnrollmentCertFilename() {
         // when
-        final String result = sut.getEnrollmentCertFilename(DICE_PARAMS, DICE_ENROLLMENT_PARAMS);
+        final String result = sut.getEnrollmentCertFilename(DICE_ENROLLMENT_PARAMS);
 
         // then
         Assertions.assertEquals(EXPECTED_ENROLLMENT_PATH, result);

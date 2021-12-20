@@ -43,7 +43,7 @@ import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.CommandIdentifier;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.intel.bkp.verifier.command.logger.SigmaLoggerValues.SIGMA_TEARDOWN_MESSAGE;
+import static com.intel.bkp.verifier.command.logger.SigmaLoggerValues.PSGSIGMA_TEARDOWN_MESSAGE;
 
 @Slf4j
 public class TeardownMessageSender {
@@ -66,7 +66,7 @@ public class TeardownMessageSender {
     }
 
     private void send(TransportLayer transportLayer, CommandLayer commandLayer, SigmaTeardownMessage sigmaTeardown) {
-        SigmaLogger.log(sigmaTeardown, SIGMA_TEARDOWN_MESSAGE, this.getClass());
+        SigmaLogger.log(sigmaTeardown, PSGSIGMA_TEARDOWN_MESSAGE, this.getClass());
         new SigmaTeardownResponseBuilder()
             .parse(messageSender.send(transportLayer, commandLayer, sigmaTeardown, CommandIdentifier.SIGMA_TEARDOWN));
     }

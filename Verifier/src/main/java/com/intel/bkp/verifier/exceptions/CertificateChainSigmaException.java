@@ -31,39 +31,15 @@
  *
  */
 
-package com.intel.bkp.verifier.model.dice;
+package com.intel.bkp.verifier.exceptions;
 
-import com.intel.bkp.ext.utils.ByteSwap;
-import com.intel.bkp.ext.utils.ByteSwapOrder;
-import com.intel.bkp.ext.utils.HexConverter;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+public class CertificateChainSigmaException extends SigmaException {
 
-import java.security.cert.X509Certificate;
+    public CertificateChainSigmaException(String message, Throwable e) {
+        super(message, e);
+    }
 
-@Slf4j
-public class DiceParamsParser extends DiceParamsParserBase {
-
-    @Getter
-    private DiceParams diceParams;
-
-    @Override
-    public void parse(@NonNull X509Certificate certificate) {
-        log.debug("Parsing DiceParams from certificate: {}", certificate.getSubjectDN());
-
-        final String[] splitDN = parsePrincipalField(certificate, X509Certificate::getIssuerDN);
-
-        final String ski = splitDN[3];
-        final String uid = splitDN[4];
-        diceParams = new DiceParams(ski, uid);
-
-        // uid is used in diceParams on purpose
-        // uidInLittleEndian is used to present it in logs in consistent format (as received from GET_CHIPID)
-        final String uidInLittleEndian = HexConverter.toHex(ByteSwap.getSwappedArrayByLong(
-            HexConverter.fromHex(uid), ByteSwapOrder.B2L));
-
-        log.debug("Parsed DiceParams from certificate. SKI = {}, UID = {} (in format for Distribution Point: {})", ski,
-            uidInLittleEndian, uid);
+    public CertificateChainSigmaException(String message) {
+        super(message);
     }
 }

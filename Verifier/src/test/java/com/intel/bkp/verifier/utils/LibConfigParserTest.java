@@ -88,14 +88,14 @@ class LibConfigParserTest {
             config.getVerifierKeyParams().getVerifierRootQkyChain().getSingleChainPath());
         Assertions.assertEquals("some-key-name", config.getVerifierKeyParams().getKeyName());
 
-        var distributionPoint = config.getIpcsDistributionPoint();
+        var distributionPoint = config.getDistributionPoint();
         Assertions.assertEquals("https://tsci.intel.com/content/IPCS/certs/", distributionPoint.getPathCer());
         Assertions.assertEquals("99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F",
             distributionPoint.getTrustedRootHash().getS10());
         Assertions.assertEquals("35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B",
             distributionPoint.getTrustedRootHash().getDice());
-        Assertions.assertEquals("proxy.intel.com", distributionPoint.getProxyHost());
-        Assertions.assertEquals(912, distributionPoint.getProxyPort());
+        Assertions.assertEquals("proxy.intel.com", distributionPoint.getProxy().getHost());
+        Assertions.assertEquals(912, distributionPoint.getProxy().getPort());
 
         var securityProviderParams = config.getProviderParams();
         Assertions.assertNotNull(securityProviderParams);
@@ -130,10 +130,10 @@ class LibConfigParserTest {
         LibConfig config = spy.parseConfigFile(CONFIG_EMPTY_OPTIONALS);
 
         // then
-        var distributionPoint = config.getIpcsDistributionPoint();
+        var distributionPoint = config.getDistributionPoint();
         Assertions.assertEquals("", distributionPoint.getTrustedRootHash().getS10());
-        Assertions.assertEquals("", distributionPoint.getProxyHost());
-        Assertions.assertNull(distributionPoint.getProxyPort());
+        Assertions.assertEquals("", distributionPoint.getProxy().getHost());
+        Assertions.assertNull(distributionPoint.getProxy().getPort());
     }
 
     @Test
@@ -146,9 +146,9 @@ class LibConfigParserTest {
         LibConfig config = spy.parseConfigFile(CONFIG_WITHOUT_OPTIONALS);
 
         // then
-        var distributionPoint = config.getIpcsDistributionPoint();
-        Assertions.assertNull(distributionPoint.getProxyHost());
-        Assertions.assertNull(distributionPoint.getProxyPort());
+        var distributionPoint = config.getDistributionPoint();
+        Assertions.assertNull(distributionPoint.getProxy().getHost());
+        Assertions.assertNull(distributionPoint.getProxy().getPort());
     }
 
     @Test

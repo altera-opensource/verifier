@@ -31,23 +31,29 @@
  *
  */
 
-package com.intel.bkp.verifier.command.messages.attestation;
+package com.intel.bkp.verifier.command.responses.chip;
 
-import lombok.AllArgsConstructor;
+import com.intel.bkp.verifier.command.logger.ILogger;
+import com.intel.bkp.verifier.interfaces.Response;
+import com.intel.bkp.verifier.model.CertificateRequestType;
 import lombok.Getter;
+import lombok.Setter;
 
-@AllArgsConstructor
+import java.nio.ByteBuffer;
+
 @Getter
-public enum AttestationCertificateRequestType {
+@Setter
+public class GetCertificateResponse implements Response, ILogger {
 
-    FIRMWARE(0x01),
-    DEVICE_ID_SELF_SIGNED(0x02),
-    DEVICE_ID_ENROLLMENT(0x04),
-    ENROLLMENT_SELF_SIGNED(0x08),
-    UDS_EFUSE_ALIAS(0x10),
-    UDS_EFUSE_BKP(0x20),
-    UDS_IID_PUF_ALIAS(0x40),
-    UDS_IID_PUF_BKP(0x80);
+    private byte[] certificateType = new byte[0];
+    private byte[] certificateBlob = new byte[0];
+    private CertificateRequestType certificateTypeValue;
 
-    private final int code;
+    @Override
+    public byte[] array() {
+        return ByteBuffer.allocate(certificateType.length + certificateBlob.length)
+            .put(certificateType)
+            .put(certificateBlob)
+            .array();
+    }
 }

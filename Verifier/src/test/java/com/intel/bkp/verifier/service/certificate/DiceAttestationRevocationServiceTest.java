@@ -35,19 +35,30 @@ package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
+import com.intel.bkp.verifier.interfaces.IProxyCallback;
+import com.intel.bkp.verifier.model.DistributionPoint;
+import com.intel.bkp.verifier.model.LibConfig;
+import com.intel.bkp.verifier.model.Proxy;
+import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.model.dice.DiceEnrollmentParams;
 import com.intel.bkp.verifier.model.dice.DiceParams;
 import com.intel.bkp.verifier.x509.X509CertificateParser;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,18 +68,17 @@ class DiceAttestationRevocationServiceTest {
     private static final String ENROLLMENT_NAME = "ENROLLMENT_NAME";
     private static final String IID_NAME = "IID_NAME";
     private static final Optional<byte[]> EMPTY_CERT = Optional.empty();
-    private static final byte[] NOT_EMPTY_CERT = new byte[] {};
+    private static final byte[] NOT_EMPTY_CERT = new byte[]{};
     private static final DiceParams DICE_PARAMS = new DiceParams("SKI", "UID");
-    private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS = new DiceEnrollmentParams("SKIER", "SVN");
+    private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS = new DiceEnrollmentParams("SKIER", "SVN", "UID");
+
+    private static MockedStatic<ProxyCallbackFactory> proxyFactoryMockStatic;
 
     @Mock
     private X509Certificate certificate;
 
     @Mock
     private DistributionPointConnector connector;
-
-    @Mock
-    private ProxyCallbackFactory proxyCallbackFactory;
 
     @Mock
     private DiceCertificateVerifier diceCertificateVerifier;
@@ -81,6 +91,52 @@ class DiceAttestationRevocationServiceTest {
 
     @InjectMocks
     private DiceAttestationRevocationService sut;
+
+    @BeforeAll
+    public static void prepareStaticMock() {
+        proxyFactoryMockStatic = mockStatic(ProxyCallbackFactory.class);
+    }
+
+    @AfterAll
+    public static void closeStaticMock() {
+        proxyFactoryMockStatic.close();
+    }
+
+    @Test
+    void constructor_configuresProperly() {
+        // given
+        final var appContext = mock(AppContext.class);
+        final var libConfig = mock(LibConfig.class);
+        final var dp = mock(DistributionPoint.class);
+        final var certPath = "path";
+        final var trustedRootHash = new TrustedRootHash("s10", "dice");
+        final var host = "host";
+        final var port = 123;
+        final var proxy = new Proxy(host, port);
+        final var proxyCallback = mock(IProxyCallback.class);
+
+        when(appContext.getLibConfig()).thenReturn(libConfig);
+        when(libConfig.getDistributionPoint()).thenReturn(dp);
+        when(dp.getPathCer()).thenReturn(certPath);
+        when(dp.getTrustedRootHash()).thenReturn(trustedRootHash);
+        when(dp.getProxy()).thenReturn(proxy);
+        when(ProxyCallbackFactory.get(host, port)).thenReturn(proxyCallback);
+
+        // when
+        sut = new DiceAttestationRevocationService(appContext);
+
+        // then
+        final var diceCertVerifier = sut.getDiceCertificateVerifier();
+        Assertions.assertEquals(trustedRootHash, diceCertVerifier.getTrustedRootHash());
+
+        final var crlProvider = diceCertVerifier.getCrlVerifier().getCrlProvider();
+        Assertions.assertTrue(crlProvider instanceof DistributionPointCrlProvider);
+
+        final var addressProvider = sut.getAddressProvider();
+        Assertions.assertEquals(certPath, addressProvider.getCertificateUrlPrefix());
+
+        proxyFactoryMockStatic.verify(() -> ProxyCallbackFactory.get(host, port), times(2));
+    }
 
     @Test
     void fmGetDeviceIdCert_WithEmpty() {
@@ -113,12 +169,12 @@ class DiceAttestationRevocationServiceTest {
     @Test
     void fmGetEnrollmentCert_WithEmpty() {
         // given
-        when(addressProvider.getEnrollmentCertFilename(DICE_PARAMS, DICE_ENROLLMENT_PARAMS))
+        when(addressProvider.getEnrollmentCertFilename(DICE_ENROLLMENT_PARAMS))
             .thenReturn(ENROLLMENT_NAME);
         when(connector.tryGetBytes(ENROLLMENT_NAME)).thenReturn(EMPTY_CERT);
 
         // when
-        final Optional<X509Certificate> result = sut.fmGetEnrollmentCert(DICE_PARAMS, DICE_ENROLLMENT_PARAMS);
+        final Optional<X509Certificate> result = sut.fmGetEnrollmentCert(DICE_ENROLLMENT_PARAMS);
 
         // then
         Assertions.assertTrue(result.isEmpty());
@@ -127,13 +183,13 @@ class DiceAttestationRevocationServiceTest {
     @Test
     void fmGetEnrollmentCert_ReturnsCert() {
         // given
-        when(addressProvider.getEnrollmentCertFilename(DICE_PARAMS, DICE_ENROLLMENT_PARAMS)).
+        when(addressProvider.getEnrollmentCertFilename(DICE_ENROLLMENT_PARAMS)).
             thenReturn(ENROLLMENT_NAME);
         when(connector.tryGetBytes(ENROLLMENT_NAME)).thenReturn(Optional.of(NOT_EMPTY_CERT));
         when(certificateParser.toX509(NOT_EMPTY_CERT)).thenReturn(certificate);
 
         // when
-        final Optional<X509Certificate> result = sut.fmGetEnrollmentCert(DICE_PARAMS, DICE_ENROLLMENT_PARAMS);
+        final Optional<X509Certificate> result = sut.fmGetEnrollmentCert(DICE_ENROLLMENT_PARAMS);
 
         // then
         Assertions.assertTrue(result.isPresent());

@@ -217,21 +217,24 @@ Configuration file `config.properties` contains parameters that will be parsed b
 | **SQLite database** |
 | database-configuration.internal-database | NO | If set to true, in-memory sqlite cache database will be created. If false, sqlite database will be stored in file <strong>verifier_core.sqlite</strong> in current folder. | true (default), false |
 | **Verifier Signing Key** |
-| verifier-key-params.verifier-root-qky-chain.single-chain-path | NO | Absolute path to Verifier Signing Key single root certificate chain for **Stratix10** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if multi-chain-path is set. | - | /path/to/verifier_chain_single.qky |
-| verifier-key-params.verifier-root-qky-chain.multi-chain-path | NO | Absolute path to Verifier Signing Key certificate chain for **Agilex** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if single-chain-path is set. | - | /path/to/verifier_chain_multi.qky |
+| verifier-key-params.verifier-root-qky-chain.single-chain-path | NO | Absolute path to Verifier Signing Key single root certificate chain for **
+Stratix10** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if multi-chain-path is set. | - | /path/to/verifier_chain_single.qky |
+| verifier-key-params.verifier-root-qky-chain.multi-chain-path | NO | Absolute path to Verifier Signing Key certificate chain for **
+Agilex** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if single-chain-path is set. | - | /path/to/verifier_chain_multi.qky |
 | verifier-key-params.key-name | NO | Verifier Signing Key alias used for identifying security object in Security Provider - leave empty during first run or if you need rotate Verifier Signing Key. | - | ced20836-8a55-49d5-862a-510296142a99 |
 | **Certificate Distribution Point** |
 | distribution-point.path-cer | YES | Path to certificate distribution point | - | https://tsci.intel.com/content/IPCS/certs/ |
 | distribution-point.trusted-root-hash.s10 | NO | SHA256 fingerprint of trusted root certificate for Stratix10. To calculate, run: `openssl x509 -in s10_root.cer -noout -fingerprint -sha256` | - | 99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F |
 | distribution-point.trusted-root-hash.dice | NO | SHA256 fingerprint of trusted root certificate (DICE) for Agilex. To calculate, run: `openssl x509 -in dice_root.cer -noout -fingerprint -sha256` | - | 35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B |
-| distribution-point.proxy-host | NO | Parameter to set proxy host if required. | - | proxy[.]company[.]com |
-| distribution-point.proxy-port | NO | Parameter to set proxy port if required. | - | 911 |
+| distribution-point.proxy.host | NO | Parameter to set proxy host if required. | - | proxy[.]company[.]com |
+| distribution-point.proxy.port | NO | Parameter to set proxy port if required. | - | 911 |
 | **Security provider** |  | __All settings are specific to used security provider.__ |
 | security-provider-params.provider.name | YES | Security Provider name registered in system / available in Java classpath. | - | BC |
 | security-provider-params.provider.file-based | YES | Set true if Security Provider is file based (eg.BouncyCastle), set false if HSM based (Luna, nCipher etc.) | - | true, false |
 | security-provider-params.provider.class-name | YES | Security Provider canonical class name. | - | org.bouncycastle.jce.provider.BouncyCastleProvider |
 | security-provider-params.security.key-store-name | YES | Name for keystore used to store data. | - | uber |
-| security-provider-params.security.password | NO | Password for keystore. **For security, it is advised to set password with environment variable: __VERIFIER_SECURITY_PROVIDER_PASSWORD__** | - |  |
+| security-provider-params.security.password | NO | Password for keystore. **For security, it is advised to set password
+with environment variable: __VERIFIER_SECURITY_PROVIDER_PASSWORD__** | - |  |
 | security-provider-params.security.input-stream-param | YES | Keystore location. E.g., for BouncyCastle it is path to keystore file. For Gemalto Luna it would be slot number or partition name. | - | /tmp/bc-keystore-verifier.jks |
 | security-provider-params.key-types.ec.key-name | YES | Class name for EC key. | - | EC |
 | security-provider-params.key-types.ec.curve-spec-384 | YES | P-384 elliptic curve identifier. | - | secp256r1 |

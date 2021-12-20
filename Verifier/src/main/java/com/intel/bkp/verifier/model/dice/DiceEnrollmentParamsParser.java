@@ -33,30 +33,24 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import lombok.Getter;
-import lombok.NonNull;
+import com.intel.bkp.ext.core.attestation.DiceCertificateSubject;
+import com.intel.bkp.ext.core.certificate.X509CertificateUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 
 @Slf4j
-public final class DiceEnrollmentParamsParser extends DiceParamsParserBase {
+public final class DiceEnrollmentParamsParser extends DiceParamsParserBase<DiceEnrollmentParams> {
 
-    @Getter
-    private DiceEnrollmentParams diceEnrollmentParams;
+
+    public DiceEnrollmentParamsParser() {
+        super(X509CertificateUtils::getAuthorityKeyIdentifier, X509Certificate::getIssuerDN);
+    }
 
     @Override
-    public void parse(@NonNull X509Certificate certificate) {
-        log.debug("Parsing DiceEnrollmentParams from certificate: {}", certificate.getSubjectDN());
-
-        final byte[] aki = parseAuthorityKeyIdentifier(certificate);
-        final String[] splitIssuerDN = parsePrincipalField(certificate, X509Certificate::getIssuerDN);
-
-        final String skiER = Base64.getUrlEncoder().encodeToString(aki);
-        final String svn = splitIssuerDN[3];
-        diceEnrollmentParams = new DiceEnrollmentParams(skiER, svn);
-
-        log.debug("Parsed DiceEnrollmentParams from certificate. SKIER = {}, SVN = {}", skiER, svn);
+    protected DiceEnrollmentParams getDiceParams(String ski, DiceCertificateSubject subject) {
+        final String svn = subject.getAdditionalData();
+        final String uid = subject.getDeviceId();
+        return new DiceEnrollmentParams(ski, svn, uid);
     }
 }

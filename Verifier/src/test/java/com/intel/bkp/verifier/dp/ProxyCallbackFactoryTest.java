@@ -42,8 +42,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ProxyCallbackFactoryTest {
 
-    private ProxyCallbackFactory sut = new ProxyCallbackFactory();
-
     @Test
     void get_WithHostAndPort_ReturnsCustom() {
         // given
@@ -51,7 +49,7 @@ class ProxyCallbackFactoryTest {
         final int port = 123;
 
         // when
-        final IProxyCallback result = sut.get(host, port);
+        final IProxyCallback result = ProxyCallbackFactory.get(host, port);
 
         // then
         Assertions.assertTrue(result instanceof ProxyCallbackImplCustom);
@@ -64,7 +62,7 @@ class ProxyCallbackFactoryTest {
         final int port = 123;
 
         // when
-        final IProxyCallback result = sut.get(host, port);
+        final IProxyCallback result = ProxyCallbackFactory.get(host, port);
 
         // then
         Assertions.assertTrue(result instanceof ProxyCallbackImplDefault);
@@ -77,7 +75,7 @@ class ProxyCallbackFactoryTest {
         final int port = 123;
 
         // when
-        final IProxyCallback result = sut.get(host, port);
+        final IProxyCallback result = ProxyCallbackFactory.get(host, port);
 
         // then
         Assertions.assertTrue(result instanceof ProxyCallbackImplDefault);
@@ -90,7 +88,20 @@ class ProxyCallbackFactoryTest {
         final Integer port = null;
 
         // when
-        final IProxyCallback result = sut.get(host, port);
+        final IProxyCallback result = ProxyCallbackFactory.get(host, port);
+
+        // then
+        Assertions.assertTrue(result instanceof ProxyCallbackImplDefault);
+    }
+
+    @Test
+    void get_WithPortZero_ReturnsDefault() {
+        // given
+        final String host = "test";
+        final Integer port = 0;
+
+        // when
+        final IProxyCallback result = ProxyCallbackFactory.get(host, port);
 
         // then
         Assertions.assertTrue(result instanceof ProxyCallbackImplDefault);

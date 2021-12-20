@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.command.logger;
 
 public enum SigmaLoggerValues {
 
-    SIGMA_TEARDOWN_MESSAGE,
+    PSGSIGMA_TEARDOWN_MESSAGE,
     GET_CHIPID_MESSAGE,
     GET_CERTIFICATE_MESSAGE,
     CREATE_ATTESTATION_SUBKEY_MESSAGE,

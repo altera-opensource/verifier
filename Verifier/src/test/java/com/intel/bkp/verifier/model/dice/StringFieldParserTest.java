@@ -38,8 +38,6 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Locale;
-
 import static com.intel.bkp.verifier.model.dice.FieldParserTestUtils.getOctetString;
 import static com.intel.bkp.verifier.model.dice.FieldParserTestUtils.getTaggedObject;
 
@@ -58,6 +56,6 @@ class StringFieldParserTest {
         final String result = sut.parse(taggedObj);
 
         // then
-        Assertions.assertEquals(expected.toUpperCase(Locale.ROOT), result);
+        Assertions.assertEquals(expected, result);
     }
 }

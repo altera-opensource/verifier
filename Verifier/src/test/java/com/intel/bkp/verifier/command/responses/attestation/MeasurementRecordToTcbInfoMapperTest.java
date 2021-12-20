@@ -35,6 +35,7 @@ package com.intel.bkp.verifier.command.responses.attestation;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.model.dice.TcbInfo;
+import com.intel.bkp.verifier.model.dice.TcbInfoConstants;
 import com.intel.bkp.verifier.model.dice.TcbInfoField;
 import com.intel.bkp.verifier.model.evidence.MeasurementRecordHeader;
 import com.intel.bkp.verifier.model.evidence.SectionType;
@@ -42,9 +43,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
+import static com.intel.bkp.verifier.model.dice.TcbInfoField.FWIDS;
+import static com.intel.bkp.verifier.model.dice.TcbInfoField.INDEX;
+import static com.intel.bkp.verifier.model.dice.TcbInfoField.LAYER;
+import static com.intel.bkp.verifier.model.dice.TcbInfoField.TYPE;
+import static com.intel.bkp.verifier.model.dice.TcbInfoField.VENDOR;
+import static com.intel.bkp.verifier.model.dice.TcbInfoField.VENDOR_INFO;
+
 class MeasurementRecordToTcbInfoMapperTest {
+
+    private static final String EXPECTED_VENDOR = TcbInfoConstants.VENDOR;
+    private static final String EXPECTED_TYPE_PREFIX = "2.16.840.1.113741.1.15.4.";
+    private static final int EXPECTED_LAYER = 2;
 
     private final ByteBufferSafe buffer = ByteBufferSafe.wrap(new byte[100]);
     private final MeasurementRecordToTcbInfoMapper sut = new MeasurementRecordToTcbInfoMapper();
@@ -60,56 +73,52 @@ class MeasurementRecordToTcbInfoMapperTest {
     void map_WithDeviceState() {
         // given
         header.setSectionType(SectionType.DEVICE_STATE);
+        final var expectedKeys = List.of(VENDOR, TYPE, LAYER, VENDOR_INFO);
+        final var notExpectedKeys = List.of(INDEX, FWIDS);
 
         // when
         final TcbInfo result = sut.map(header, buffer);
 
         // then
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(4, tcbInfo.size());
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.VENDOR));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.TYPE));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.LAYER));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.VENDOR_INFO));
-        Assertions.assertFalse(tcbInfo.containsKey(TcbInfoField.INDEX));
-        Assertions.assertFalse(tcbInfo.containsKey(TcbInfoField.FWIDS));
+        verifyKeys(result, expectedKeys, notExpectedKeys);
     }
 
     @Test
     void map_WithPr() {
         // given
         header.setSectionType(SectionType.PR);
+        final var expectedKeys = List.of(VENDOR, TYPE, LAYER, INDEX, FWIDS);
+        final var notExpectedKeys = List.of(VENDOR_INFO);
 
         // when
         final TcbInfo result = sut.map(header, buffer);
 
         // then
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(5, tcbInfo.size());
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.VENDOR));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.TYPE));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.LAYER));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.INDEX));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.FWIDS));
-        Assertions.assertFalse(tcbInfo.containsKey(TcbInfoField.VENDOR_INFO));
+        verifyKeys(result, expectedKeys, notExpectedKeys);
     }
 
     @Test
     void map_WithUserDesign() {
         // given
         header.setSectionType(SectionType.CORE);
+        final var expectedKeys = List.of(VENDOR, TYPE, LAYER, FWIDS);
+        final var notExpectedKeys = List.of(INDEX, VENDOR_INFO);
 
         // when
         final TcbInfo result = sut.map(header, buffer);
 
         // then
+        verifyKeys(result, expectedKeys, notExpectedKeys);
+    }
+
+    private void verifyKeys(TcbInfo result, List<TcbInfoField> expectedKeys, List<TcbInfoField> notExpectedKeys) {
         final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(4, tcbInfo.size());
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.VENDOR));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.TYPE));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.LAYER));
-        Assertions.assertTrue(tcbInfo.containsKey(TcbInfoField.FWIDS));
-        Assertions.assertFalse(tcbInfo.containsKey(TcbInfoField.VENDOR_INFO));
-        Assertions.assertFalse(tcbInfo.containsKey(TcbInfoField.INDEX));
+        Assertions.assertEquals(expectedKeys.size(), tcbInfo.size());
+        Assertions.assertTrue(tcbInfo.keySet().containsAll(expectedKeys));
+        Assertions.assertTrue(tcbInfo.keySet().stream().noneMatch(notExpectedKeys::contains));
+
+        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(VENDOR));
+        Assertions.assertEquals(EXPECTED_TYPE_PREFIX + header.getSectionType().getValue(), tcbInfo.get(TYPE));
+        Assertions.assertEquals(EXPECTED_LAYER, tcbInfo.get(LAYER));
     }
 }

@@ -51,7 +51,7 @@ public class X509CertificateParentVerifier {
             child.verify(parent.getPublicKey());
         } catch (CertificateException | NoSuchAlgorithmException
             | InvalidKeyException | NoSuchProviderException | SignatureException e) {
-            log.error("Invalid X509 signature in certificate: {}.", child.getSubjectDN(), e);
+            log.error("Invalid X509 signature in certificate.\nParent: {} \nChild: {}", parent, child, e);
             throw new CertificateChainValidationException(e);
         }
     }

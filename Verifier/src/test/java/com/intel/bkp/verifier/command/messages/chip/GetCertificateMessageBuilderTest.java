@@ -31,21 +31,50 @@
  *
  */
 
-package com.intel.bkp.verifier.model;
+package com.intel.bkp.verifier.command.messages.chip;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.intel.bkp.verifier.model.CertificateRequestType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class IpcsDistributionPoint {
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.verifier.model.CertificateRequestType.DEVICE_ID_ENROLLMENT;
+import static com.intel.bkp.verifier.model.CertificateRequestType.FIRMWARE;
+import static com.intel.bkp.verifier.model.CertificateRequestType.UDS_EFUSE_ALIAS;
 
-    private String pathCer;
-    private TrustedRootHash trustedRootHash;
-    private String proxyHost;
-    private Integer proxyPort;
+class GetCertificateMessageBuilderTest {
+
+    @Test
+    void withType_DeviceIdEnrollment() {
+        // when
+        final byte[] certMessage = buildMessage(DEVICE_ID_ENROLLMENT);
+
+        // then
+        Assertions.assertEquals("04000000", toHex(certMessage));
+    }
+
+    @Test
+    void withType_UdsEfuseAlias() {
+        // when
+        final byte[] certMessage = buildMessage(UDS_EFUSE_ALIAS);
+
+        // then
+        Assertions.assertEquals("10000000", toHex(certMessage));
+    }
+
+    @Test
+    void withType_UdsEfuseFirmware() {
+        // when
+        final byte[] certMessage = buildMessage(FIRMWARE);
+
+        // then
+        Assertions.assertEquals("01000000", toHex(certMessage));
+    }
+
+    private byte[] buildMessage(CertificateRequestType requestType) {
+        return new GetCertificateMessageBuilder()
+            .withType(requestType)
+            .build()
+            .array();
+    }
 }

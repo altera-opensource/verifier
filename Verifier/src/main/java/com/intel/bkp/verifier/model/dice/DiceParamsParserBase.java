@@ -33,44 +33,36 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import com.intel.bkp.ext.core.certificate.X509CertificateUtils;
-import com.intel.bkp.verifier.exceptions.InternalLibraryException;
-import com.intel.bkp.verifier.interfaces.ICertificateParser;
+import com.intel.bkp.ext.core.attestation.DiceCertificateSubject;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.Principal;
 import java.security.cert.X509Certificate;
-import java.util.Optional;
 import java.util.function.Function;
 
-public abstract class DiceParamsParserBase implements ICertificateParser {
+@Slf4j
+@AllArgsConstructor
+public abstract class DiceParamsParserBase<T extends DiceParams> {
 
-    private static final int EXPECTED_FIELDS_COUNT = 5;
-    private static final String FIELD_DELIMITER = ":";
+    private final KeyIdentifierProvider keyIdentifierProvider = new KeyIdentifierProvider();
+    private final DomainNameParser domainNameParser = new DomainNameParser();
 
-    @Override
-    public abstract void parse(X509Certificate certificate);
+    private final Function<X509Certificate, byte[]> keyIdentifierMappingFunc;
+    private final Function<X509Certificate, Principal> domainNameMappingFunc;
 
-    protected final String[] parsePrincipalField(X509Certificate certificate,
-        Function<X509Certificate, Principal> mappingFunc) {
+    protected abstract T getDiceParams(String ski, DiceCertificateSubject subject);
 
-        final String[] strings = Optional.ofNullable(certificate)
-            .map(mappingFunc)
-            .map(Principal::getName)
-            .map(name -> name.split(FIELD_DELIMITER))
-            .orElse(new String[] {});
+    public T parse(@NonNull X509Certificate certificate) {
+        log.debug("Parsing Dice URL params from certificate: {}", certificate.getSubjectDN());
 
-        if (strings.length < EXPECTED_FIELDS_COUNT) {
-            throw new InternalLibraryException(String.format(
-                "Received certificate does not contain valid fields: %s", String.join(":", strings))
-            );
-        }
+        final String ski = keyIdentifierProvider.getKeyIdentifierInBase64Url(certificate, keyIdentifierMappingFunc);
+        final DiceCertificateSubject subject = domainNameParser.parse(certificate, domainNameMappingFunc);
+        final T diceParams = getDiceParams(ski, subject);
 
-        return strings;
-    }
+        log.debug("Parsed from certificate: {}", diceParams);
 
-    protected final byte[] parseAuthorityKeyIdentifier(X509Certificate certificate) {
-        return Optional.ofNullable(certificate)
-            .map(X509CertificateUtils::getAuthorityKeyIdentifier)
-            .orElse(new byte[] {});
+        return diceParams;
     }
 }

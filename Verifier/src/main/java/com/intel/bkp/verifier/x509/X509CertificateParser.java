@@ -34,9 +34,8 @@
 package com.intel.bkp.verifier.x509;
 
 import com.intel.bkp.ext.core.certificate.X509CertificateUtils;
-import com.intel.bkp.ext.crypto.CryptoUtils;
+import com.intel.bkp.ext.crypto.exceptions.X509CertificateParsingException;
 import com.intel.bkp.verifier.exceptions.X509ParsingException;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -55,8 +54,6 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
@@ -65,12 +62,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.intel.bkp.ext.crypto.x509.X509CertificateParser.toX509Certificate;
+
 @Slf4j
 public class X509CertificateParser {
 
     private static final String FAIL_TO_PARSE_MESSAGE = "Failed to parse CRL Distribution Points "
         + "from attestation certificate.";
-    private static final String CERTIFICATE_FACTORY_TYPE = "X.509";
 
     public Optional<String> getPathToCrlDistributionPoint(X509Certificate certificate) {
         final List<String> crlUrls;
@@ -104,21 +102,17 @@ public class X509CertificateParser {
         return Optional.of(crlUrls.get(0));
     }
 
-    public String tryGetPathToIssuerCertificateLocation(X509Certificate certificate) {
+    public Optional<String> findPathToIssuerCertificate(X509Certificate certificate) {
         final byte[] authorityInfoAccess = certificate.getExtensionValue(Extension.authorityInfoAccess.getId());
         return tryGetAccessDescriptions(authorityInfoAccess)
             .filter(descriptions -> descriptions.length > 0)
             .map(descriptions -> getLocationName(descriptions[0]))
-            .orElse("");
+            .filter(StringUtils::isNotBlank);
     }
 
-    public String getPathToIssuerCertificateLocation(X509Certificate certificate) {
-        final String issuerCertificateLocation = tryGetPathToIssuerCertificateLocation(certificate);
-        if (StringUtils.isBlank(issuerCertificateLocation)) {
-            throw new X509ParsingException("No AuthorityInformationAccess in certificate.");
-        }
-
-        return issuerCertificateLocation;
+    public String getPathToIssuerCertificate(X509Certificate certificate) {
+        return findPathToIssuerCertificate(certificate)
+            .orElseThrow(() -> new X509ParsingException("No AuthorityInformationAccess in certificate."));
     }
 
     public X509Certificate toX509(String certificate) {
@@ -126,24 +120,28 @@ public class X509CertificateParser {
     }
 
     public X509Certificate toX509(byte[] certificate) {
-        return toX509(new ByteArrayInputStream(certificate));
-    }
-
-    private X509Certificate toX509(ByteArrayInputStream inputStream) {
         try {
-            return (X509Certificate)CertificateFactory
-                .getInstance(CERTIFICATE_FACTORY_TYPE, CryptoUtils.getBouncyCastleProvider())
-                .generateCertificate(inputStream);
-        } catch (CertificateException e) {
+            return toX509Certificate(certificate);
+        } catch (X509CertificateParsingException e) {
             throw new X509ParsingException("Failed to parse X.509 certificates.", e);
         }
     }
 
-    @NonNull
+    public Optional<X509Certificate> tryToX509(byte[] certificate) {
+        try {
+            return Optional.of(toX509Certificate(certificate));
+        } catch (X509CertificateParsingException e) {
+            return Optional.empty();
+        }
+    }
+
     private Optional<AccessDescription[]> tryGetAccessDescriptions(byte[] authorityInfoAccess) {
+        if (authorityInfoAccess == null) {
+            return Optional.empty();
+        }
         try {
             return Optional.ofNullable(AuthorityInformationAccess.getInstance(
-                JcaX509ExtensionUtils.parseExtensionValue(authorityInfoAccess))
+                    JcaX509ExtensionUtils.parseExtensionValue(authorityInfoAccess))
                 .getAccessDescriptions());
         } catch (IOException e) {
             log.warn("Failed to parse AuthorityInformationAccess from certificate.", e);

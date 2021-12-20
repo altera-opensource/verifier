@@ -41,6 +41,6 @@ public class OperationalFlagsFieldParser extends BaseExtensionParser implements 
 
     @Override
     public String parse(ASN1TaggedObject object) {
-        return HexConverter.toHex(parseOctetString(object));
+        return HexConverter.toHex(parseBitString(object));
     }
 }

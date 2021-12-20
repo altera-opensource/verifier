@@ -38,8 +38,9 @@ import com.intel.bkp.ext.core.security.SecurityProviderParamsSetter;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.model.AttestationCertificateFlow;
 import com.intel.bkp.verifier.model.DatabaseConfiguration;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
+import com.intel.bkp.verifier.model.DistributionPoint;
 import com.intel.bkp.verifier.model.LibConfig;
+import com.intel.bkp.verifier.model.Proxy;
 import com.intel.bkp.verifier.model.TransportLayerType;
 import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
@@ -72,6 +73,7 @@ import static com.intel.bkp.verifier.config.Properties.KEY_TYPES_GROUP;
 import static com.intel.bkp.verifier.config.Properties.ONLY_EFUSE_UDS;
 import static com.intel.bkp.verifier.config.Properties.PROVIDER_GROUP;
 import static com.intel.bkp.verifier.config.Properties.PROVIDER_PARAMS_GROUP;
+import static com.intel.bkp.verifier.config.Properties.PROXY_GROUP;
 import static com.intel.bkp.verifier.config.Properties.SECURITY_GROUP;
 import static com.intel.bkp.verifier.config.Properties.TRANSPORT_LAYER_TYPE;
 import static com.intel.bkp.verifier.config.Properties.TRUSTED_ROOT_HASH_GROUP;
@@ -123,7 +125,7 @@ public class LibConfigParser {
         final LibConfig appConfig = new LibConfig();
         appConfig.setTransportLayerType(getTransportLayerType(prop));
         appConfig.setAttestationCertificateFlow(getAttestationCertificateFlow(prop));
-        appConfig.setIpcsDistributionPoint(getIpcsDistributionPoint(prop));
+        appConfig.setDistributionPoint(getDistributionPoint(prop));
         appConfig.setVerifierKeyParams(getVerifierKeyParams(prop));
         appConfig.setDatabaseConfiguration(getDatabaseConfiguration(prop));
         appConfig.setProviderParams(getProviderParams(prop));
@@ -149,7 +151,7 @@ public class LibConfigParser {
         );
     }
 
-    private IpcsDistributionPoint getIpcsDistributionPoint(SchemaParams prop) {
+    private DistributionPoint getDistributionPoint(SchemaParams prop) {
         final TrustedRootHash trustedRootHash = new TrustedRootHash(
             Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_S10_TRUSTED_ROOT,
                 DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
@@ -159,14 +161,19 @@ public class LibConfigParser {
                 .orElse("")
         );
 
-        return new IpcsDistributionPoint(
-            prop.getPropertyGroup(DISTRIBUTION_POINT_PATH_CER, DISTRIBUTION_POINT_GROUP),
-            trustedRootHash,
-            prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_HOST, DISTRIBUTION_POINT_GROUP),
-            Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_PORT, DISTRIBUTION_POINT_GROUP))
+        final Proxy proxy = new Proxy(
+            prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_HOST,
+                DISTRIBUTION_POINT_GROUP, PROXY_GROUP),
+            Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_PORT,
+                DISTRIBUTION_POINT_GROUP, PROXY_GROUP))
                 .filter(Predicate.not(StringUtils::isBlank))
                 .map(Integer::valueOf)
-                .orElse(null)
+                .orElse(null));
+
+        return new DistributionPoint(
+            prop.getPropertyGroup(DISTRIBUTION_POINT_PATH_CER, DISTRIBUTION_POINT_GROUP),
+            trustedRootHash,
+            proxy
         );
     }
 

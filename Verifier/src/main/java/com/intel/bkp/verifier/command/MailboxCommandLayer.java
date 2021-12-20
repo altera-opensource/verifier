@@ -34,38 +34,41 @@
 package com.intel.bkp.verifier.command;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
+import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.header.CommandHeader;
 import com.intel.bkp.verifier.command.header.CommandHeaderManager;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.Message;
 import com.intel.bkp.verifier.model.CommandIdentifier;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 
-@RequiredArgsConstructor
+@Slf4j
 public class MailboxCommandLayer implements CommandLayer {
 
     private static final int COMMAND_HEADER_LEN = 4;
-
-    private final int clientIdentifier;
+    private static final int CLIENT_IDENTIFIER = 1;
 
     @Override
     public byte[] create(Message data, CommandIdentifier command) {
-        int commandCode = command.getCommandCode();
-        byte[] dataBytes = data.array();
-        byte[] header = buildCommandHeader(commandCode, getArgumentsLen(dataBytes), 0, clientIdentifier);
-        return withAppendedHeader(dataBytes, header);
+        final int commandCode = command.getCommandCode();
+        final byte[] dataBytes = data.array();
+        final byte[] header = buildCommandHeader(commandCode, getArgumentsLen(dataBytes), 0, CLIENT_IDENTIFIER);
+        final byte[] rawData = withAppendedHeader(dataBytes, header);
+        log.trace("Sending raw data for command {}: {}", command.name(), HexConverter.toHex(rawData));
+        return rawData;
     }
 
     @Override
     public byte[] retrieve(byte[] data, CommandIdentifier command) {
-        CommandHeaderManager.validateCommandHeaderCode(data, command.getResponseName());
+        log.trace("Received raw data for response {}: {}", command.name(), HexConverter.toHex(data));
+        CommandHeaderManager.validateCommandHeaderCode(data, command.name());
         return ByteBufferSafe.wrap(data).skip(COMMAND_HEADER_LEN).getRemaining();
     }
 
     private int getArgumentsLen(byte[] dataBytes) {
-        return dataBytes.length / Integer.BYTES;
+        return (int)Math.ceil((double)dataBytes.length / Integer.BYTES);
     }
 
     private byte[] buildCommandHeader(int commandCode, int argumentsLength, int id, int client) {

@@ -31,9 +31,32 @@
  *
  */
 
-package com.intel.bkp.verifier.model.dice;
+package com.intel.bkp.ext.crypto.x509;
 
-public class Constants {
+import com.intel.bkp.ext.crypto.CryptoUtils;
+import com.intel.bkp.ext.crypto.constants.CryptoConstants;
+import com.intel.bkp.ext.crypto.exceptions.X509CertificateParsingException;
 
-    public static final int INDEX_DEFAULT_VALUE = 0;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+public class X509CertificateParser {
+
+    public static X509Certificate toX509Certificate(byte[] certBytes) throws X509CertificateParsingException {
+        try (InputStream input = new ByteArrayInputStream(certBytes)) {
+            return (X509Certificate) getCertificateFactory().generateCertificate(input);
+        } catch (CertificateException | IOException e) {
+            throw new X509CertificateParsingException("Failed to parse certificate.", e);
+        }
+    }
+
+    private static CertificateFactory getCertificateFactory() throws CertificateException {
+        return CertificateFactory.getInstance(
+            CryptoConstants.CERTIFICATE_FACTORY_TYPE,
+            CryptoUtils.getBouncyCastleProvider());
+    }
 }

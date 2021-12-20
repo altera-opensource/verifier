@@ -34,49 +34,53 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.ext.core.utils.AttestationConstants;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
+import com.intel.bkp.ext.utils.PathUtils;
 import com.intel.bkp.verifier.model.dice.DiceEnrollmentParams;
 import com.intel.bkp.verifier.model.dice.DiceParams;
 import com.intel.bkp.verifier.model.s10.S10Params;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor
+@Getter(AccessLevel.PACKAGE)
+@RequiredArgsConstructor
 public class DistributionPointAddressProvider {
 
-    private IpcsDistributionPoint dp;
+    private final String certificateUrlPrefix;
 
-    void withDistributionPoint(IpcsDistributionPoint dp) {
-        this.dp = dp;
-    }
-
-    String getAttestationCertFilename(S10Params s10Params) {
-        return dp.getPathCer() + String.format(AttestationConstants.S10_ATTESTATION_CERT_FILE_NAME,
+    public String getAttestationCertFilename(S10Params s10Params) {
+        final String filename = String.format(AttestationConstants.S10_ATTESTATION_CERT_FILE_NAME,
             s10Params.getDeviceId(),
             s10Params.getPufType());
+        return getUrl(filename);
     }
 
-    String getDeviceIdCertFilename(DiceParams diceParams) {
-        return dp.getPathCer() + String.format(AttestationConstants.DEVICEID_CERT_FILE_NAME,
+    public String getDeviceIdCertFilename(DiceParams diceParams) {
+        final String filename = String.format(AttestationConstants.DEVICEID_CERT_FILE_NAME,
             diceParams.getUid(),
             diceParams.getSki());
+        return getUrl(filename);
     }
 
-    String getEnrollmentCertFilename(DiceParams diceParams,
-        DiceEnrollmentParams diceEnrollmentParams) {
-        return dp.getPathCer() + String.format(AttestationConstants.ENROLLMENT_CERT_FILE_NAME,
-            diceParams.getUid(),
+    public String getEnrollmentCertFilename(DiceEnrollmentParams diceEnrollmentParams) {
+        final String filename = String.format(AttestationConstants.ENROLLMENT_CERT_FILE_NAME,
+            diceEnrollmentParams.getUid(),
             diceEnrollmentParams.getSvn(),
-            diceEnrollmentParams.getSkiER());
+            diceEnrollmentParams.getSki());
+        return getUrl(filename);
     }
 
-    String getIidUdsCertFilename(DiceParams diceParams) {
-        return dp.getPathCer() + String.format(AttestationConstants.IIDUDS_CERT_FILE_NAME,
+    public String getIidUdsCertFilename(DiceParams diceParams) {
+        final String filename = String.format(AttestationConstants.IIDUDS_CERT_FILE_NAME,
             diceParams.getUid(),
             diceParams.getSki());
+        return getUrl(filename);
     }
+
+    private String getUrl(String filename) {
+        return PathUtils.buildPath(certificateUrlPrefix, filename);
+    }
+
 }
