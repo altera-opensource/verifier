@@ -41,6 +41,6 @@ public class IntegerFieldParser extends BaseExtensionParser implements ITcbInfoF
 
     @Override
     public Integer parse(ASN1TaggedObject object) {
-        return Integer.parseInt(HexConverter.toHex(parseOctetString(object)));
+        return Integer.parseInt(HexConverter.toHex(parseOctetString(object)), 16);
     }
 }

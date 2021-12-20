@@ -34,6 +34,7 @@
 package com.intel.bkp.verifier.x509;
 
 import com.intel.bkp.ext.crypto.CryptoUtils;
+import com.intel.bkp.ext.crypto.x509.X509CrlParser;
 import com.intel.bkp.verifier.Utils;
 import com.intel.bkp.verifier.exceptions.X509ParsingException;
 import org.junit.jupiter.api.Assertions;
@@ -56,7 +57,6 @@ class X509CrlParentVerifierTest {
     // https://tsci.intel.com/content/IPCS/certs/IPCSSigningCA.cer
     private static final String PARENT_CERT_FILENAME = "IPCSSigningCA.cer";
 
-    private static final X509CrlParser X509_CRL_PARSER = new X509CrlParser();
     private static final X509CertificateParser X509_PARSER = new X509CertificateParser();
 
     private static X509CRL crl;
@@ -67,7 +67,7 @@ class X509CrlParentVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        crl = X509_CRL_PARSER.toX509(Utils.readFromResources(TEST_FOLDER, CRL_FILENAME));
+        crl = X509CrlParser.toX509Crl(Utils.readFromResources(TEST_FOLDER, CRL_FILENAME));
         parentCert = X509_PARSER.toX509(Utils.readFromResources(TEST_FOLDER, PARENT_CERT_FILENAME));
     }
 

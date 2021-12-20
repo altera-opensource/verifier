@@ -33,14 +33,11 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.core.crl.CrlSerialNumberBuilder;
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
-import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
-import com.intel.bkp.verifier.model.TrustedRootHash;
+import com.intel.bkp.verifier.exceptions.CrlSignatureException;
+import com.intel.bkp.verifier.exceptions.SigmaException;
+import com.intel.bkp.verifier.exceptions.X509ParsingException;
 import com.intel.bkp.verifier.x509.X509CertificateParser;
 import com.intel.bkp.verifier.x509.X509CrlParentVerifier;
-import com.intel.bkp.verifier.x509.X509CrlParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,17 +46,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -67,103 +66,144 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CrlVerifierTest {
 
-    private static final String PATH_CER = "path-cer";
-    private static final String S10_TRUSTED_ROOT_HASH = "hashS10";
-    private static final String DICE_TRUSTED_ROOT_HASH = "hashDice";
-    private static final String PROXY_HOST = "proxyhost";
-    private static final Integer PROXY_PORT = 123;
-    private static final TrustedRootHash TRUSTED_ROOT_HASH =
-        new TrustedRootHash(S10_TRUSTED_ROOT_HASH, DICE_TRUSTED_ROOT_HASH);
-    private static final IpcsDistributionPoint DISTRIBUTION_POINT =
-        new IpcsDistributionPoint(PATH_CER, TRUSTED_ROOT_HASH, PROXY_HOST, PROXY_PORT);
-
-    private static final String DEVICE_ID_REVOKED = "B51BF9E7B6169C87";
-    private static final String DEVICE_ID_NOT_REVOKED = "0011223344556677";
-    private static final byte[] MOCKED_CRL = new byte[]{0x01, 0x02, 0x03};
+    private static final BigInteger REVOKED_SERIAL_NUMBER = BigInteger.ONE;
+    private static final BigInteger NOT_REVOKED_SERIAL_NUMBER = BigInteger.TWO;
+    private static final String LEAF_CRL_PATH = "Leaf CRL URL";
+    private static final String PARENT_CRL_PATH = "Parent CRL URL";
 
     @Mock
-    private X509CRLEntry crlEntry;
+    private X509CRL leafCRL;
 
     @Mock
-    private X509CRL x509CRL;
+    private X509CRL parentCRL;
 
     @Mock
-    private PublicKey ipcsSigningPublicKey;
+    private PublicKey parentPublicKey;
 
     @Mock
-    private X509CrlParser x509CrlParser;
+    private PublicKey rootPublicKey;
 
     @Mock
     private X509CrlParentVerifier x509CrlParentVerifier;
 
     @Mock
-    private DistributionPointConnector connector;
-
-    @Mock
-    private ProxyCallbackFactory proxyCallbackFactory;
-
-    @Mock
     private X509CertificateParser certificateParser;
+
+    @Mock
+    private ICrlProvider crlProvider;
 
     @Mock
     private List<X509Certificate> certificates;
 
     @Mock
-    private X509Certificate certificate;
+    private X509Certificate leafCertificate;
+
+    @Mock
+    private X509Certificate parentCertificate;
+
+    @Mock
+    private X509Certificate rootCertificate;
 
     @Mock
     private ListIterator<X509Certificate> certificateChainIterator;
 
     @Mock
-    private ListIterator<X509Certificate> issuerCertsIterator;
+    private ListIterator<X509Certificate> leafCertIssuerCertsIterator;
+
+    @Mock
+    private ListIterator<X509Certificate> parentCertIssuerCertsIterator;
 
     @InjectMocks
     private CrlVerifier sut;
 
-    private Set revokedCertificates = new HashSet<>();
-
     @BeforeEach
     void setUpClass() {
-        when(certificates.listIterator()).thenReturn(certificateChainIterator);
-        when(certificateChainIterator.hasNext()).thenReturn(true, false);
-        when(certificateChainIterator.next()).thenReturn(certificate);
-
-        sut.withDistributionPoint(DISTRIBUTION_POINT);
+        sut.certificates(certificates);
     }
 
     @Test
     void verify_NotRevokedDevice_Success() {
         // given
-        mockCrl();
-        when(certificateParser.getPathToCrlDistributionPoint(certificate)).thenReturn(Optional.of("path to CRL"));
-        when(certificate.getSerialNumber())
-            .thenReturn(CrlSerialNumberBuilder.convertToBigInteger(DEVICE_ID_NOT_REVOKED));
+        mockChainWith2Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByDirectParent();
+        mockLeafCertIsNotRevoked();
 
         // when-then
         Assertions.assertTrue(() -> sut.verify());
 
         // then
-        verify(x509CrlParentVerifier).verify(x509CRL, ipcsSigningPublicKey);
+        verify(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
     }
 
     @Test
     void verify_WithRevokedDevice_ReturnFalse() {
         // given
-        mockCrl();
-        when(certificateParser.getPathToCrlDistributionPoint(certificate)).thenReturn(Optional.of("path to CRL"));
-        when(certificate.getSerialNumber()).thenReturn(CrlSerialNumberBuilder.convertToBigInteger(DEVICE_ID_REVOKED));
+        mockChainWith2Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByDirectParent();
+        mockLeafCertIsRevoked();
 
         // when-then
         Assertions.assertFalse(() -> sut.verify());
 
         // then
-        verify(x509CrlParentVerifier).verify(x509CRL, ipcsSigningPublicKey);
+        verify(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
+    }
+
+    @Test
+    void verify_WithRevokedIntermediateCert_Throws() {
+        // given
+        mockChainWith3Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByDirectParent();
+        mockParentCrlOnDp();
+        mockParentCrlSignedByRoot();
+        mockParentCertIsRevoked();
+
+        // when-then
+        Assertions.assertThrows(SigmaException.class, () -> sut.verify());
+    }
+
+    @Test
+    void verify_CrlSignedNotByDirectCertIssuer_Success() {
+        // given
+        mockChainWith3Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByRoot();
+        mockParentCrlOnDp();
+        mockParentCrlSignedByRoot();
+
+        // when-then
+        Assertions.assertTrue(() -> sut.verify());
+
+        // then
+        verify(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
+        verify(x509CrlParentVerifier).verify(leafCRL, rootPublicKey);
+        verify(x509CrlParentVerifier).verify(parentCRL, rootPublicKey);
+    }
+
+    @Test
+    void verify_CrlNotSignedByAnyCertInChain_Throws() {
+        // given
+        mockChainWith3Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlNotSignedByAnyCertInChain();
+
+        // when-then
+        CrlSignatureException ex = Assertions.assertThrows(CrlSignatureException.class, () -> sut.verify());
+
+        // then
+        Assertions.assertEquals("Failed to verify signature of CRL", ex.getMessage());
+        verify(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
+        verify(x509CrlParentVerifier).verify(leafCRL, rootPublicKey);
     }
 
     @Test
     void verify_WithCertWithoutCrlExtension_CrlNotRequired_ReturnTrue() {
         // given
-        when(certificateParser.getPathToCrlDistributionPoint(certificate)).thenReturn(Optional.empty());
+        mockChainWith2Certs();
+        mockLeafCertDoesNotContainUrlToCrl();
 
         // when-then
         Assertions.assertTrue(() -> sut.doNotRequireCrlForLeafCertificate().verify());
@@ -175,7 +215,8 @@ class CrlVerifierTest {
     @Test
     void verify_WithCertWithoutCrlExtension_CrlRequired_ReturnFalse() {
         // given
-        when(certificateParser.getPathToCrlDistributionPoint(certificate)).thenReturn(Optional.empty());
+        mockChainWith2Certs();
+        mockLeafCertDoesNotContainUrlToCrl();
 
         // when-then
         Assertions.assertFalse(() -> sut.verify());
@@ -184,19 +225,95 @@ class CrlVerifierTest {
         verifyNoInteractions(x509CrlParentVerifier);
     }
 
-    @SuppressWarnings("unchecked")
-    private void mockCrl() {
-        when(connector.getBytes(any())).thenReturn(MOCKED_CRL);
-        when(x509CrlParser.toX509(MOCKED_CRL)).thenReturn(x509CRL);
-        when(x509CRL.getRevokedCertificates()).thenReturn(revokedCertificates);
-        when(crlEntry.getSerialNumber())
-            .thenReturn(CrlSerialNumberBuilder.convertToBigInteger(DEVICE_ID_REVOKED));
-        revokedCertificates.add(crlEntry);
-        when(certificate.getPublicKey()).thenReturn(ipcsSigningPublicKey);
+    private void mockChainWith3Certs() {
+        when(certificates.listIterator()).thenReturn(certificateChainIterator);
+        when(certificateChainIterator.hasNext()).thenReturn(true, true, false);
+        when(certificateChainIterator.next()).thenReturn(leafCertificate, parentCertificate, rootCertificate);
+    }
 
+    private void mockChainWith2Certs() {
+        when(certificates.listIterator()).thenReturn(certificateChainIterator);
+        when(certificateChainIterator.hasNext()).thenReturn(true, false);
+        when(certificateChainIterator.next()).thenReturn(leafCertificate, parentCertificate);
+    }
+
+    private void mockLeafCrlOnDp() {
+        when(certificateParser.getPathToCrlDistributionPoint(leafCertificate)).thenReturn(Optional.of(LEAF_CRL_PATH));
+        when(crlProvider.getCrl(LEAF_CRL_PATH)).thenReturn(leafCRL);
+    }
+
+    private void mockLeafCertDoesNotContainUrlToCrl() {
+        when(certificateParser.getPathToCrlDistributionPoint(leafCertificate)).thenReturn(Optional.empty());
+    }
+
+    private void mockParentCrlOnDp() {
+        when(certificateParser.getPathToCrlDistributionPoint(parentCertificate)).thenReturn(Optional.of(PARENT_CRL_PATH));
+        when(crlProvider.getCrl(PARENT_CRL_PATH)).thenReturn(parentCRL);
+    }
+
+    private void mockLeafCrlSignedByDirectParent() {
         when(certificateChainIterator.nextIndex()).thenReturn(1);
-        when(certificates.listIterator(1)).thenReturn(issuerCertsIterator);
-        when(issuerCertsIterator.hasNext()).thenReturn(true, false);
-        when(issuerCertsIterator.next()).thenReturn(certificate);
+        when(certificates.listIterator(1)).thenReturn(leafCertIssuerCertsIterator);
+        when(leafCertIssuerCertsIterator.hasNext()).thenReturn(true);
+        when(leafCertIssuerCertsIterator.next()).thenReturn(parentCertificate);
+        when(parentCertificate.getPublicKey()).thenReturn(parentPublicKey);
+        doNothing().when(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
+    }
+
+    private void mockLeafCrlSignedByRoot() {
+        when(certificateChainIterator.nextIndex()).thenReturn(1);
+        when(certificates.listIterator(1)).thenReturn(leafCertIssuerCertsIterator);
+        when(leafCertIssuerCertsIterator.hasNext()).thenReturn(true, true);
+        when(leafCertIssuerCertsIterator.next()).thenReturn(parentCertificate, rootCertificate);
+        when(parentCertificate.getPublicKey()).thenReturn(parentPublicKey);
+        doThrow(new X509ParsingException("")).when(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
+        doNothing().when(x509CrlParentVerifier).verify(leafCRL, rootPublicKey);
+    }
+
+    private void mockLeafCrlNotSignedByAnyCertInChain() {
+        when(certificateChainIterator.nextIndex()).thenReturn(1);
+        when(certificates.listIterator(1)).thenReturn(leafCertIssuerCertsIterator);
+        when(leafCertIssuerCertsIterator.hasNext()).thenReturn(true, true, false);
+        when(leafCertIssuerCertsIterator.next()).thenReturn(parentCertificate, rootCertificate);
+        when(parentCertificate.getPublicKey()).thenReturn(parentPublicKey);
+        when(rootCertificate.getPublicKey()).thenReturn(rootPublicKey);
+        doThrow(new X509ParsingException("")).when(x509CrlParentVerifier).verify(leafCRL, parentPublicKey);
+        doThrow(new X509ParsingException("")).when(x509CrlParentVerifier).verify(leafCRL, rootPublicKey);
+    }
+
+    private void mockParentCrlSignedByRoot() {
+        when(certificateChainIterator.nextIndex()).thenReturn(1, 2);
+        when(certificates.listIterator(2)).thenReturn(parentCertIssuerCertsIterator);
+        when(parentCertIssuerCertsIterator.hasNext()).thenReturn(true, false);
+        when(parentCertIssuerCertsIterator.next()).thenReturn(rootCertificate);
+        when(rootCertificate.getPublicKey()).thenReturn(rootPublicKey);
+        doNothing().when(x509CrlParentVerifier).verify(parentCRL, rootPublicKey);
+    }
+
+    private void mockLeafCertIsNotRevoked() {
+        mockSerialNumber(leafCertificate, NOT_REVOKED_SERIAL_NUMBER);
+        mockCrlWithRevokedEntry(leafCRL, REVOKED_SERIAL_NUMBER);
+    }
+
+    private void mockLeafCertIsRevoked() {
+        mockSerialNumber(leafCertificate, REVOKED_SERIAL_NUMBER);
+        mockCrlWithRevokedEntry(leafCRL, REVOKED_SERIAL_NUMBER);
+    }
+
+    private void mockParentCertIsRevoked() {
+        mockSerialNumber(parentCertificate, REVOKED_SERIAL_NUMBER);
+        mockCrlWithRevokedEntry(parentCRL, REVOKED_SERIAL_NUMBER);
+        when(certificateChainIterator.previousIndex()).thenReturn(1);
+    }
+
+    private void mockSerialNumber(X509Certificate certificate, BigInteger serialNumber) {
+        when(certificate.getSerialNumber()).thenReturn(serialNumber);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void mockCrlWithRevokedEntry(X509CRL crl, BigInteger revokedSerialNumber) {
+        final X509CRLEntry crlEntry = mock(X509CRLEntry.class);
+        when(crl.getRevokedCertificates()).thenReturn((Set) Set.of(crlEntry));
+        when(crlEntry.getSerialNumber()).thenReturn(revokedSerialNumber);
     }
 }

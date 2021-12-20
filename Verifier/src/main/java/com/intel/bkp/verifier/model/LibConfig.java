@@ -46,7 +46,7 @@ import lombok.Setter;
 public class LibConfig {
     private TransportLayerType transportLayerType;
     private AttestationCertificateFlow attestationCertificateFlow;
-    private IpcsDistributionPoint ipcsDistributionPoint;
+    private DistributionPoint distributionPoint;
     private SecurityProviderParams providerParams;
     private VerifierKeyParams verifierKeyParams;
     private DatabaseConfiguration databaseConfiguration;

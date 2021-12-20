@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.verifier.exceptions.SigmaException;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
 import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.x509.X509CertificateChainVerifier;
 import com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier;
@@ -70,9 +69,6 @@ class DiceCertificateVerifierTest {
     private static final byte[] DEVICE_ID = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
     private static final byte[] DICE_ROOT_CERT = new byte[]{7, 8};
     private static final String DICE_ROOT_HASH = DigestUtils.sha256Hex(DICE_ROOT_CERT);
-    private static final TrustedRootHash TRUSTED_ROOT_HASH = new TrustedRootHash(null, DICE_ROOT_HASH);
-    private static final IpcsDistributionPoint DISTRIBUTION_POINT = new IpcsDistributionPoint(null,
-        TRUSTED_ROOT_HASH, null, null);
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
         TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
 
@@ -97,6 +93,9 @@ class DiceCertificateVerifierTest {
     @Mock
     private RootHashVerifier rootHashVerifier;
 
+    @Mock
+    private TrustedRootHash trustedRootHash;
+
     @InjectMocks
     private DiceCertificateVerifier sut;
 
@@ -105,82 +104,81 @@ class DiceCertificateVerifierTest {
     @BeforeEach
     void setUp() {
         sut.withDeviceId(DEVICE_ID);
-        sut.withDistributionPoint(DISTRIBUTION_POINT);
         certificates = new LinkedList<>();
         certificates.add(certificate);
     }
 
     @Test
-    void verify_CertificateChainFails_Throws() {
+    void verifyAliasChain_ParentVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
     }
 
     @Test
-    void verify_UeidVerificationFails_Throws() {
+    void verifyAliasChain_UeidVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
     }
 
     @Test
-    void verify_SkiVerificationFails_Throws() {
+    void verifyAliasChain_SkiVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
         mockSkiVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
     }
 
     @Test
-    void verify_ExtendedKeyUsageVerificationFails_Throws() {
+    void verifyAliasChain_RootHashVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
         mockSkiVerification(true);
-        mockExtendedKeyUsageVerification(false);
-
-        // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
-    }
-
-    @Test
-    void verify_RootHashVerificationFails_Throws() {
-        // given
-        mockCertificateParentVerification(true);
-        mockUeidVerification(true);
-        mockSkiVerification(true);
-        mockExtendedKeyUsageVerification(true);
         mockRootHashVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
     }
 
     @Test
-    void verify_CrlVerificationFails_Throws() {
+    void verifyAliasChain_CrlVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
         mockSkiVerification(true);
-        mockExtendedKeyUsageVerification(true);
         mockRootHashVerification(true);
         mockCrlVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
     }
 
     @Test
-    void verify_AllPassed() {
+    void verifyAliasChain_ExtendedKeyUsageVerificationFails_Throws() {
+        // given
+        mockCertificateParentVerification(true);
+        mockUeidVerification(true);
+        mockSkiVerification(true);
+        mockRootHashVerification(true);
+        mockCrlVerification(true);
+        mockExtendedKeyUsageVerification(false);
+
+        // when-then
+        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+    }
+
+    @Test
+    void verifyAliasChain_AllPassed() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
@@ -190,7 +188,7 @@ class DiceCertificateVerifierTest {
         mockCrlVerification(true);
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verify(certificates));
+        Assertions.assertDoesNotThrow(() -> sut.verifyAliasChain(certificates));
         verify(certificateParentVerifier).rootBasicConstraints(CA_TRUE_PATHLENGTH_NONE);
         verify(certificateParentVerifier).knownExtensionOids(DICE_EXTENSION_OIDS);
         verify(extendedKeyUsageVerifier).verify(KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC);
@@ -220,6 +218,7 @@ class DiceCertificateVerifierTest {
     }
 
     private void mockRootHashVerification(boolean verificationPassed) {
+        when(trustedRootHash.getDice()).thenReturn(DICE_ROOT_HASH);
         when(rootHashVerifier.verifyRootHash(certificate, DICE_ROOT_HASH)).thenReturn(verificationPassed);
     }
 

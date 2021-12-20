@@ -40,20 +40,22 @@ import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.sender.GetCertificateMessageSender;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.FIRMWARE;
+import static com.intel.bkp.verifier.model.CertificateRequestType.FIRMWARE;
 
 @Slf4j
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class GetDeviceAttestationComponent {
 
-    private GetCertificateMessageSender getCertificateMessageSender = new GetCertificateMessageSender();
-    private S10AttestationComponent s10AttestationComponent = new S10AttestationComponent();
-    private DiceAttestationComponent diceAttestationComponent = new DiceAttestationComponent();
+    private final GetCertificateMessageSender getCertificateMessageSender;
+    private final S10AttestationComponent s10AttestationComponent;
+    private final DiceAttestationComponent diceAttestationComponent;
+
+    public GetDeviceAttestationComponent() {
+        this(new GetCertificateMessageSender(), new S10AttestationComponent(), new DiceAttestationComponent());
+    }
 
     public VerifierExchangeResponse perform(String refMeasurement, byte[] deviceId) {
         return perform(AppContext.instance(), refMeasurement, deviceId);

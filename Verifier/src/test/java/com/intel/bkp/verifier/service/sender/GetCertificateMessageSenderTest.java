@@ -33,12 +33,14 @@
 
 package com.intel.bkp.verifier.service.sender;
 
-import com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType;
-import com.intel.bkp.verifier.command.messages.attestation.GetCertificateMessage;
-import com.intel.bkp.verifier.command.messages.attestation.GetCertificateMessageBuilder;
-import com.intel.bkp.verifier.command.responses.attestation.GetCertificateResponseBuilder;
+import com.intel.bkp.ext.utils.ByteSwap;
+import com.intel.bkp.ext.utils.ByteSwapOrder;
+import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessage;
+import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessageBuilder;
+import com.intel.bkp.verifier.command.responses.chip.GetCertificateResponseBuilder;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
+import com.intel.bkp.verifier.model.CertificateRequestType;
 import com.intel.bkp.verifier.model.CommandIdentifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.intel.bkp.verifier.model.CertificateRequestType.FIRMWARE;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,7 +61,13 @@ class GetCertificateMessageSenderTest {
     private static byte[] prepareResponse() {
         final GetCertificateResponseBuilder builder = new GetCertificateResponseBuilder();
         builder.setCertificateBlob(CERTIFICATE);
+        builder.setCertificateType(getCertTypeBytes(FIRMWARE));
+        builder.setCertificateTypeValue(FIRMWARE);
         return builder.build().array();
+    }
+
+    private static byte[] getCertTypeBytes(CertificateRequestType certType) {
+        return ByteSwap.getSwappedArray(certType.getType(), ByteSwapOrder.B2L);
     }
 
     @Mock
@@ -82,13 +91,13 @@ class GetCertificateMessageSenderTest {
     @Test
     void send_WithTypeFirmware() {
         // given
-        when(messageBuilder.withType(AttestationCertificateRequestType.FIRMWARE)).thenReturn(messageBuilder);
+        when(messageBuilder.withType(FIRMWARE)).thenReturn(messageBuilder);
         when(messageBuilder.build()).thenReturn(message);
         when(messageSender.send(transportLayer, commandLayer, message, CommandIdentifier.GET_CERTIFICATE))
             .thenReturn(RESPONSE);
 
         // when
-        final byte[] result = sut.send(transportLayer, commandLayer, AttestationCertificateRequestType.FIRMWARE);
+        final byte[] result = sut.send(transportLayer, commandLayer, FIRMWARE);
 
         // then
         Assertions.assertArrayEquals(CERTIFICATE, result);

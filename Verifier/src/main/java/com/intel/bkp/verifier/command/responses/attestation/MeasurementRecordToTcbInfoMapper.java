@@ -40,14 +40,14 @@ import com.intel.bkp.verifier.model.dice.TcbInfoField;
 import com.intel.bkp.verifier.model.evidence.MeasurementRecordHeader;
 import com.intel.bkp.verifier.model.evidence.SectionType;
 
-import java.util.Locale;
 import java.util.Map;
+
+import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.VENDOR;
 
 public class MeasurementRecordToTcbInfoMapper {
 
-    private static final String VENDOR = "intel.com";
     private static final String TYPE_PREFIX = "2.16.840.1.113741.1.15.4.";
-    private static final String SHA384_HASH_ALG = "2.16.840.1.101.3.4.2.2";
     private static final int LAYER = 2;
 
     public TcbInfo map(MeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
@@ -64,7 +64,7 @@ public class MeasurementRecordToTcbInfoMapper {
         if (SectionType.DEVICE_STATE == sectionType) {
             map.put(TcbInfoField.VENDOR_INFO, new DeviceStateMeasurementRecord(recordContentBuffer).getData());
         } else {
-            map.put(TcbInfoField.FWIDS, new FwIdField(SHA384_HASH_ALG,
+            map.put(TcbInfoField.FWIDS, new FwIdField(FWIDS_HASH_ALG,
                 new UserDesignMeasurementRecord(recordContentBuffer).getData())
             );
         }
@@ -73,7 +73,7 @@ public class MeasurementRecordToTcbInfoMapper {
     }
 
     private void createBaseMap(Map<TcbInfoField, Object> map, SectionType sectionType) {
-        map.put(TcbInfoField.VENDOR, VENDOR.toUpperCase(Locale.ROOT));
+        map.put(TcbInfoField.VENDOR, VENDOR);
         map.put(TcbInfoField.TYPE, TYPE_PREFIX + sectionType.getValue());
         map.put(TcbInfoField.LAYER, LAYER);
     }

@@ -31,22 +31,34 @@
  *
  */
 
-package com.intel.bkp.verifier.command.messages.attestation;
+package com.intel.bkp.verifier.model;
 
-import com.intel.bkp.verifier.command.logger.ILogger;
-import com.intel.bkp.verifier.interfaces.Message;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
+import java.util.EnumSet;
+
+@AllArgsConstructor
 @Getter
-@Setter
-public class GetCertificateMessage implements Message, ILogger {
+public enum CertificateRequestType {
 
-    private byte[] certificateRequest = new byte[0];
+    FIRMWARE(0x01),
+    DEVICE_ID_SELF_SIGNED(0x02),
+    DEVICE_ID_ENROLLMENT(0x04),
+    ENROLLMENT_SELF_SIGNED(0x08),
+    UDS_EFUSE_ALIAS(0x10),
+    UDS_EFUSE_BKP(0x20),
+    UDS_IID_PUF_ALIAS(0x40),
+    UDS_IID_PUF_BKP(0x80);
 
-    @Override
-    public byte[] array() {
-        return certificateRequest;
+    private final int type;
+
+    public static CertificateRequestType findByType(byte[] data) {
+        return EnumSet.allOf(CertificateRequestType.class)
+            .stream()
+            .filter(item -> data != null)
+            .filter(item -> (byte) item.getType() == data[0])
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
     }
 }
-

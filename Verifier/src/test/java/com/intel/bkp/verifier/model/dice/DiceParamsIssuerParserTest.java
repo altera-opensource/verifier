@@ -33,26 +33,43 @@
 
 package com.intel.bkp.verifier.model.dice;
 
+import com.intel.bkp.ext.core.exceptions.InvalidDiceCertificateSubjectException;
 import com.intel.bkp.verifier.Utils;
+import com.intel.bkp.verifier.exceptions.X509ParsingException;
 import com.intel.bkp.verifier.x509.X509CertificateParser;
+import org.bouncycastle.asn1.x509.Extension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.security.Principal;
 import java.security.cert.X509Certificate;
 
-class DiceParamsParserTest {
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class DiceParamsIssuerParserTest {
 
     private static final String TEST_FOLDER = "responses/";
     private static final String FIRMWARE_CERT = "firmware_certificate.der";
-    private static final String EXPECTED_SKI = "DI931bRmuixmLyW4";
+    private static final String EXPECTED_SKI = "DI931bRmuixmLyW4WJYySeQiDaQ";
     private static final String EXPECTED_UID = "065effc1e44f3506";
     private static final X509CertificateParser X509_PARSER = new X509CertificateParser();
+    private static final String AKI_OID = Extension.authorityKeyIdentifier.getId();
 
     private static X509Certificate firmwareCert;
 
-    private DiceParamsParser sut;
+    @Mock
+    private static X509Certificate certificate;
+
+    @Mock
+    private static Principal principal;
+
+    private DiceParamsIssuerParser sut;
 
     @BeforeAll
     static void init() throws Exception {
@@ -61,7 +78,7 @@ class DiceParamsParserTest {
 
     @BeforeEach
     void setUp() {
-        sut = new DiceParamsParser();
+        sut = new DiceParamsIssuerParser();
     }
 
     private static byte[] readCertificate(String filename) throws Exception {
@@ -71,10 +88,30 @@ class DiceParamsParserTest {
     @Test
     void parse() {
         // when
-        sut.parse(firmwareCert);
+        final DiceParams result = sut.parse(firmwareCert);
 
         // then
-        Assertions.assertEquals(EXPECTED_SKI, sut.getDiceParams().getSki());
-        Assertions.assertEquals(EXPECTED_UID, sut.getDiceParams().getUid());
+        Assertions.assertEquals(EXPECTED_SKI, result.getSki());
+        Assertions.assertEquals(EXPECTED_UID, result.getUid());
+    }
+
+    @Test
+    void parse_certWithoutAki_Throws() {
+        // given
+        when(certificate.getExtensionValue(AKI_OID)).thenReturn(null);
+
+        // when-then
+        Assertions.assertThrows(X509ParsingException.class, () -> sut.parse(certificate));
+    }
+
+    @Test
+    void parse_certWithIssuerDNThatIsNotInDiceFormat_Throws() {
+        // given
+        when(certificate.getIssuerDN()).thenReturn(principal);
+        when(principal.getName()).thenReturn("CN=ValidCommonName:ButNotInDiceFormat");
+        when(certificate.getExtensionValue(AKI_OID)).thenReturn(firmwareCert.getExtensionValue(AKI_OID));
+
+        // when-then
+        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class, () -> sut.parse(certificate));
     }
 }

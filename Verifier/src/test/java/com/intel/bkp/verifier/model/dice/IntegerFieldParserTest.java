@@ -48,7 +48,7 @@ class IntegerFieldParserTest {
     @Test
     void parse() {
         // given
-        final Integer expected = 1;
+        final Integer expected = 12;
         final ASN1Primitive obj = getOctetString(expected);
         final ASN1TaggedObject taggedObj = getTaggedObject(obj);
 

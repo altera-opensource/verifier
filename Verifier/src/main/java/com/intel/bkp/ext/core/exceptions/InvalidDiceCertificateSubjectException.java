@@ -31,49 +31,10 @@
  *
  */
 
-package com.intel.bkp.verifier.command.messages.attestation;
+package com.intel.bkp.ext.core.exceptions;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.DEVICE_ID_ENROLLMENT;
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.FIRMWARE;
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.UDS_EFUSE_ALIAS;
-
-class GetCertificateMessageBuilderTest {
-
-    @Test
-    void withType_DeviceIdEnrollment() {
-        // when
-        final byte[] certMessage = buildMessage(DEVICE_ID_ENROLLMENT);
-
-        // then
-        Assertions.assertEquals("04000000", toHex(certMessage));
-    }
-
-    @Test
-    void withType_UdsEfuseAlias() {
-        // when
-        final byte[] certMessage = buildMessage(UDS_EFUSE_ALIAS);
-
-        // then
-        Assertions.assertEquals("10000000", toHex(certMessage));
-    }
-
-    @Test
-    void withType_UdsEfuseFirmware() {
-        // when
-        final byte[] certMessage = buildMessage(FIRMWARE);
-
-        // then
-        Assertions.assertEquals("01000000", toHex(certMessage));
-    }
-
-    private byte[] buildMessage(AttestationCertificateRequestType requestType) {
-        return new GetCertificateMessageBuilder()
-            .withType(requestType)
-            .build()
-            .array();
+public class InvalidDiceCertificateSubjectException extends RuntimeException {
+    public InvalidDiceCertificateSubjectException(String message) {
+        super(message);
     }
 }

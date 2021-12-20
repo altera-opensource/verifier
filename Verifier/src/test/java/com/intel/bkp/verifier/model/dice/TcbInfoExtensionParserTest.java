@@ -42,8 +42,10 @@ import org.junit.jupiter.api.Test;
 
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.VENDOR;
 
 class TcbInfoExtensionParserTest {
 
@@ -54,9 +56,9 @@ class TcbInfoExtensionParserTest {
     private static final String FIRMWARE_CERT = "firmware_certificate.der";
     private static final String DEVICE_ID_ENROLLMENT_CERT = "device_id_enrollment_certificate.der";
 
-    private static final String EXPECTED_VENDOR = "intel.com".toUpperCase(Locale.ROOT);
-    private static final String EXPECTED_MODEL = "agilex".toUpperCase(Locale.ROOT);
-    private static final String EXPECTED_HASH_ALG = "2.16.840.1.101.3.4.2.2";
+    private static final String EXPECTED_VENDOR = VENDOR;
+    private static final String EXPECTED_MODEL = "Agilex";
+    private static final String EXPECTED_HASH_ALG = FWIDS_HASH_ALG;
 
     private static final int ALIAS_EXPECTED_LAYER = 2;
     private static final String ALIAS_EXPECTED_DIGEST_1 = "066331A2C0CD05F2F48D5BDD4EA60C5CFFAE61C286B1ADDE040E1"
@@ -71,7 +73,7 @@ class TcbInfoExtensionParserTest {
     private static final int FIRMWARE_EXPECTED_INDEX = 0;
     private static final String FIRMWARE_EXPECTED_DIGEST = "9430BBFC85A933E15A87E04D12A86D4231A88DC7FE58F388ED0C"
         + "B3235EF3E7D5BB1CC91C72C4BA7A045971AE07B91F61";
-    private static final String FIRMWARE_EXPECTED_FLAGS = "0640";
+    private static final String FIRMWARE_EXPECTED_FLAGS = "40";
 
     private static final int DEVICEID_EXPECTED_SVN = 0;
     private static final int DEVICEID_EXPECTED_LAYER = 0;

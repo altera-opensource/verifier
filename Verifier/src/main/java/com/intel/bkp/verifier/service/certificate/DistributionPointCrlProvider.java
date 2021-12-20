@@ -31,30 +31,40 @@
  *
  */
 
-package com.intel.bkp.verifier.command.responses.attestation;
+package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import lombok.Getter;
-import lombok.Setter;
+import com.intel.bkp.ext.crypto.exceptions.X509CrlParsingException;
+import com.intel.bkp.verifier.dp.DistributionPointConnector;
+import com.intel.bkp.verifier.exceptions.X509ParsingException;
+import com.intel.bkp.verifier.model.Proxy;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Setter
-public class GetCertificateResponseBuilder {
+import java.security.cert.X509CRL;
 
-    private byte[] returnedCertificate = new byte[Integer.BYTES];
-    private byte[] certificateBlob = new byte[0];
+import static com.intel.bkp.ext.crypto.x509.X509CrlParser.toX509Crl;
 
-    public GetCertificateResponse build() {
-        GetCertificateResponse response = new GetCertificateResponse();
-        response.setReturnedCertificate(returnedCertificate);
-        response.setCertificateBlob(certificateBlob);
-        return response;
+@Slf4j
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+public class DistributionPointCrlProvider implements ICrlProvider {
+
+    private final DistributionPointConnector connector;
+
+    public DistributionPointCrlProvider(Proxy proxy) {
+        this(new DistributionPointConnector(proxy));
     }
 
-    public GetCertificateResponseBuilder parse(byte[] message) {
-        certificateBlob = ByteBufferSafe.wrap(message)
-            .get(returnedCertificate)
-            .getRemaining();
-        return this;
+    public X509CRL getCrl(String crlUrl) {
+        return downloadCrl(crlUrl);
+    }
+
+    private X509CRL downloadCrl(String crlUrl) {
+        final byte[] crlBytes = connector.getBytes(crlUrl);
+        try {
+            return toX509Crl(crlBytes);
+        } catch (X509CrlParsingException e) {
+            throw new X509ParsingException(String.format("Failed to parse CRL downloaded from %s", crlUrl), e);
+        }
     }
 }

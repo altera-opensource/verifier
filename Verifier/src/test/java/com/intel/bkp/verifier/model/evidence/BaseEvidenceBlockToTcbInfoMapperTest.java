@@ -47,7 +47,9 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
 
     private static final String TYPE = "TYPE";
     private static final String VENDOR = "VENDOR";
+    private static final String VENDOR_MIXED_LETTER_SIZE = "VeNdOr";
     private static final String MODEL = "MODEL";
+    private static final String MODEL_MIXED_LETTER_SIZE = "MoDeL";
     private static final String LAYER = "11";
     private static final int LAYER_INT = 11;
     private static final int INDEX = 9;
@@ -108,8 +110,22 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
 
         // then
         final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        final FwIdField fwIds = (FwIdField)tcbInfo.get(TcbInfoField.FWIDS);
+        final FwIdField fwIds = (FwIdField) tcbInfo.get(TcbInfoField.FWIDS);
         Assertions.assertEquals(DIGEST, fwIds.getDigest());
+    }
+
+    @Test
+    void map_VerifyVendorAndModelPreserveLetterSize() {
+        // given
+        final BaseEvidenceBlock block = prepareBlockWithVendorAndModelWithMixedLetterSize();
+
+        // when
+        final TcbInfo result = sut.map(block);
+
+        // then
+        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
+        Assertions.assertEquals(VENDOR_MIXED_LETTER_SIZE, tcbInfo.get(TcbInfoField.VENDOR));
+        Assertions.assertEquals(MODEL_MIXED_LETTER_SIZE, tcbInfo.get(TcbInfoField.MODEL));
     }
 
     private BaseEvidenceBlock prepareEmptyBlock() {
@@ -132,6 +148,13 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
     private BaseEvidenceBlock prepareBlockWithLowercaseDigest() {
         final BaseEvidenceBlock block = new BaseEvidenceBlock();
         block.setFwids(List.of(FWIDS_LOWERCASE));
+        return block;
+    }
+
+    private BaseEvidenceBlock prepareBlockWithVendorAndModelWithMixedLetterSize() {
+        final BaseEvidenceBlock block = new BaseEvidenceBlock();
+        block.setVendor(VENDOR_MIXED_LETTER_SIZE);
+        block.setModel(MODEL_MIXED_LETTER_SIZE);
         return block;
     }
 }

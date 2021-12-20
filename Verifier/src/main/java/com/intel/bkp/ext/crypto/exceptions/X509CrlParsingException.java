@@ -31,27 +31,10 @@
  *
  */
 
-package com.intel.bkp.verifier.command.responses.attestation;
+package com.intel.bkp.ext.crypto.exceptions;
 
-import com.intel.bkp.verifier.command.logger.ILogger;
-import com.intel.bkp.verifier.interfaces.Response;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.nio.ByteBuffer;
-
-@Getter
-@Setter
-public class GetCertificateResponse implements Response, ILogger {
-
-    private byte[] returnedCertificate = new byte[0];
-    private byte[] certificateBlob = new byte[0];
-
-    @Override
-    public byte[] array() {
-        return ByteBuffer.allocate(returnedCertificate.length + certificateBlob.length)
-            .put(returnedCertificate)
-            .put(certificateBlob)
-            .array();
+public class X509CrlParsingException extends Exception {
+    public X509CrlParsingException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }

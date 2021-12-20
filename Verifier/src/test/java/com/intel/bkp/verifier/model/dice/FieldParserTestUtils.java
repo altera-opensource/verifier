@@ -38,6 +38,7 @@ import com.intel.bkp.ext.utils.HexConverter;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.DLTaggedObject;
@@ -62,6 +63,10 @@ class FieldParserTestUtils {
 
     public static DEROctetString getOctetString(byte[] value) {
         return new DEROctetString(value);
+    }
+
+    public static DERBitString getBitString(String dataHex, int padBits) {
+        return new DERBitString(HexConverter.fromHex(dataHex), padBits);
     }
 
     public static ASN1TaggedObject getSequence(ASN1Primitive... obj) {

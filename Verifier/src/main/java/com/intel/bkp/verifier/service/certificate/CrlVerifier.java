@@ -33,17 +33,13 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
-import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
 import com.intel.bkp.verifier.exceptions.CrlSignatureException;
 import com.intel.bkp.verifier.exceptions.SigmaException;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
 import com.intel.bkp.verifier.x509.X509CertificateParser;
 import com.intel.bkp.verifier.x509.X509CrlParentVerifier;
-import com.intel.bkp.verifier.x509.X509CrlParser;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigInteger;
@@ -56,27 +52,25 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor
 @Slf4j
+@Getter(AccessLevel.PACKAGE)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class CrlVerifier {
 
-    private DistributionPointConnector connector = new DistributionPointConnector();
-    private X509CrlParser x509CrlParser = new X509CrlParser();
-    private X509CertificateParser x509CertificateParser = new X509CertificateParser();
-    private X509CrlParentVerifier x509CrlParentVerifier = new X509CrlParentVerifier();
-    private ProxyCallbackFactory proxyCallbackFactory = new ProxyCallbackFactory();
+    private final X509CertificateParser x509CertificateParser;
+    private final X509CrlParentVerifier x509CrlParentVerifier;
+    private final ICrlProvider crlProvider;
 
     private List<X509Certificate> certificates;
     private boolean requireCrlForLeafCertificate = true;
 
+    public CrlVerifier(ICrlProvider crlProvider) {
+        this(new X509CertificateParser(), new X509CrlParentVerifier(), crlProvider);
+    }
+
     public CrlVerifier certificates(List<X509Certificate> certificates) {
         this.certificates = certificates;
         return this;
-    }
-
-    public void withDistributionPoint(IpcsDistributionPoint dp) {
-        connector.setProxy(proxyCallbackFactory.get(dp.getProxyHost(), dp.getProxyPort()));
     }
 
     public CrlVerifier doNotRequireCrlForLeafCertificate() {
@@ -115,9 +109,7 @@ public class CrlVerifier {
 
     private boolean handleCrl(String crlUrl, BigInteger serialNumber,
                               ListIterator<X509Certificate> certificateChainIterator) {
-        final byte[] crlBytes = connector.getBytes(crlUrl);
-        final X509CRL crl = x509CrlParser.toX509(crlBytes);
-
+        final X509CRL crl = crlProvider.getCrl(crlUrl);
         verifyCrlSignature(crl, certificateChainIterator.nextIndex());
 
         if (isRevoked(crl, serialNumber)) {
@@ -127,6 +119,7 @@ public class CrlVerifier {
 
         return verifyRecursive(certificateChainIterator.next(), certificateChainIterator, true);
     }
+
 
     private void verifyCrlSignature(final X509CRL crl, final int issuerCertIndex) {
         final var issuerCertsIterator = certificates.listIterator(issuerCertIndex);
@@ -142,6 +135,7 @@ public class CrlVerifier {
                 log.debug("Failed to verify CRL signature using public key of certificate: {}", potentialIssuerSubject);
             }
         }
+
         throw new CrlSignatureException("Failed to verify signature of CRL");
     }
 
@@ -161,8 +155,6 @@ public class CrlVerifier {
             .stream()
             .map(X509CRLEntry::getSerialNumber)
             .anyMatch(x -> x.equals(serialNumber));
-
-
     }
 }
 

@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static com.intel.bkp.verifier.model.dice.FieldParserTestUtils.getOctetString;
+import static com.intel.bkp.verifier.model.dice.FieldParserTestUtils.getBitString;
 import static com.intel.bkp.verifier.model.dice.FieldParserTestUtils.getTaggedObject;
 
 class OperationalFlagsFieldParserTest {
@@ -46,10 +46,26 @@ class OperationalFlagsFieldParserTest {
     private final OperationalFlagsFieldParser sut = new OperationalFlagsFieldParser();
 
     @Test
-    void parse() {
+    void parse_flagSet() {
         // given
-        final String expected = "01020304";
-        final ASN1Primitive obj = getOctetString(expected);
+        final String expected = "80";
+        final int padBits = 7;
+        final ASN1Primitive obj = getBitString(expected, padBits);
+        final ASN1TaggedObject taggedObj = getTaggedObject(obj);
+
+        // when
+        final String result = sut.parse(taggedObj);
+
+        // then
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    void parse_noFlagSet() {
+        // given
+        final String expected = "";
+        final int padBits = 0;
+        final ASN1Primitive obj = getBitString(expected, padBits);
         final ASN1TaggedObject taggedObj = getTaggedObject(obj);
 
         // when

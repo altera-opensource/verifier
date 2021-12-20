@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
@@ -87,5 +88,9 @@ public abstract class BaseExtensionParser {
 
     protected final byte[] parseOctetString(ASN1TaggedObject asn1TaggedObject) {
         return parseOctetString(asn1TaggedObject.getObject());
+    }
+
+    protected final byte[] parseBitString(ASN1TaggedObject asn1TaggedObject) {
+        return DERBitString.getInstance(asn1TaggedObject, false).getBytes();
     }
 }

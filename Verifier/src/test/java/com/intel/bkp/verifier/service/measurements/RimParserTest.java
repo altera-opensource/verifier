@@ -46,6 +46,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.VENDOR;
+
 @ExtendWith(MockitoExtension.class)
 class RimParserTest {
 
@@ -118,59 +121,59 @@ class RimParserTest {
 
     private void assertSectionLayer1Common(List<BaseEvidenceBlock> blocks, String modelName, String expectedHash) {
         final BaseEvidenceBlock block = blocks.get(0);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals(modelName, block.getModel());
         Assertions.assertEquals("1", block.getLayer());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals(expectedHash, fwIds.getDigest());
     }
 
     private void assertIoSection(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(1);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.2", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals("664AAD52B52B717A2597CBFE0D1BF43FD5860DB48EFEDA21C9C2"
             + "D892828BA70BE61162A273A8A7156337CD8343CA24FE", fwIds.getDigest());
     }
 
     private void assertCoreSection(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(2);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.3", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals("5D04018373C58AB309644118599094F7A5CF759F9C2F14759B24"
             + "35F3387F4DAF9B05DBF6BC25D215F16BC81FB93F9F2B", fwIds.getDigest());
     }
 
     private void assertPrSection(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(3);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.6", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals(16777216, block.getIndex());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals("CBF9E12CDF8ED22F9752574E440A5964458AAEFFDE7533EF1636"
             + "8DE4551F90282AC2A890BE1C42796B3385686AC3CB81", fwIds.getDigest());
     }
 
     private void assertDeviceStateSection(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(4);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.1", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals("0002000002020200", block.getVendorInfo());
@@ -179,7 +182,7 @@ class RimParserTest {
 
     private void assertDeviceStateSectionAgilex(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(4);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.1", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals("0000000003000000", block.getVendorInfo());
@@ -188,40 +191,40 @@ class RimParserTest {
 
     private void assertSecondPrSectionAgilex(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(5);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.6", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals(33554432, block.getIndex());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals("EDCB0F4721E6578D900E4C24AD4B19E194AB6C87F8243BFC6B11"
             + "754DD8B0BBDE4F30B1D18197932B6376DA004DCD97C4", fwIds.getDigest());
     }
 
     private void assertUntypedSectionLayer0Agilex(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(6);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("Agilex", block.getModel());
         Assertions.assertEquals("0", block.getLayer());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals("CB00753F45A35E8BB5A03D699AC65007272C32AB0EDED1631A8B"
             + "605A43FF5BED8086072BA1E7CC2358BAECA134C825A7", fwIds.getDigest());
     }
 
     private void assertUntypedSectionLayer2Agilex(List<BaseEvidenceBlock> blocks) {
         final BaseEvidenceBlock block = blocks.get(7);
-        Assertions.assertEquals("intel.com", block.getVendor());
+        Assertions.assertEquals(VENDOR, block.getVendor());
         Assertions.assertEquals("2.16.840.1.113741.1.15.4.12", block.getType());
         Assertions.assertEquals("2", block.getLayer());
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals("2.16.840.1.101.3.4.2.2", fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
         Assertions.assertEquals("180C325CCCB299E76EC6C03A5B5A7755AF8EF499906DBF531F18"
             + "D0CA509E4871B0805CAC0F122B962D54BADC6119F3CF", fwIds.getDigest());
     }

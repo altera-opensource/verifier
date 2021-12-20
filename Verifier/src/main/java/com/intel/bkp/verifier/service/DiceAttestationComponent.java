@@ -36,17 +36,18 @@ package com.intel.bkp.verifier.service;
 import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.ext.utils.HexConverter;
-import com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.database.model.DiceRevocationCacheEntity;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
+import com.intel.bkp.verifier.model.CertificateRequestType;
 import com.intel.bkp.verifier.model.RootChainType;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.model.dice.DiceEnrollmentParamsParser;
-import com.intel.bkp.verifier.model.dice.DiceParamsParser;
+import com.intel.bkp.verifier.model.dice.DiceParams;
+import com.intel.bkp.verifier.model.dice.DiceParamsIssuerParser;
 import com.intel.bkp.verifier.model.dice.TcbInfoAggregator;
 import com.intel.bkp.verifier.model.dice.TcbInfoExtensionParser;
 import com.intel.bkp.verifier.model.dice.UeidExtensionParser;
@@ -68,9 +69,9 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import static com.intel.bkp.ext.core.manufacturing.model.AttFamily.AGILEX;
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.DEVICE_ID_ENROLLMENT;
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.UDS_EFUSE_ALIAS;
-import static com.intel.bkp.verifier.command.messages.attestation.AttestationCertificateRequestType.UDS_IID_PUF_ALIAS;
+import static com.intel.bkp.verifier.model.CertificateRequestType.DEVICE_ID_ENROLLMENT;
+import static com.intel.bkp.verifier.model.CertificateRequestType.UDS_EFUSE_ALIAS;
+import static com.intel.bkp.verifier.model.CertificateRequestType.UDS_IID_PUF_ALIAS;
 import static com.intel.bkp.verifier.model.DiceRevocationStatus.REVOKED;
 
 @Slf4j
@@ -82,7 +83,7 @@ public class DiceAttestationComponent {
     private GetCertificateMessageSender getCertificateMessageSender = new GetCertificateMessageSender();
     private X509CertificateParser certificateParser = new X509CertificateParser();
     private DiceAttestationRevocationService diceAttestationRevocationService = new DiceAttestationRevocationService();
-    private DiceParamsParser diceParamsParser = new DiceParamsParser();
+    private DiceParamsIssuerParser diceParamsIssuerParser = new DiceParamsIssuerParser();
     private DiceEnrollmentParamsParser diceEnrollmentParamsParser = new DiceEnrollmentParamsParser();
     private UeidExtensionParser ueidExtensionParser = new UeidExtensionParser();
     private TcbInfoExtensionParser tcbInfoExtensionParser = new TcbInfoExtensionParser();
@@ -101,7 +102,6 @@ public class DiceAttestationComponent {
     VerifierExchangeResponse perform(AppContext appContext, byte[] firmwareCertificateResponse, String refMeasurement,
                                      byte[] deviceId) {
 
-        diceAttestationRevocationService.withDistributionPoint(appContext.getLibConfig().getIpcsDistributionPoint());
         diceAttestationRevocationService.withDeviceId(deviceId);
 
         final TransportLayer transportLayer = appContext.getTransportLayer();
@@ -110,14 +110,14 @@ public class DiceAttestationComponent {
         parseTcbInfoAndAddToChain(aliasX509);
 
         final X509Certificate firmwareX509 = certificateParser.toX509(firmwareCertificateResponse);
-        diceParamsParser.parse(firmwareX509);
+        final DiceParams diceParams = diceParamsIssuerParser.parse(firmwareX509);
         ueidExtensionParser.parse(firmwareX509);
         parseTcbInfoAndAddToChain(firmwareX509);
 
         Optional<X509Certificate> deviceIdCert = Optional.empty();
 
         if (!isRevoked(appContext, deviceId)) {
-            deviceIdCert = diceAttestationRevocationService.fmGetDeviceIdCert(diceParamsParser.getDiceParams());
+            deviceIdCert = diceAttestationRevocationService.fmGetDeviceIdCert(diceParams);
         }
 
         deviceIdCert.ifPresentOrElse(this::parseTcbInfoAndAddToChain,
@@ -128,7 +128,7 @@ public class DiceAttestationComponent {
             diceAttestationRevocationService.addIid(getNextCert(transportLayer, commandLayer, UDS_IID_PUF_ALIAS));
 
             diceAttestationRevocationService
-                .fmGetIidUdsCert(diceParamsParser.getDiceParams())
+                .fmGetIidUdsCert(diceParams)
                 .ifPresentOrElse(diceAttestationRevocationService::addIid,
                     () -> {
                         throw new InternalLibraryException("IID UDS certificate not found on Distribution Point.");
@@ -160,7 +160,7 @@ public class DiceAttestationComponent {
     }
 
     private X509Certificate getNextCert(TransportLayer transportLayer, CommandLayer commandLayer,
-                                        AttestationCertificateRequestType certType) {
+                                        CertificateRequestType certType) {
         return certificateParser.toX509(getCertificateMessageSender.send(transportLayer, commandLayer, certType));
     }
 
@@ -169,11 +169,10 @@ public class DiceAttestationComponent {
 
         log.debug("DeviceID cert not found on Distribution Point.");
         final X509Certificate enrollmentX509 = getNextCert(transportLayer, commandLayer, DEVICE_ID_ENROLLMENT);
-        diceEnrollmentParamsParser.parse(enrollmentX509);
         parseTcbInfoAndAddToChain(enrollmentX509);
 
         final Optional<X509Certificate> ipcsEnrollmentCert = diceAttestationRevocationService.fmGetEnrollmentCert(
-            diceParamsParser.getDiceParams(), diceEnrollmentParamsParser.getDiceEnrollmentParams());
+            diceEnrollmentParamsParser.parse(enrollmentX509));
 
         ipcsEnrollmentCert.ifPresentOrElse(this::parseTcbInfoAndAddToChain,
             () -> {

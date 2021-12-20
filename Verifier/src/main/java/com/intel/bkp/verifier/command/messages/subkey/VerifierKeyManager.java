@@ -111,7 +111,7 @@ public class VerifierKeyManager {
                 + "verifier_pub.pem verifier_chain_single.qky"
                 + "\n      -- example command for Agilex - multi root chain: "
                 + "\n          quartus_sign --family=agilex --operation=APPEND_KEY "
-                + "--previous_pem=root_private_chain.pem --previous_qky=root_chain.qky --permission=512 --cancel=0 "
+                + "--previous_pem=root_private_chain.pem --previous_qky=root_multi.qky --permission=512 --cancel=0 "
                 + "verifier_pub.pem verifier_chain_multi.qky"
                 + "\n   4. Provide absolute path to these chains into the configuration file:"
                 + "\n      -- single root chain:"

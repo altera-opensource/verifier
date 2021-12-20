@@ -34,14 +34,14 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.verifier.exceptions.SigmaException;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
+import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.x509.X509CertificateChainVerifier;
 import com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier;
 import com.intel.bkp.verifier.x509.X509CertificateSubjectKeyIdentifierVerifier;
 import com.intel.bkp.verifier.x509.X509CertificateUeidVerifier;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
@@ -56,36 +56,45 @@ import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifie
 import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
 
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@Getter(AccessLevel.PACKAGE)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class DiceCertificateVerifier {
 
     private static final int ROOT_BASIC_CONSTRAINTS = CA_TRUE_PATHLENGTH_NONE;
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
         TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
 
-    private X509CertificateChainVerifier certificateChainVerifier = new X509CertificateChainVerifier();
-    private X509CertificateExtendedKeyUsageVerifier extendedKeyUsageVerifier =
-        new X509CertificateExtendedKeyUsageVerifier();
-    private CrlVerifier crlVerifier = new CrlVerifier();
-    private RootHashVerifier rootHashVerifier = new RootHashVerifier();
-    private X509CertificateUeidVerifier ueidVerifier = new X509CertificateUeidVerifier();
-    private X509CertificateSubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier =
-        new X509CertificateSubjectKeyIdentifierVerifier();
+    protected final X509CertificateExtendedKeyUsageVerifier extendedKeyUsageVerifier;
+    private final X509CertificateChainVerifier certificateChainVerifier;
+    private final CrlVerifier crlVerifier;
+    private final RootHashVerifier rootHashVerifier;
+    private final X509CertificateUeidVerifier ueidVerifier;
+    private final X509CertificateSubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier;
+    private final TrustedRootHash trustedRootHash;
 
-    private IpcsDistributionPoint dp;
     private byte[] deviceId;
 
-    public void withDistributionPoint(IpcsDistributionPoint dp) {
-        this.dp = dp;
-        crlVerifier.withDistributionPoint(dp);
+    public DiceCertificateVerifier(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
+        this(new X509CertificateExtendedKeyUsageVerifier(), new X509CertificateChainVerifier(),
+            new CrlVerifier(crlProvider), new RootHashVerifier(), new X509CertificateUeidVerifier(),
+            new X509CertificateSubjectKeyIdentifierVerifier(), trustedRootHash);
     }
 
-    public void withDeviceId(byte[] deviceId) {
+    public DiceCertificateVerifier withDeviceId(byte[] deviceId) {
         this.deviceId = deviceId;
+        return this;
     }
 
-    public void verify(LinkedList<X509Certificate> certificates) {
+    public void verifyAliasChain(LinkedList<X509Certificate> certificates) {
+        verifyCommon(certificates);
+
+        if (!extendedKeyUsageVerifier.certificate(certificates.getFirst())
+            .verify(KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC)) {
+            throw new SigmaException("Alias certificate is invalid.");
+        }
+    }
+
+    protected void verifyCommon(LinkedList<X509Certificate> certificates) {
         if (!certificateChainVerifier.certificates(certificates).rootBasicConstraints(ROOT_BASIC_CONSTRAINTS)
             .knownExtensionOids(DICE_EXTENSION_OIDS).verify()) {
             throw new SigmaException("Parent signature verification in X509 attestation chain failed.");
@@ -99,12 +108,7 @@ public class DiceCertificateVerifier {
             throw new SigmaException("One of certificates in X509 attestation chain has invalid SKI extension value.");
         }
 
-        if (!extendedKeyUsageVerifier.certificate(certificates.getFirst())
-            .verify(KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC)) {
-            throw new SigmaException("Leaf certificate is invalid.");
-        }
-
-        if (!rootHashVerifier.verifyRootHash(certificates.getLast(), dp.getTrustedRootHash().getDice())) {
+        if (!rootHashVerifier.verifyRootHash(certificates.getLast(), trustedRootHash.getDice())) {
             throw new SigmaException("Root hash in X509 DICE chain is different from trusted root hash.");
         }
 

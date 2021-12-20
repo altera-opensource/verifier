@@ -40,8 +40,6 @@ import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.database.repository.S10CacheEntityService;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
-import com.intel.bkp.verifier.model.LibConfig;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
@@ -71,14 +69,10 @@ class CreateDeviceAttestationSubKeyComponentTest {
     private static final String CONTEXT = "0102";
     private static final PufType PUF_TYPE = PufType.EFUSE;
     private static final byte[] DEVICE_ID = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-    private static final IpcsDistributionPoint IPCS_DISTRIBUTION_POINT = new IpcsDistributionPoint();
     private static final byte[] SDM_SESSION_ID = { 0, 0, 0, 1 };
 
     @Mock
     private AppContext appContext;
-
-    @Mock
-    private LibConfig libConfig;
 
     @Mock
     private SQLiteHelper sqLiteHelper;
@@ -120,7 +114,6 @@ class CreateDeviceAttestationSubKeyComponentTest {
     void perform_Success() {
         // given
         mockAppContext();
-        mockLibConfig();
         mockDatabaseConnection();
 
         createSubKeyResponseBuilder.setSdmSessionId(SDM_SESSION_ID);
@@ -145,11 +138,6 @@ class CreateDeviceAttestationSubKeyComponentTest {
     private void mockAppContext() {
         when(appContext.getTransportLayer()).thenReturn(transportLayer);
         when(appContext.getCommandLayer()).thenReturn(commandLayer);
-    }
-
-    private void mockLibConfig() {
-        when(appContext.getLibConfig()).thenReturn(libConfig);
-        when(libConfig.getIpcsDistributionPoint()).thenReturn(IPCS_DISTRIBUTION_POINT);
     }
 
     private void mockDatabaseConnection() {

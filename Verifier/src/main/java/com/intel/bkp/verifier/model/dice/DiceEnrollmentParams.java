@@ -33,25 +33,27 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-
 import java.util.Locale;
 
 /**
- * skiER - Subject Key Identifier.
  * svn - Security Version Number.
  */
-@Data
-public class DiceEnrollmentParams {
+public class DiceEnrollmentParams extends DiceParams {
 
-    private final String skiER;
-
-    @Getter(AccessLevel.NONE)
     private final String svn;
+
+    public DiceEnrollmentParams(String ski, String svn, String uid) {
+        super(ski, uid);
+        this.svn = svn;
+    }
 
     public String getSvn() {
         return svn.toLowerCase(Locale.ROOT);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("DiceEnrollmentParams(SKI = %s, SVN = %s, UID = %s (in Distribution Point format: %s))",
+            getSki(), getSvn(), getUidInLogsFormat(), getUid());
     }
 }

@@ -56,7 +56,6 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AppContext implements AutoCloseable {
 
-    private static final int CLIENT_ID = 1;
     private static final String CONFIG_FILE_NAME = "config.properties";
 
     private LibConfig libConfig;
@@ -103,7 +102,7 @@ public class AppContext implements AutoCloseable {
     }
 
     private static MailboxCommandLayer prepareCommandLayer() {
-        return new MailboxCommandLayer(CLIENT_ID);
+        return new MailboxCommandLayer();
     }
 
     private static SQLiteHelper prepareSqLiteHelper(LibConfig libConfig) {

@@ -33,8 +33,10 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import lombok.AccessLevel;
-import lombok.Data;
+import com.intel.bkp.ext.utils.ByteSwap;
+import com.intel.bkp.ext.utils.ByteSwapOrder;
+import com.intel.bkp.ext.utils.HexConverter;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Locale;
@@ -44,15 +46,29 @@ import java.util.Locale;
  * uid - same as deviceId/chipId but reversed by 8-bytes, eg. deviceId = 0102030405060708 -> uid = 0807060504030201.
  * This is because FM/DM certificates on Distribution Point have different naming convention than S10.
  */
-@Data
+@AllArgsConstructor
 public class DiceParams {
 
+    @Getter
     private final String ski;
 
-    @Getter(AccessLevel.NONE)
     private final String uid;
 
     public String getUid() {
         return uid.toLowerCase(Locale.ROOT);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("DiceParams(SKI = %s, UID = %s (in Distribution Point format: %s))",
+            getSki(), getUidInLogsFormat(), getUid());
+    }
+
+    protected final String getUidInLogsFormat() {
+        // uid is used in diceParams on purpose (it is in Distribution Point format)
+        // uidInLittleEndian is used to present it in logs in consistent format (as received from GET_CHIPID)
+        final String uidInLittleEndian = HexConverter.toHex(ByteSwap.getSwappedArrayByLong(
+            HexConverter.fromHex(uid), ByteSwapOrder.B2L));
+        return uidInLittleEndian;
     }
 }

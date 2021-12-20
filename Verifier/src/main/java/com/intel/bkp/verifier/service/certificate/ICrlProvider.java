@@ -31,28 +31,11 @@
  *
  */
 
-package com.intel.bkp.verifier.command.messages.attestation;
+package com.intel.bkp.verifier.service.certificate;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.security.cert.X509CRL;
 
-public class GetCertificateMessageBuilder {
+public interface ICrlProvider {
 
-    private int certificateRequest = AttestationCertificateRequestType.FIRMWARE.getCode();
-
-    public GetCertificateMessageBuilder withType(AttestationCertificateRequestType certificateRequestType) {
-        this.certificateRequest = certificateRequestType.getCode();
-        return this;
-    }
-
-    public GetCertificateMessage build() {
-        GetCertificateMessage message = new GetCertificateMessage();
-        message.setCertificateRequest(ByteBuffer
-            .allocate(Integer.BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
-            .putInt(certificateRequest)
-            .array()
-        );
-        return message;
-    }
+    X509CRL getCrl(String crlUrl);
 }

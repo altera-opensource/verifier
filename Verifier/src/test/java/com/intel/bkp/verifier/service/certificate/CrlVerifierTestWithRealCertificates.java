@@ -33,90 +33,85 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.crypto.pem.PemFormatHeader;
 import com.intel.bkp.verifier.Utils;
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
-import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.x509.X509CertificateParser;
 import com.intel.bkp.verifier.x509.X509CrlParentVerifier;
-import com.intel.bkp.verifier.x509.X509CrlParser;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.nio.charset.StandardCharsets;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.LinkedList;
 
+import static com.intel.bkp.ext.crypto.x509.X509CertificateParser.toX509Certificate;
+import static com.intel.bkp.ext.crypto.x509.X509CrlParser.toX509Crl;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class CrlVerifierTestWithRealCertificates {
 
     private static final String TEST_FOLDER = "certs/";
     private static final String DUMMY_CHAIN_FOLDER = "dummyChain/";
 
-    private static byte[] intermediateCrl;
-    private static byte[] rootCrl;
-    private static String leafCert;
-    private static String intermediateCertRevoked;
-    private static String rootCert;
+    private static X509CRL intermediateCrl;
+    private static X509CRL rootCrl;
+    private static X509Certificate leafCert;
+    private static X509Certificate intermediateCertRevoked;
+    private static X509Certificate rootCert;
 
-    private DistributionPointConnector connector = new DistributionPointConnector();
-    private X509CertificateParser x509CertificateParser = new X509CertificateParser();
-    @Spy
-    private DistributionPointConnector connectorSpy = Mockito.spy(connector);
+    @Mock
+    private ICrlProvider crlProvider;
 
-    @InjectMocks
-    private CrlVerifier sut = new CrlVerifier(connectorSpy, new X509CrlParser(), x509CertificateParser,
-        new X509CrlParentVerifier(), new ProxyCallbackFactory(), new ArrayList<>(), true);
+    private CrlVerifier sut;
 
     @BeforeAll
     static void init() throws Exception {
         // certificate chain generated based on tutorial https://pki-tutorial.readthedocs.io/en/latest/advanced/
-        intermediateCrl = getBytesFromFile("intermediate-ca.crl");
-        rootCrl = getBytesFromFile("root-ca.crl");
-        leafCert = getPemFromFile("leaf-not-revoked.crt");
-        intermediateCertRevoked = getPemFromFile("intermediate-ca-revoked.crt");
-        rootCert = getPemFromFile("root-ca.crt");
+        intermediateCrl = getCrlFromFile("intermediate-ca.crl");
+        rootCrl = getCrlFromFile("root-ca.crl");
+        leafCert = getCertFromFile("leaf-not-revoked.crt");
+        intermediateCertRevoked = getCertFromFile("intermediate-ca-revoked.crt");
+        rootCert = getCertFromFile("root-ca.crt");
+    }
+
+    @BeforeEach
+    void prepareSut() {
+        sut = new CrlVerifier(new X509CertificateParser(), new X509CrlParentVerifier(), crlProvider);
+    }
+
+    private static X509CRL getCrlFromFile(String filename) throws Exception {
+        return toX509Crl(getBytesFromFile(filename));
+    }
+
+    private static X509Certificate getCertFromFile(String filename) throws Exception {
+        return toX509Certificate(getBytesFromFile(filename));
     }
 
     private static byte[] getBytesFromFile(String filename) throws Exception {
         return Utils.readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER, filename);
     }
 
-    private static String getPemFromFile(String filename) throws Exception {
-        return new String(getBytesFromFile(filename), StandardCharsets.UTF_8);
-    }
-
     @Test
     void verify_WithRevokedIntermediate_Throws() {
         // given
-        Mockito.doReturn(intermediateCrl, rootCrl).when(connectorSpy).getBytes(any());
+        when(crlProvider.getCrl(any())).thenReturn(intermediateCrl, rootCrl);
         final LinkedList<X509Certificate> list = new LinkedList<>();
-        list.add(getCertFromPem(leafCert));
-        list.add(getCertFromPem(intermediateCertRevoked));
-        list.add(getCertFromPem(rootCert));
+        list.add(leafCert);
+        list.add(intermediateCertRevoked);
+        list.add(rootCert);
 
         // when-then
         SigmaException thrown = Assertions.assertThrows(SigmaException.class,
             () -> sut.certificates(list).verify());
         assertTrue(thrown.getMessage().contains("Intermediate certificate with serial number 2 is revoked."));
 
-    }
-
-    public X509Certificate getCertFromPem(String pem) {
-        String pemWithoutMetadata = StringUtils.substringBetween(pem, PemFormatHeader.CERTIFICATE.getBegin(),
-            PemFormatHeader.CERTIFICATE.getEnd());
-        byte[] decoded = Base64.getDecoder().decode(pemWithoutMetadata.replace("\n", ""));
-
-        return x509CertificateParser.toX509(decoded);
     }
 }

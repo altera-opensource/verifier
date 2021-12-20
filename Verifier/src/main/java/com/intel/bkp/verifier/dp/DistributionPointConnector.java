@@ -34,7 +34,7 @@
 package com.intel.bkp.verifier.dp;
 
 import com.intel.bkp.verifier.exceptions.ConnectionException;
-import com.intel.bkp.verifier.interfaces.IProxyCallback;
+import com.intel.bkp.verifier.model.Proxy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -49,10 +49,10 @@ import java.util.Optional;
 @Slf4j
 public class DistributionPointConnector {
 
-    private ProxySelector proxy;
+    private final ProxySelector proxy;
 
-    public void setProxy(IProxyCallback proxyCallback) {
-        proxy = proxyCallback.get();
+    public DistributionPointConnector(Proxy proxy) {
+        this.proxy = ProxyCallbackFactory.get(proxy.getHost(), proxy.getPort()).get();
     }
 
     public String getString(String url) {
@@ -72,7 +72,7 @@ public class DistributionPointConnector {
                 responseBody = Optional.of(response.body());
             }
         } catch (IOException | InterruptedException e) {
-            log.warn("Failed to get http response.");
+            log.warn("Failed to get http response.", e);
         }
         return responseBody;
     }
@@ -90,8 +90,9 @@ public class DistributionPointConnector {
         }
     }
 
-    private <T> HttpResponse<T> tryGetHttpResponse(String url,
-        HttpResponse.BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
+    private <T> HttpResponse<T> tryGetHttpResponse(String url, HttpResponse.BodyHandler<T> bodyHandler)
+        throws IOException, InterruptedException {
+
         return HttpClient.newBuilder()
             .proxy(proxy)
             .build()
@@ -101,7 +102,6 @@ public class DistributionPointConnector {
     private HttpRequest getHttpRequest(String url) {
         log.info("Performing request to: {}", url);
         return HttpRequest.newBuilder(URI.create(url))
-            .header("accept", "application/octet-stream")
             .GET()
             .build();
     }

@@ -39,6 +39,7 @@ public class Properties {
     public static final String ONLY_EFUSE_UDS = "only-efuse-uds";
     public static final String DISTRIBUTION_POINT_GROUP = "distribution-point";
     public static final String TRUSTED_ROOT_HASH_GROUP = "trusted-root-hash";
+    public static final String PROXY_GROUP = "proxy";
     public static final String PROVIDER_PARAMS_GROUP = "security-provider-params";
     public static final String VERIFIER_KEY_PARAMS_GROUP = "verifier-key-params";
     public static final String VERIFIER_KEY_CHAIN_GROUP = "verifier-root-qky-chain";
@@ -51,8 +52,8 @@ public class Properties {
     public static final String DISTRIBUTION_POINT_PATH_CER = "path-cer";
     public static final String DISTRIBUTION_POINT_S10_TRUSTED_ROOT = "s10";
     public static final String DISTRIBUTION_POINT_DICE_TRUSTED_ROOT = "dice";
-    public static final String DISTRIBUTION_POINT_PROXY_HOST = "proxy-host";
-    public static final String DISTRIBUTION_POINT_PROXY_PORT = "proxy-port";
+    public static final String DISTRIBUTION_POINT_PROXY_HOST = "host";
+    public static final String DISTRIBUTION_POINT_PROXY_PORT = "port";
 
     public static final String VERIFIER_KEY_PARAMS_SINGLE_ROOT_QKY_CHAIN_PATH = "single-chain-path";
     public static final String VERIFIER_KEY_PARAMS_MULTI_ROOT_QKY_CHAIN_PATH = "multi-chain-path";

@@ -31,29 +31,18 @@
  *
  */
 
-package com.intel.bkp.verifier.x509;
+package com.intel.bkp.verifier.model;
 
-import com.intel.bkp.ext.crypto.constants.CryptoConstants;
-import com.intel.bkp.verifier.exceptions.X509ParsingException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.CRLException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509CRL;
-
-public class X509CrlParser {
-
-    public X509CRL toX509(byte[] crlBytes) {
-        try {
-            CertificateFactory fact = CertificateFactory.getInstance(CryptoConstants.CERTIFICATE_FACTORY_TYPE);
-            try (InputStream input = new ByteArrayInputStream(crlBytes)) {
-                return (X509CRL) fact.generateCRL(input);
-            }
-        } catch (CRLException | CertificateException | IOException e) {
-            throw new X509ParsingException("Failed to parse CRL.", e);
-        }
-    }
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Proxy {
+    private String host;
+    private Integer port;
 }

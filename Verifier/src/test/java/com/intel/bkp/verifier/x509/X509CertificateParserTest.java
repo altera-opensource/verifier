@@ -64,6 +64,7 @@ class X509CertificateParserTest {
     private static byte[] dummyCertificate;
     private static byte[] dummyCertificateNoCrlExtension;
     private static byte[] dummyCertificateEmptyCrlPath;
+    private static byte[] dummyCertificateNoAiaExtension;
 
     @InjectMocks
     private X509CertificateParser sut;
@@ -77,6 +78,7 @@ class X509CertificateParserTest {
         dummyCertificateNoCrlExtension = Utils.readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER, "leaf-no-crl.crt");
         dummyCertificateEmptyCrlPath = Utils.readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER, "leaf-crl-empty-path" +
             ".crt");
+        dummyCertificateNoAiaExtension = Utils.readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER, "root-ca.crt");
     }
 
     @Test
@@ -95,12 +97,37 @@ class X509CertificateParserTest {
     }
 
     @Test
-    void getPathToIssuerCertificateLocation() {
+    void getPathToIssuerCertificate_Success() {
         // when
-        String result = sut.getPathToIssuerCertificateLocation(sut.toX509(certificate));
+        String result = sut.getPathToIssuerCertificate(sut.toX509(certificate));
 
         // then
         Assertions.assertEquals(ISSUER_CERT_LOCATION, result);
+    }
+
+    @Test
+    void getPathToIssuerCertificate_NoAiaExtension_Throws() {
+        // when-then
+        Assertions.assertThrows(X509ParsingException.class,
+            () -> sut.getPathToIssuerCertificate(sut.toX509(dummyCertificateNoAiaExtension)));
+    }
+
+    @Test
+    void findPathToIssuerCertificate_NoAiaExtension_Success() {
+        // when
+        final Optional<String> result = sut.findPathToIssuerCertificate(sut.toX509(dummyCertificateNoAiaExtension));
+
+        // then
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findPathToIssuerCertificate_Success() {
+        // when
+        final Optional<String> result = sut.findPathToIssuerCertificate(sut.toX509(certificate));
+
+        // then
+        Assertions.assertTrue(result.isPresent());
     }
 
     @Test

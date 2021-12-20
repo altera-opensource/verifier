@@ -42,6 +42,7 @@ import com.intel.bkp.verifier.exceptions.JtagResponseException;
 import com.intel.bkp.verifier.exceptions.UnknownCommandException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Map;
@@ -50,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.intel.bkp.ext.utils.ByteSwapOrder.B2L;
 import static com.intel.bkp.ext.utils.ByteSwapOrder.L2B;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommandHeaderManager {
 
@@ -90,13 +92,13 @@ public class CommandHeaderManager {
             final int shiftRight = COMMAND_HEADER_LEN_BITS - headerField.getSize();
 
             int headerValue = headerFinalValue << shiftLeft;
-            headerValue = headerValue >> shiftRight;
+            headerValue = headerValue >>> shiftRight;
             map.put(headerField, headerValue);
         }
         return new CommandHeader(Collections.unmodifiableMap(map));
     }
 
-    public static void validateCommandHeaderCode(byte[] command, String responseName) {
+    public static void validateCommandHeaderCode(byte[] command, String commandName) {
         try {
             if (command.length < COMMAND_HEADER_LEN) {
                 throw new CommandHeaderValidationException("No command header in response.");
@@ -106,10 +108,10 @@ public class CommandHeaderManager {
             ByteBufferSafe.wrap(command).get(header);
 
             final CommandHeader parsedHeader = CommandHeaderManager.parseFromFw(header);
-            throwOnError(responseName, parsedHeader);
+            throwOnError(commandName, parsedHeader);
         } catch (CommandHeaderValidationException e) {
             throw new JtagResponseException(
-                String.format("Failed to parse command [%s] header from response.", responseName));
+                String.format("Failed to parse command [%s] header from response.", commandName));
         }
     }
 

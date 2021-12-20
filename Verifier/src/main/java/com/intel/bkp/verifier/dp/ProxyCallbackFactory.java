@@ -34,12 +34,15 @@
 package com.intel.bkp.verifier.dp;
 
 import com.intel.bkp.verifier.interfaces.IProxyCallback;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProxyCallbackFactory {
 
-    public IProxyCallback get(String host, Integer port) {
-        if (StringUtils.isBlank(host) || port == null) {
+    public static IProxyCallback get(String host, Integer port) {
+        if (StringUtils.isBlank(host) || port == null || port == 0) {
             return new ProxyCallbackImplDefault();
         } else {
             return new ProxyCallbackImplCustom(host, port);

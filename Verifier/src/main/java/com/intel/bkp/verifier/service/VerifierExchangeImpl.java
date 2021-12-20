@@ -43,27 +43,26 @@ import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.verifier.validators.ParameterValidator;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class VerifierExchangeImpl implements VerifierExchange {
 
-    private static final byte[] GET_CHIPID = new byte[] { 0x12, 0x00, 0x00, 0x00 };
+    private static final byte[] GET_CHIPID = new byte[]{0x12, 0x00, 0x00, 0x00};
 
     private final ParameterValidator parameterValidator = new ParameterValidator();
 
-    @Setter
-    private InitSessionComponent initSessionComponent = new InitSessionComponent();
-    @Setter
-    private CreateDeviceAttestationSubKeyComponent createSubKeyComponent = new CreateDeviceAttestationSubKeyComponent();
-    @Setter
-    private GetDeviceAttestationComponent getAttestationComponent = new GetDeviceAttestationComponent();
+    private final InitSessionComponent initSessionComponent;
+    private final CreateDeviceAttestationSubKeyComponent createSubKeyComponent;
+    private final GetDeviceAttestationComponent getAttestationComponent;
+
+    public VerifierExchangeImpl() {
+        this(new InitSessionComponent(), new CreateDeviceAttestationSubKeyComponent(),
+            new GetDeviceAttestationComponent());
+    }
 
     @Override
     @SuppressWarnings("unchecked")

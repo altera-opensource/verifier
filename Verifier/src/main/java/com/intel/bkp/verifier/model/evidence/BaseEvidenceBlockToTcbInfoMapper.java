@@ -36,12 +36,12 @@ package com.intel.bkp.verifier.model.evidence;
 import com.intel.bkp.verifier.model.dice.FwIdField;
 import com.intel.bkp.verifier.model.dice.MaskedVendorInfo;
 import com.intel.bkp.verifier.model.dice.TcbInfo;
+import com.intel.bkp.verifier.model.dice.TcbInfoConstants;
 import com.intel.bkp.verifier.model.dice.TcbInfoField;
 
 import java.util.Locale;
 import java.util.Map;
 
-import static com.intel.bkp.verifier.model.dice.Constants.INDEX_DEFAULT_VALUE;
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -52,11 +52,11 @@ public class BaseEvidenceBlockToTcbInfoMapper {
         final Map<TcbInfoField, Object> tcbInfoMap = tcbInfo.getTcbInfo();
 
         if (isNotBlank(block.getVendor())) {
-            tcbInfoMap.put(TcbInfoField.VENDOR, block.getVendor().toUpperCase(Locale.ROOT));
+            tcbInfoMap.put(TcbInfoField.VENDOR, block.getVendor());
         }
 
         if (isNotBlank(block.getModel())) {
-            tcbInfoMap.put(TcbInfoField.MODEL, block.getModel().toUpperCase(Locale.ROOT));
+            tcbInfoMap.put(TcbInfoField.MODEL, block.getModel());
         }
 
         if (isNotBlank(block.getLayer())) {
@@ -66,7 +66,7 @@ public class BaseEvidenceBlockToTcbInfoMapper {
         if (!isNull(block.getIndex())) {
             tcbInfoMap.put(TcbInfoField.INDEX, block.getIndex());
         } else {
-            tcbInfoMap.put(TcbInfoField.INDEX, INDEX_DEFAULT_VALUE);
+            tcbInfoMap.put(TcbInfoField.INDEX, TcbInfoConstants.INDEX);
         }
 
         // Assumption is that there is only 1 element in list for SHA384.

@@ -43,7 +43,6 @@ import com.intel.bkp.verifier.exceptions.CacheEntityDoesNotExistException;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
-import com.intel.bkp.verifier.model.IpcsDistributionPoint;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.model.dice.TcbInfoAggregator;
 import com.intel.bkp.verifier.service.certificate.AppContext;
@@ -54,25 +53,29 @@ import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
 import com.intel.bkp.verifier.sigma.GetMeasurementVerifier;
 import com.intel.bkp.verifier.sigma.SigmaM2DeviceIdVerifier;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
 @Slf4j
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class S10AttestationComponent {
 
-    private GetMeasurementMessageSender getMeasurementMessageSender = new GetMeasurementMessageSender();
-    private TeardownMessageSender teardownMessageSender = new TeardownMessageSender();
-    private GetMeasurementVerifier getMeasurementVerifier = new GetMeasurementVerifier();
-    private EvidenceVerifier evidenceVerifier = new EvidenceVerifier();
-    private S10AttestationRevocationService s10AttestationRevocationService = new S10AttestationRevocationService();
-    private SigmaM2DeviceIdVerifier deviceIdVerifier = new SigmaM2DeviceIdVerifier();
-    private final GetMeasurementResponseToTcbInfoMapper measurementMapper = new GetMeasurementResponseToTcbInfoMapper();
-    private TcbInfoAggregator tcbInfoAggregator = new TcbInfoAggregator();
+    private final GetMeasurementResponseToTcbInfoMapper measurementMapper;
+    private final GetMeasurementMessageSender getMeasurementMessageSender;
+    private final TeardownMessageSender teardownMessageSender;
+    private final GetMeasurementVerifier getMeasurementVerifier;
+    private final EvidenceVerifier evidenceVerifier;
+    private final S10AttestationRevocationService s10AttestationRevocationService;
+    private final SigmaM2DeviceIdVerifier deviceIdVerifier;
+    private final TcbInfoAggregator tcbInfoAggregator;
+
+    public S10AttestationComponent() {
+        this(new GetMeasurementResponseToTcbInfoMapper(), new GetMeasurementMessageSender(),
+            new TeardownMessageSender(), new GetMeasurementVerifier(), new EvidenceVerifier(),
+            new S10AttestationRevocationService(), new SigmaM2DeviceIdVerifier(), new TcbInfoAggregator());
+    }
 
     public VerifierExchangeResponse perform(String refMeasurement, byte[] deviceId) {
         return perform(AppContext.instance(), refMeasurement, deviceId);
@@ -85,8 +88,6 @@ public class S10AttestationComponent {
 
         final S10CacheEntity entity = readEntityFromDatabase(appContext, deviceId);
 
-        final IpcsDistributionPoint dp = appContext.getLibConfig().getIpcsDistributionPoint();
-        s10AttestationRevocationService.withDistributionPoint(dp);
         s10AttestationRevocationService.checkAndRetrieve(deviceId, PufType.getPufTypeHex(entity.getPufType()));
 
         final EcdhKeyPair serviceDhKeyPair = generateEcdhKeyPair();

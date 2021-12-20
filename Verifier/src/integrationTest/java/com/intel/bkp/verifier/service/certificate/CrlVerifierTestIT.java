@@ -34,23 +34,21 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.verifier.Utils;
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
-import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
 import com.intel.bkp.verifier.x509.X509CertificateParser;
 import com.intel.bkp.verifier.x509.X509CrlParentVerifier;
-import com.intel.bkp.verifier.x509.X509CrlParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.List;
 
+import static com.intel.bkp.ext.crypto.x509.X509CrlParser.toX509Crl;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,21 +63,24 @@ public class CrlVerifierTestIT {
 
     private static X509Certificate aliasCert;
     private static X509Certificate firmwareCert;
-    private static byte[] firmwareCrl;
+    private static X509CRL firmwareCrl;
     private static X509Certificate deviceIdCert;
-    private static byte[] deviceIdCrl;
+    private static X509CRL deviceIdCrl;
     private static X509Certificate productFamilyCert;
-    private static byte[] productFamilyCrl;
+    private static X509CRL productFamilyCrl;
     private static X509Certificate rootCert;
 
     private static List<X509Certificate> list;
 
     @Mock
-    private DistributionPointConnector connector;
+    private ICrlProvider crlProvider;
 
-    @InjectMocks
-    private CrlVerifier sut = new CrlVerifier(connector, new X509CrlParser(), X509_PARSER,
-        new X509CrlParentVerifier(), new ProxyCallbackFactory(), new ArrayList<>(), true);
+    private CrlVerifier sut;
+
+    @BeforeEach
+    void prepareSut() {
+        sut = new CrlVerifier(X509_PARSER, new X509CrlParentVerifier(), crlProvider);
+    }
 
     @BeforeAll
     static void init() throws Exception {
@@ -91,9 +92,9 @@ public class CrlVerifierTestIT {
 
         list = List.of(aliasCert, firmwareCert, deviceIdCert, productFamilyCert, rootCert);
 
-        firmwareCrl = getBytesFromFile("IPCS_agilex_L1.crl");
-        deviceIdCrl = getBytesFromFile("IPCS_agilex.crl");
-        productFamilyCrl = getBytesFromFile("DICE.crl");
+        firmwareCrl = toX509Crl(getBytesFromFile("IPCS_agilex_L1.crl"));
+        deviceIdCrl = toX509Crl(getBytesFromFile("IPCS_agilex.crl"));
+        productFamilyCrl = toX509Crl(getBytesFromFile("DICE.crl"));
     }
 
     private static byte[] getBytesFromFile(String filename) throws Exception {
@@ -103,9 +104,9 @@ public class CrlVerifierTestIT {
     @Test
     void verify_WithNotRequiredCrlForLeaf_ReturnsTrue() {
         // given
-        when(connector.getBytes(FIRMWARE_CRL_URL)).thenReturn(firmwareCrl);
-        when(connector.getBytes(DEVICEID_CRL_URL)).thenReturn(deviceIdCrl);
-        when(connector.getBytes(PRODUCTFAMILY_CRL_URL)).thenReturn(productFamilyCrl);
+        when(crlProvider.getCrl(FIRMWARE_CRL_URL)).thenReturn(firmwareCrl);
+        when(crlProvider.getCrl(DEVICEID_CRL_URL)).thenReturn(deviceIdCrl);
+        when(crlProvider.getCrl(PRODUCTFAMILY_CRL_URL)).thenReturn(productFamilyCrl);
 
         // when
         boolean result = sut.certificates(list).doNotRequireCrlForLeafCertificate().verify();

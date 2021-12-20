@@ -37,7 +37,6 @@ import lombok.Data;
 
 import java.util.Map;
 
-import static com.intel.bkp.verifier.model.dice.Constants.INDEX_DEFAULT_VALUE;
 import static com.intel.bkp.verifier.model.dice.ToStringUtils.includeIfNonNull;
 
 @Data
@@ -68,7 +67,7 @@ public class TcbInfoKey {
         if (map.containsKey(TcbInfoField.INDEX)) {
             key.setIndex((Integer)map.get(TcbInfoField.INDEX));
         } else {
-            key.setIndex(INDEX_DEFAULT_VALUE);
+            key.setIndex(TcbInfoConstants.INDEX);
         }
 
         if (map.containsKey(TcbInfoField.TYPE)) {
