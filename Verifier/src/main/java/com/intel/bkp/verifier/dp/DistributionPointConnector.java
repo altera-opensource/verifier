@@ -44,19 +44,18 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Optional;
 
 @Slf4j
 public class DistributionPointConnector {
 
+    public static final int CONNECTION_TIMEOUT_SECONDS = 10;
+    public static final int REQUEST_TIMEOUT_SECONDS = 15;
     private final ProxySelector proxy;
 
     public DistributionPointConnector(Proxy proxy) {
         this.proxy = ProxyCallbackFactory.get(proxy.getHost(), proxy.getPort()).get();
-    }
-
-    public String getString(String url) {
-        return getHttpResponseBody(url, HttpResponse.BodyHandlers.ofString());
     }
 
     public byte[] getBytes(String url) {
@@ -72,7 +71,7 @@ public class DistributionPointConnector {
                 responseBody = Optional.of(response.body());
             }
         } catch (IOException | InterruptedException e) {
-            log.warn("Failed to get http response.", e);
+            log.error("Failed to get http response.", e);
         }
         return responseBody;
     }
@@ -95,6 +94,7 @@ public class DistributionPointConnector {
 
         return HttpClient.newBuilder()
             .proxy(proxy)
+            .connectTimeout(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS))
             .build()
             .send(getHttpRequest(url), bodyHandler);
     }
@@ -102,6 +102,7 @@ public class DistributionPointConnector {
     private HttpRequest getHttpRequest(String url) {
         log.info("Performing request to: {}", url);
         return HttpRequest.newBuilder(URI.create(url))
+            .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
             .GET()
             .build();
     }

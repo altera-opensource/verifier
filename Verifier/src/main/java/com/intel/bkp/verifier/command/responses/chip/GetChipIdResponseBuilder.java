@@ -34,10 +34,8 @@
 package com.intel.bkp.verifier.command.responses.chip;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
 public class GetChipIdResponseBuilder {
 

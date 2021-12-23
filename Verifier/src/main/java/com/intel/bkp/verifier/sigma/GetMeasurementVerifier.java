@@ -35,10 +35,8 @@ package com.intel.bkp.verifier.sigma;
 
 import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.ext.crypto.CryptoUtils;
-import com.intel.bkp.ext.crypto.constants.CryptoConstants;
 import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.SigmaException;
@@ -50,6 +48,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+
+import static com.intel.bkp.ext.crypto.constants.CryptoConstants.ECDSA_KEY;
+import static com.intel.bkp.ext.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 
 @Slf4j
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -87,8 +89,7 @@ public class GetMeasurementVerifier {
     private PublicKey getPublicKey(S10CacheEntity entity) {
         try {
             final String pubKeyXY = entity.getAlias();
-            return CryptoUtils.toEcPublicBC(HexConverter.fromHex(pubKeyXY), CryptoConstants.ECDSA_KEY,
-                CryptoConstants.EC_CURVE_SPEC_384);
+            return CryptoUtils.toEcPublicBC(fromHex(pubKeyXY), ECDSA_KEY, EC_CURVE_SPEC_384);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException
             | EcdhKeyPairException e) {
             throw new SigmaException("Failed to recover PublicKey from alias.", e);

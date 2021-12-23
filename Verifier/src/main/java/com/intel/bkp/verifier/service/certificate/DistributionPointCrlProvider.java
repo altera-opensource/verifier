@@ -55,11 +55,8 @@ public class DistributionPointCrlProvider implements ICrlProvider {
         this(new DistributionPointConnector(proxy));
     }
 
+    @Override
     public X509CRL getCrl(String crlUrl) {
-        return downloadCrl(crlUrl);
-    }
-
-    private X509CRL downloadCrl(String crlUrl) {
         final byte[] crlBytes = connector.getBytes(crlUrl);
         try {
             return toX509Crl(crlBytes);

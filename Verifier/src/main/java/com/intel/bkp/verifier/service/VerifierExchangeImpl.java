@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.interfaces.VerifierExchange;
@@ -46,6 +45,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -114,7 +115,7 @@ public class VerifierExchangeImpl implements VerifierExchange {
             transportLayer.initialize(transportId);
             final byte[] deviceId = initSessionComponent.initializeSessionForDeviceId();
             log.info("CREATE_ATTESTATION_SUBKEY will be performed for device of id: {}",
-                HexConverter.toHex(deviceId));
+                toHex(deviceId));
 
             return createSubKeyComponent.perform(context, pufType, deviceId)
                 .getCode();
@@ -134,9 +135,9 @@ public class VerifierExchangeImpl implements VerifierExchange {
         try {
             transportLayer.initialize(transportId);
             final byte[] deviceId = initSessionComponent.initializeSessionForDeviceId();
-            response.setDeviceId(HexConverter.toHex(deviceId));
+            response.setDeviceId(toHex(deviceId));
             log.info("GET_MEASUREMENT will be performed for device of id: {}",
-                HexConverter.toHex(deviceId));
+                toHex(deviceId));
 
             response.setStatus(getAttestationComponent.perform(refMeasurement, deviceId)
                 .getCode());
@@ -153,7 +154,7 @@ public class VerifierExchangeImpl implements VerifierExchange {
         final TransportLayer transportLayer = appContext.getTransportLayer();
         try {
             transportLayer.initialize(transportId);
-            final String result = HexConverter.toHex(transportLayer.sendCommand(GET_CHIPID));
+            final String result = toHex(transportLayer.sendCommand(GET_CHIPID));
             log.info("Health check result: {}", result);
             return StringUtils.isBlank(result)
                    ? VerifierExchangeResponse.ERROR.getCode()

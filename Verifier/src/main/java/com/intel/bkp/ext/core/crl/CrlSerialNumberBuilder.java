@@ -33,12 +33,13 @@
 
 package com.intel.bkp.ext.core.crl;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CrlSerialNumberBuilder {
@@ -46,7 +47,7 @@ public class CrlSerialNumberBuilder {
     public static final byte CRL_VERSION_BYTE = (byte)0x01;
 
     public static BigInteger convertToBigInteger(String deviceId) {
-        return convertToBigInteger(HexConverter.fromHex(deviceId));
+        return convertToBigInteger(fromHex(deviceId));
     }
 
     public static BigInteger convertToBigInteger(byte[] deviceId) {

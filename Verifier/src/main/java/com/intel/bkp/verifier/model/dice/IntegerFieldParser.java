@@ -33,14 +33,15 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.interfaces.ITcbInfoFieldParser;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 public class IntegerFieldParser extends BaseExtensionParser implements ITcbInfoFieldParser<Integer> {
 
     @Override
     public Integer parse(ASN1TaggedObject object) {
-        return Integer.parseInt(HexConverter.toHex(parseOctetString(object)), 16);
+        return Integer.parseInt(toHex(parseOctetString(object)), 16);
     }
 }

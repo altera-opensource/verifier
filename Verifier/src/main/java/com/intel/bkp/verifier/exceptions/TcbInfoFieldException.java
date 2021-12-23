@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class TcbInfoFieldException extends IllegalArgumentException {
+public class TcbInfoFieldException extends VerifierRuntimeException {
 
     public TcbInfoFieldException(String message) {
         super(message);

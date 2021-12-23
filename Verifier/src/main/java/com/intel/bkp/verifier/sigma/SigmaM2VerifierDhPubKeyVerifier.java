@@ -33,17 +33,18 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 public class SigmaM2VerifierDhPubKeyVerifier {
 
     public void verify(byte[] expectedDhPubKey, byte[] incomingDhPubKey) {
         log.debug("Verifying DH Pub Key.");
-        final String expectedDhPubKeyHex = HexConverter.toHex(expectedDhPubKey);
-        final String incomingDhPubKeyHex = HexConverter.toHex(incomingDhPubKey);
+        final String expectedDhPubKeyHex = toHex(expectedDhPubKey);
+        final String incomingDhPubKeyHex = toHex(incomingDhPubKey);
         if (!expectedDhPubKeyHex.equals(incomingDhPubKeyHex)) {
             throw new SigmaException(String.format(
                 "Verifier DH Public Key from M2 (%s) is different than sent in M1 command (%s).",

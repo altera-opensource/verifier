@@ -34,7 +34,6 @@
 package com.intel.bkp.ext.core.psgcertificate.model;
 
 import com.intel.bkp.ext.core.interfaces.IPsgFormat;
-import com.intel.bkp.ext.utils.HexConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -67,9 +66,5 @@ public class PsgPublicKey implements IPsgFormat {
             .put(pointX)
             .put(pointY)
             .array();
-    }
-
-    public String toHex() {
-        return HexConverter.toHex(array());
     }
 }

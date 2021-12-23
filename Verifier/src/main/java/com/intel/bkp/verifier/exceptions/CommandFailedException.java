@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.exceptions;
 
 import com.intel.bkp.verifier.command.header.CommandHeader;
 
-public class CommandFailedException extends RuntimeException {
+public class CommandFailedException extends VerifierRuntimeException {
 
     public CommandFailedException(String responseName, CommandHeader parsedHeader) {
         this(responseName, parsedHeader.getId(), parsedHeader.getClient(), parsedHeader.getCode());

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class ConnectionException extends RuntimeException {
+public class ConnectionException extends VerifierRuntimeException {
 
     public ConnectionException(String message) {
         super(message);

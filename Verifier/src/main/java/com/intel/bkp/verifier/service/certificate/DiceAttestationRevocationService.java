@@ -55,7 +55,7 @@ import java.util.Optional;
 public class DiceAttestationRevocationService {
 
     private final DistributionPointConnector connector;
-    private final DiceCertificateVerifier diceCertificateVerifier;
+    private final DiceAliasChainVerifier diceAliasChainVerifier;
     private final X509CertificateParser certificateParser;
     private final DistributionPointAddressProvider addressProvider;
 
@@ -72,13 +72,13 @@ public class DiceAttestationRevocationService {
 
     public DiceAttestationRevocationService(DistributionPoint dp) {
         this(new DistributionPointConnector(dp.getProxy()),
-            new DiceCertificateVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash()),
+            new DiceAliasChainVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash()),
             new X509CertificateParser(),
             new DistributionPointAddressProvider(dp.getPathCer()));
     }
 
     public DiceAttestationRevocationService withDeviceId(byte[] deviceId) {
-        diceCertificateVerifier.withDeviceId(deviceId);
+        diceAliasChainVerifier.setDeviceId(deviceId);
         return this;
     }
 
@@ -134,11 +134,11 @@ public class DiceAttestationRevocationService {
 
     private void verifyChainsInternal() {
         log.debug("Verifying chain with EFUSE UDS that has {} certificates.", certificates.size());
-        diceCertificateVerifier.verifyAliasChain(certificates);
+        diceAliasChainVerifier.verifyChain(certificates);
 
         if (!certificatesIID.isEmpty()) {
             log.debug("Verifying chain with IID UDS that has {} certificates.", certificatesIID.size());
-            diceCertificateVerifier.verifyAliasChain(certificatesIID);
+            diceAliasChainVerifier.verifyChain(certificatesIID);
         }
     }
 

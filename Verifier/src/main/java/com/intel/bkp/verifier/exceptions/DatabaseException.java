@@ -33,10 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-public class DatabaseException extends RuntimeException {
+public class DatabaseException extends VerifierRuntimeException {
 
     public DatabaseException(String message, Throwable cause) {
         super(message, cause);

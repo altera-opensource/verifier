@@ -83,7 +83,7 @@ class SectionTypeTest {
         final byte value = 13;
 
         // when-then
-        final IllegalArgumentException thrown =
+        final SectionTypeException thrown =
             Assertions.assertThrows(SectionTypeException.class, () -> SectionType.from(value));
         Assertions.assertEquals(String.format(SectionType.UNSUPPORTED_SECTION_TYPE, value), thrown.getMessage());
     }
@@ -94,7 +94,7 @@ class SectionTypeTest {
         final BaseEvidenceBlock block = new BaseEvidenceBlock();
 
         // when-then
-        final IllegalArgumentException thrown =
+        final SectionTypeException thrown =
             Assertions.assertThrows(SectionTypeException.class, () -> SectionType.from(block));
         Assertions.assertEquals(SectionType.FAILED_TO_DETERMINE_SECTION_TYPE, thrown.getMessage());
     }
@@ -119,7 +119,7 @@ class SectionTypeTest {
         block.setType("A.A");
 
         // when-then
-        final IllegalArgumentException thrown =
+        final SectionTypeException thrown =
             Assertions.assertThrows(SectionTypeException.class, () -> SectionType.from(block));
         Assertions.assertEquals(SectionType.TYPE_IDENTIFIER_MUST_BE_BYTE_VALUE, thrown.getMessage());
     }
@@ -170,7 +170,7 @@ class SectionTypeTest {
         block.setLayer("3");
 
         // when-then
-        final IllegalArgumentException thrown =
+        final SectionTypeException thrown =
             Assertions.assertThrows(SectionTypeException.class, () -> SectionType.from(block));
         Assertions.assertEquals(SectionType.LAYER_CAN_ONLY_HAVE_VALUES, thrown.getMessage());
     }
@@ -182,7 +182,7 @@ class SectionTypeTest {
         block.setLayer("-1");
 
         // when-then
-        final IllegalArgumentException thrown =
+        final SectionTypeException thrown =
             Assertions.assertThrows(SectionTypeException.class, () -> SectionType.from(block));
         Assertions.assertEquals(SectionType.LAYER_CAN_ONLY_HAVE_VALUES, thrown.getMessage());
     }
@@ -194,7 +194,7 @@ class SectionTypeTest {
         block.setLayer("A");
 
         // when-then
-        final IllegalArgumentException thrown =
+        final SectionTypeException thrown =
             Assertions.assertThrows(SectionTypeException.class, () -> SectionType.from(block));
         Assertions.assertEquals(SectionType.LAYER_MUST_BE_INTEGER_VALUE, thrown.getMessage());
     }

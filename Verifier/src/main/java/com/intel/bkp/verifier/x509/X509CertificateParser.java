@@ -127,14 +127,6 @@ public class X509CertificateParser {
         }
     }
 
-    public Optional<X509Certificate> tryToX509(byte[] certificate) {
-        try {
-            return Optional.of(toX509Certificate(certificate));
-        } catch (X509CertificateParsingException e) {
-            return Optional.empty();
-        }
-    }
-
     private Optional<AccessDescription[]> tryGetAccessDescriptions(byte[] authorityInfoAccess) {
         if (authorityInfoAccess == null) {
             return Optional.empty();

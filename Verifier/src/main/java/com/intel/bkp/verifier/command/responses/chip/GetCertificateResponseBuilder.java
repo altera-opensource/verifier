@@ -36,13 +36,11 @@ package com.intel.bkp.verifier.command.responses.chip;
 import com.intel.bkp.ext.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.model.CertificateRequestType;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
-@Getter
 @Setter
 @Slf4j
 public class GetCertificateResponseBuilder {

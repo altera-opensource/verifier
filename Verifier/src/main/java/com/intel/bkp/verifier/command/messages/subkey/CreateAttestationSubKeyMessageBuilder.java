@@ -36,7 +36,6 @@ package com.intel.bkp.verifier.command.messages.subkey;
 import com.intel.bkp.ext.core.manufacturing.model.PufType;
 import com.intel.bkp.ext.utils.ByteBufferSafe;
 import com.intel.bkp.ext.utils.ByteSwap;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.messages.VerifierDHCertBuilder;
 import com.intel.bkp.verifier.command.messages.VerifierDhEntryManager;
 import com.intel.bkp.verifier.model.RootChainType;
@@ -44,6 +43,7 @@ import com.intel.bkp.verifier.model.RootChainType;
 import java.nio.ByteBuffer;
 
 import static com.intel.bkp.ext.utils.ByteSwapOrder.B2L;
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 import static com.intel.bkp.verifier.command.Magic.CREATE_SUBKEY;
 
 public class CreateAttestationSubKeyMessageBuilder {
@@ -81,7 +81,7 @@ public class CreateAttestationSubKeyMessageBuilder {
 
     public CreateAttestationSubKeyMessageBuilder context(String context) {
         ByteBuffer.allocate(CONTEXT_LEN)
-            .put(HexConverter.fromHex(context))
+            .put(fromHex(context))
             .rewind()
             .get(this.verifierInputContext);
         return this;

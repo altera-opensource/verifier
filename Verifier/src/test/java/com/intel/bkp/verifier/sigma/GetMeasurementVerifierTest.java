@@ -36,7 +36,6 @@ package com.intel.bkp.verifier.sigma;
 import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.SigmaException;
@@ -48,6 +47,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -117,6 +117,6 @@ class GetMeasurementVerifierTest {
     }
 
     private void mockAlias() throws EcdhKeyPairException {
-        when(entity.getAlias()).thenReturn(HexConverter.toHex(EcdhKeyPair.generate().getPublicKey()));
+        when(entity.getAlias()).thenReturn(toHex(EcdhKeyPair.generate().getPublicKey()));
     }
 }

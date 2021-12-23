@@ -33,12 +33,13 @@
 
 package com.intel.bkp.verifier.model.s10;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 
 import java.util.Locale;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 /**
  * deviceId - little endian chipId - as received from device.
@@ -62,6 +63,6 @@ public class S10Params {
     }
 
     public static S10Params from(byte[] deviceId, String pufTypeHex) {
-        return new S10Params(HexConverter.toHex(deviceId), pufTypeHex);
+        return new S10Params(toHex(deviceId), pufTypeHex);
     }
 }

@@ -35,11 +35,13 @@ package com.intel.bkp.verifier.model.dice;
 
 import com.intel.bkp.ext.utils.ByteSwap;
 import com.intel.bkp.ext.utils.ByteSwapOrder;
-import com.intel.bkp.ext.utils.HexConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Locale;
+
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 /**
  * ski - Subject Key Identifier
@@ -67,8 +69,7 @@ public class DiceParams {
     protected final String getUidInLogsFormat() {
         // uid is used in diceParams on purpose (it is in Distribution Point format)
         // uidInLittleEndian is used to present it in logs in consistent format (as received from GET_CHIPID)
-        final String uidInLittleEndian = HexConverter.toHex(ByteSwap.getSwappedArrayByLong(
-            HexConverter.fromHex(uid), ByteSwapOrder.B2L));
-        return uidInLittleEndian;
+        final byte[] uidInLittleEndian = ByteSwap.getSwappedArrayByLong(fromHex(uid), ByteSwapOrder.B2L);
+        return toHex(uidInLittleEndian);
     }
 }

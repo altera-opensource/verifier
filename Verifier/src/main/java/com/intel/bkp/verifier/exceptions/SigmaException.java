@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class SigmaException extends RuntimeException {
+public class SigmaException extends VerifierRuntimeException {
 
     public SigmaException(String message, Throwable e) {
         super(message, e);

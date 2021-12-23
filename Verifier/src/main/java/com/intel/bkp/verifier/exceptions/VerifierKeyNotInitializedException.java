@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class VerifierKeyNotInitializedException extends RuntimeException {
+public class VerifierKeyNotInitializedException extends VerifierRuntimeException {
 
     public VerifierKeyNotInitializedException() {
         super("User must initialize Verifier Key first.");

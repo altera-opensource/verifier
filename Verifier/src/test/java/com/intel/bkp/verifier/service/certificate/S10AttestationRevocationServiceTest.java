@@ -98,7 +98,7 @@ class S10AttestationRevocationServiceTest {
     private X509CertificateParser certificateParser;
 
     @Mock
-    private S10CertificateVerifier s10CertificateVerifier;
+    private S10ChainVerifier s10ChainVerifier;
 
     @Mock
     private DistributionPointConnector connector;
@@ -148,7 +148,7 @@ class S10AttestationRevocationServiceTest {
         sut = new S10AttestationRevocationService(appContext);
 
         // then
-        final var s10CertVerifier = sut.getS10CertificateVerifier();
+        final var s10CertVerifier = sut.getS10ChainVerifier();
         Assertions.assertEquals(trustedRootHash, s10CertVerifier.getTrustedRootHash());
 
         final var crlProvider = s10CertVerifier.getCrlVerifier().getCrlProvider();
@@ -165,14 +165,14 @@ class S10AttestationRevocationServiceTest {
         // given
         mockFetchingCertificates(DEVICE_ID, PUF_TYPE);
         mockAttestationKey(attestationPublicKey);
-        when(s10CertificateVerifier.withDevice(DEVICE_ID)).thenReturn(s10CertificateVerifier);
 
         // when
         final PublicKey result = sut.checkAndRetrieve(DEVICE_ID, PUF_TYPE);
 
         // then
         Assertions.assertEquals(attestationPublicKey, result);
-        verify(s10CertificateVerifier).verify(certificatesCaptor.capture());
+        verify(s10ChainVerifier).setDeviceId(DEVICE_ID);
+        verify(s10ChainVerifier).verifyChain(certificatesCaptor.capture());
         final LinkedList<X509Certificate> certificates = certificatesCaptor.getValue();
         Assertions.assertEquals(attestationCert, certificates.getFirst());
         Assertions.assertEquals(parentCert, certificates.get(1));

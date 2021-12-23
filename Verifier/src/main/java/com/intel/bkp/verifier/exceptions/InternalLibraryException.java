@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class InternalLibraryException extends RuntimeException {
+public class InternalLibraryException extends VerifierRuntimeException {
 
     public InternalLibraryException(String message, Throwable e) {
         super(message, e);

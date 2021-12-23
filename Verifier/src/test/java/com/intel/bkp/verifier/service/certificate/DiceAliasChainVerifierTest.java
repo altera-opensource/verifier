@@ -31,53 +31,53 @@
  *
  */
 
-package com.intel.bkp.verifier.command.messages.attestation;
+package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.Utils;
+import com.intel.bkp.verifier.exceptions.SigmaException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.nio.ByteOrder;
-
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
-import static com.intel.bkp.verifier.command.Magic.GET_MEASUREMENT;
+import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_INIT;
+import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
 
 @ExtendWith(MockitoExtension.class)
-class GetMeasurementMessageBuilderTest {
+class DiceAliasChainVerifierTest {
 
-    private static final String TEST_FOLDER = "messages/";
-    private static final String MEASUREMENTS_CMD_FILENAME = "measurements_cmd.bin";
-    private static final String VERIFIER_DH_PUBKEY =
-        "E556DCF69048124658D9B40AC13E70074CBB245135DF7851F0FAEE0C8CD43CAFBBD5DDD042ED40C630A2BC37CB03EB2" +
-            "D1F01DC9DC33CD20FADD8F150B825981B391F100670404C63E7857D10625083E7A06C343B66A17A4BF9A0CD52A855A4B6";
-    private static final String CONTEXT = "abcdefg";
+    @Mock
+    private ICrlProvider crlProvider;
 
-    private static byte[] measurementsCmd;
+    @Mock
+    private RootHashVerifier rootHashVerifier;
 
     @InjectMocks
-    private GetMeasurementMessageBuilder sut;
+    private DiceAliasChainVerifier sut;
 
-    @BeforeAll
-    static void init() throws Exception {
-        measurementsCmd = Utils.readFromResources(TEST_FOLDER, MEASUREMENTS_CMD_FILENAME);
+    @Test
+    void getExpectedLeafCertKeyPurposes_ReturnsPurposesForAliasCertificate() {
+        // given
+        final String[] aliasCertificateKeyPurposes = new String[]{KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC};
+
+        // when
+        final String[] result = sut.getExpectedLeafCertKeyPurposes();
+
+        // then
+        Assertions.assertArrayEquals(aliasCertificateKeyPurposes, result);
     }
 
     @Test
-    void parse() {
-        // when
-        final GetMeasurementMessage result = sut
-            .parse(measurementsCmd)
-            .build();
+    void handleVerificationFailure_throwsSigmaException() {
+        // given
+        final String failureDetails = "some details about why validation happened.";
+
+        // when-then
+        SigmaException ex = Assertions.assertThrows(SigmaException.class,
+            () -> sut.handleVerificationFailure(failureDetails));
 
         // then
-        Assertions.assertEquals(GET_MEASUREMENT.getCode(),
-            ByteBufferSafe.wrap(result.getMagic()).getInt(ByteOrder.LITTLE_ENDIAN));
-        Assertions.assertEquals(VERIFIER_DH_PUBKEY, toHex(result.getVerifierDhPubKey()));
-        Assertions.assertTrue(new String(result.getVerifierInputContext()).contains(CONTEXT));
+        Assertions.assertEquals(failureDetails, ex.getMessage());
     }
 }

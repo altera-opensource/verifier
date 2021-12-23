@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class SectionTypeException extends IllegalArgumentException {
+public class SectionTypeException extends VerifierRuntimeException {
 
     public SectionTypeException(String message) {
         super(message);

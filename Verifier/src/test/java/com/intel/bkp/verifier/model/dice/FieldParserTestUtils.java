@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.model.dice;
 
 import com.intel.bkp.ext.core.utils.Converter;
-import com.intel.bkp.ext.utils.HexConverter;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
@@ -42,6 +41,8 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.DLTaggedObject;
+
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 
 class FieldParserTestUtils {
 
@@ -54,7 +55,7 @@ class FieldParserTestUtils {
     }
 
     public static DEROctetString getOctetString(String hexStr) {
-        return getOctetString(HexConverter.fromHex(hexStr));
+        return getOctetString(fromHex(hexStr));
     }
 
     public static DEROctetString getOctetString(Integer integer) {
@@ -66,7 +67,7 @@ class FieldParserTestUtils {
     }
 
     public static DERBitString getBitString(String dataHex, int padBits) {
-        return new DERBitString(HexConverter.fromHex(dataHex), padBits);
+        return new DERBitString(fromHex(dataHex), padBits);
     }
 
     public static ASN1TaggedObject getSequence(ASN1Primitive... obj) {

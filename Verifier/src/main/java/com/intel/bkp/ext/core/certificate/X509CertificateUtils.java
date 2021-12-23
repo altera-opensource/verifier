@@ -48,7 +48,9 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class X509CertificateUtils {
 
@@ -112,7 +114,9 @@ public class X509CertificateUtils {
      */
     public static boolean containsExtension(final X509Certificate certificate, ASN1ObjectIdentifier extensionOid) {
         final String oid = extensionOid.getId();
-        return certificate.getCriticalExtensionOIDs().contains(oid)
-            || certificate.getNonCriticalExtensionOIDs().contains(oid);
+        final Set<String> allExtOids = new HashSet<>();
+        Optional.ofNullable(certificate.getCriticalExtensionOIDs()).ifPresent(allExtOids::addAll);
+        Optional.ofNullable(certificate.getNonCriticalExtensionOIDs()).ifPresent(allExtOids::addAll);
+        return allExtOids.contains(oid);
     }
 }

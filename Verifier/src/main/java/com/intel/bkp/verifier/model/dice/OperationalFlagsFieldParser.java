@@ -33,14 +33,15 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.interfaces.ITcbInfoFieldParser;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 public class OperationalFlagsFieldParser extends BaseExtensionParser implements ITcbInfoFieldParser<String> {
 
     @Override
     public String parse(ASN1TaggedObject object) {
-        return HexConverter.toHex(parseBitString(object));
+        return toHex(parseBitString(object));
     }
 }

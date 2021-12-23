@@ -34,9 +34,10 @@
 package com.intel.bkp.verifier.command.responses.attestation;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.HexConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 
 class DeviceStateMeasurementRecordTest {
 
@@ -45,7 +46,7 @@ class DeviceStateMeasurementRecordTest {
         // given
         final String data = "0102030405060708";
         final String expectedReversedEndiannessData = "0403020105060708";
-        final ByteBufferSafe buffer = ByteBufferSafe.wrap(HexConverter.fromHex(data));
+        final ByteBufferSafe buffer = ByteBufferSafe.wrap(fromHex(data));
 
         // when
         final DeviceStateMeasurementRecord record = new DeviceStateMeasurementRecord(buffer);

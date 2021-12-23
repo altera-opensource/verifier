@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.command.messages.subkey;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,6 +44,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.ByteOrder;
 
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 import static com.intel.bkp.verifier.command.Magic.CREATE_SUBKEY;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,7 +77,7 @@ class CreateAttestationSubKeyMessageBuilderTest {
         // then
         Assertions.assertEquals(CREATE_SUBKEY.getCode(),
             ByteBufferSafe.wrap(result.getMagic()).getInt(ByteOrder.LITTLE_ENDIAN));
-        Assertions.assertEquals(VERIFIER_DH_PUBKEY, HexConverter.toHex(result.getVerifierDhPubKey()));
+        Assertions.assertEquals(VERIFIER_DH_PUBKEY, toHex(result.getVerifierDhPubKey()));
         Assertions.assertTrue(new String(result.getVerifierInputContext()).contains(CONTEXT));
     }
 }
