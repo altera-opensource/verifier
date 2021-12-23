@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.model.dice;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.interfaces.ITcbInfoFieldParser;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -41,6 +40,8 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 public class FwidFieldParser extends BaseExtensionParser implements ITcbInfoFieldParser<FwIdField> {
@@ -74,7 +75,7 @@ public class FwidFieldParser extends BaseExtensionParser implements ITcbInfoFiel
         if (obj instanceof ASN1ObjectIdentifier) {
             field.setHashAlg(parseAsn1Identifier(obj));
         } else if (obj instanceof DEROctetString) {
-            field.setDigest(HexConverter.toHex(parseOctetString(obj)));
+            field.setDigest(toHex(parseOctetString(obj)));
         }
     }
 }

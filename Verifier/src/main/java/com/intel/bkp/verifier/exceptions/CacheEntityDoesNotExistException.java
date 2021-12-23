@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class CacheEntityDoesNotExistException extends RuntimeException {
+public class CacheEntityDoesNotExistException extends VerifierRuntimeException {
 
     public CacheEntityDoesNotExistException() {
         super("Call CreateAttestationSubKey API first.");

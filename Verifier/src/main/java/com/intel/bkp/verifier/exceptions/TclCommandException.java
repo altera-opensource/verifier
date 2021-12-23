@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class TclCommandException extends RuntimeException {
+public class TclCommandException extends VerifierRuntimeException {
     public TclCommandException(String message, Throwable e) {
         super(message, e);
     }

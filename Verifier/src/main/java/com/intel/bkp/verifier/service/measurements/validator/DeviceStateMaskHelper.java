@@ -34,10 +34,12 @@
 package com.intel.bkp.verifier.service.measurements.validator;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.HexConverter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
+
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 public class DeviceStateMaskHelper {
 
@@ -53,9 +55,9 @@ public class DeviceStateMaskHelper {
     public static String applyMask(String value, String mask) {
         value = alignValueToMask(value, mask);
 
-        final byte[] valueBytes = HexConverter.fromHex(value);
-        final byte[] maskBytes = HexConverter.fromHex(mask);
-        return HexConverter.toHex(applyMask(valueBytes, maskBytes));
+        final byte[] valueBytes = fromHex(value);
+        final byte[] maskBytes = fromHex(mask);
+        return toHex(applyMask(valueBytes, maskBytes));
     }
 
     private static byte[] applyMask(byte[] value, byte[] mask) {

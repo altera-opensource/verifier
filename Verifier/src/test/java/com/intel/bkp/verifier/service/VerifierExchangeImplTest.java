@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.exceptions.InitSessionFailedException;
 import com.intel.bkp.verifier.exceptions.TransportLayerException;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
@@ -49,6 +48,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -157,7 +157,7 @@ class VerifierExchangeImplTest {
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result.getStatus());
-        Assertions.assertEquals(HexConverter.toHex(deviceId), result.getDeviceId());
+        Assertions.assertEquals(toHex(deviceId), result.getDeviceId());
     }
 
     @Test
@@ -174,7 +174,7 @@ class VerifierExchangeImplTest {
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK.getCode(), result.getStatus());
-        Assertions.assertEquals(HexConverter.toHex(deviceId), result.getDeviceId());
+        Assertions.assertEquals(toHex(deviceId), result.getDeviceId());
     }
 
     @Test

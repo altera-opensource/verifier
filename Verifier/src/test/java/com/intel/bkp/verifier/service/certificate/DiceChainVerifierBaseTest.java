@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.x509.X509CertificateChainVerifier;
 import com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier;
@@ -56,17 +55,39 @@ import static com.intel.bkp.verifier.model.AttestationOid.TCG_DICE_MULTI_TCB_INF
 import static com.intel.bkp.verifier.model.AttestationOid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.verifier.model.AttestationOid.TCG_DICE_UEID;
 import static com.intel.bkp.verifier.x509.X509CertificateBasicConstraintsVerifier.CA_TRUE_PATHLENGTH_NONE;
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_INIT;
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
+import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_CODE_SIGNING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class DiceCertificateVerifierTest {
+class DiceChainVerifierBaseTest {
+
+    private static class DiceChainVerifierTestImpl extends DiceChainVerifierBase {
+
+        DiceChainVerifierTestImpl(X509CertificateExtendedKeyUsageVerifier extendedKeyUsageVerifier,
+                                  X509CertificateChainVerifier certificateChainVerifier, CrlVerifier crlVerifier,
+                                  RootHashVerifier rootHashVerifier, X509CertificateUeidVerifier ueidVerifier,
+                                  X509CertificateSubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier,
+                                  TrustedRootHash trustedRootHash) {
+            super(extendedKeyUsageVerifier, certificateChainVerifier, crlVerifier, rootHashVerifier, ueidVerifier,
+                subjectKeyIdentifierVerifier, trustedRootHash);
+        }
+
+        @Override
+        protected String[] getExpectedLeafCertKeyPurposes() {
+            return new String[]{KEY_PURPOSE};
+        }
+
+        @Override
+        protected void handleVerificationFailure(String failureDetails) {
+            throw new RuntimeException(failureDetails);
+        }
+    }
 
     private static final byte[] DEVICE_ID = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
+    private static final String KEY_PURPOSE = KEY_PURPOSE_CODE_SIGNING;
     private static final byte[] DICE_ROOT_CERT = new byte[]{7, 8};
     private static final String DICE_ROOT_HASH = DigestUtils.sha256Hex(DICE_ROOT_CERT);
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
@@ -97,49 +118,49 @@ class DiceCertificateVerifierTest {
     private TrustedRootHash trustedRootHash;
 
     @InjectMocks
-    private DiceCertificateVerifier sut;
+    private DiceChainVerifierTestImpl sut;
 
     private LinkedList<X509Certificate> certificates;
 
     @BeforeEach
     void setUp() {
-        sut.withDeviceId(DEVICE_ID);
+        sut.setDeviceId(DEVICE_ID);
         certificates = new LinkedList<>();
         certificates.add(certificate);
     }
 
     @Test
-    void verifyAliasChain_ParentVerificationFails_Throws() {
+    void verifyChain_ParentVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+        Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verifyAliasChain_UeidVerificationFails_Throws() {
+    void verifyChain_UeidVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+        Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verifyAliasChain_SkiVerificationFails_Throws() {
+    void verifyChain_SkiVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
         mockSkiVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+        Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verifyAliasChain_RootHashVerificationFails_Throws() {
+    void verifyChain_RootHashVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
@@ -147,11 +168,11 @@ class DiceCertificateVerifierTest {
         mockRootHashVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+        Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verifyAliasChain_CrlVerificationFails_Throws() {
+    void verifyChain_CrlVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
@@ -160,11 +181,11 @@ class DiceCertificateVerifierTest {
         mockCrlVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+        Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verifyAliasChain_ExtendedKeyUsageVerificationFails_Throws() {
+    void verifyChain_ExtendedKeyUsageVerificationFails_Throws() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
@@ -174,11 +195,11 @@ class DiceCertificateVerifierTest {
         mockExtendedKeyUsageVerification(false);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verifyAliasChain(certificates));
+        Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verifyAliasChain_AllPassed() {
+    void verifyChain_AllPassed() {
         // given
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
@@ -188,10 +209,10 @@ class DiceCertificateVerifierTest {
         mockCrlVerification(true);
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verifyAliasChain(certificates));
+        Assertions.assertDoesNotThrow(() -> sut.verifyChain(certificates));
         verify(certificateParentVerifier).rootBasicConstraints(CA_TRUE_PATHLENGTH_NONE);
         verify(certificateParentVerifier).knownExtensionOids(DICE_EXTENSION_OIDS);
-        verify(extendedKeyUsageVerifier).verify(KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC);
+        verify(extendedKeyUsageVerifier).verify(KEY_PURPOSE);
         verify(ueidVerifier).verify(DEVICE_ID);
     }
 

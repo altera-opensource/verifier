@@ -36,9 +36,10 @@ package com.intel.bkp.verifier.command.responses.attestation;
 import com.intel.bkp.ext.utils.ByteBufferSafe;
 import com.intel.bkp.ext.utils.ByteSwap;
 import com.intel.bkp.ext.utils.ByteSwapOrder;
-import com.intel.bkp.ext.utils.HexConverter;
 
 import java.nio.ByteBuffer;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 public class DeviceStateMeasurementRecord {
 
@@ -57,7 +58,7 @@ public class DeviceStateMeasurementRecord {
     }
 
     public String getData() {
-        return HexConverter.toHex(ByteBuffer.allocate(flags.length + counters.length)
+        return toHex(ByteBuffer.allocate(flags.length + counters.length)
             .put(flags)
             .put(counters)
             .array());

@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.ext.core.crl.CrlSerialNumberBuilder;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.x509.X509CertificateChainVerifier;
@@ -51,16 +50,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 
+import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_CODE_SIGNING;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class S10CertificateVerifierTest {
+class S10ChainVerifierTest {
 
-    private static final byte[] DEVICE_ID = HexConverter.fromHex("0011223344556677");
-    private static final byte[] WRONG_DEVICE_ID = HexConverter.fromHex("7766554433221100");
+    private static final byte[] DEVICE_ID = fromHex("0011223344556677");
+    private static final byte[] WRONG_DEVICE_ID = fromHex("7766554433221100");
 
-    private static final byte[] S10_ROOT_CERT = new byte[] { 5, 6 };
+    private static final byte[] S10_ROOT_CERT = new byte[]{5, 6};
     private static final String S10_ROOT_HASH = DigestUtils.sha256Hex(S10_ROOT_CERT);
 
     @Mock
@@ -88,18 +88,18 @@ class S10CertificateVerifierTest {
     private TrustedRootHash trustedRootHash;
 
     @InjectMocks
-    private S10CertificateVerifier sut;
+    private S10ChainVerifier sut;
 
     private final LinkedList<X509Certificate> certificates = new LinkedList<>();
 
     @BeforeEach
     void setUp() {
         setUpCertificates();
-        sut.withDevice(DEVICE_ID);
+        sut.setDeviceId(DEVICE_ID);
     }
 
     @Test
-    void verify_Success() {
+    void verifyChain_Success() {
         // given
         mockSerialNumberOfAttestationCert();
         mockCertificateParentVerification(true);
@@ -108,42 +108,42 @@ class S10CertificateVerifierTest {
         mockCrlVerification(true);
 
         // when
-        Assertions.assertDoesNotThrow(() -> sut.verify(certificates));
+        Assertions.assertDoesNotThrow(() -> sut.verifyChain(certificates));
     }
 
     @Test
-    void verify_SerialNumNotMatchDeviceId_Throws() {
+    void verifyChain_SerialNumNotMatchDeviceId_Throws() {
         // given
         mockSerialNumberOfAttestationCert();
-        sut.withDevice(WRONG_DEVICE_ID);
+        sut.setDeviceId(WRONG_DEVICE_ID);
 
         // when-then
-        assertVerifyThrowsSigmaException("Certificate Serial Number does not match device id.");
+        assertVerifyChainThrowsSigmaException("Certificate Serial Number does not match device id.");
     }
 
     @Test
-    void verify_ParentVerificationFails_Throws() {
+    void verifyChain_ParentVerificationFails_Throws() {
         // given
         mockSerialNumberOfAttestationCert();
         mockCertificateParentVerification(false);
 
         // when-then
-        assertVerifyThrowsSigmaException("Parent signature verification in X509 attestation chain failed.");
+        assertVerifyChainThrowsSigmaException("Parent signature verification in X509 attestation chain failed.");
     }
 
     @Test
-    void verify_UsageVerificationFails_Throws() {
+    void verifyChain_UsageVerificationFails_Throws() {
         // given
         mockSerialNumberOfAttestationCert();
         mockCertificateParentVerification(true);
         mockCertificateUsageVerification(false);
 
         // when-then
-        assertVerifyThrowsSigmaException("Attestation certificate is invalid.");
+        assertVerifyChainThrowsSigmaException("Attestation certificate is invalid.");
     }
 
     @Test
-    void verify_CrlVerificationFails_Throws() {
+    void verifyChain_CrlVerificationFails_Throws() {
         // given
         mockSerialNumberOfAttestationCert();
         mockCertificateParentVerification(true);
@@ -152,11 +152,11 @@ class S10CertificateVerifierTest {
         mockCrlVerification(false);
 
         // when-then
-        assertVerifyThrowsSigmaException("Device with device id 0011223344556677 is revoked.");
+        assertVerifyChainThrowsSigmaException("Device with device id 0011223344556677 is revoked.");
     }
 
     @Test
-    void verify_RootHashVerificationFails_Throws() {
+    void verifyChain_RootHashVerificationFails_Throws() {
         // given
         mockSerialNumberOfAttestationCert();
         mockCertificateParentVerification(true);
@@ -164,11 +164,12 @@ class S10CertificateVerifierTest {
         mockRootHashVerification(false);
 
         // when-then
-        assertVerifyThrowsSigmaException("Root hash in X509 attestation chain is different from trusted root hash.");
+        assertVerifyChainThrowsSigmaException("Root hash in X509 attestation chain is different from trusted root "
+            + "hash.");
     }
 
-    private void assertVerifyThrowsSigmaException(String expectedExceptionMessage) {
-        SigmaException thrown = Assertions.assertThrows(SigmaException.class, () -> sut.verify(certificates));
+    private void assertVerifyChainThrowsSigmaException(String expectedExceptionMessage) {
+        SigmaException thrown = Assertions.assertThrows(SigmaException.class, () -> sut.verifyChain(certificates));
         Assertions.assertEquals(thrown.getMessage(), expectedExceptionMessage);
     }
 

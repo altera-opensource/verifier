@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class JtagResponseException extends RuntimeException {
+public class JtagResponseException extends VerifierRuntimeException {
     public JtagResponseException(String internalMessage) {
         super(internalMessage);
     }

@@ -33,13 +33,14 @@
 
 package com.intel.bkp.verifier.command.messages.subkey;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.security.SecureRandom;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 @NoArgsConstructor
@@ -76,6 +77,6 @@ public class VerifierChainBackupUtil {
     String getRandomizedHex() {
         final byte[] randomized = new byte[Integer.BYTES];
         new SecureRandom().nextBytes(randomized);
-        return HexConverter.toHex(randomized);
+        return toHex(randomized);
     }
 }

@@ -42,6 +42,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
+
 public class SystemConsoleHexConverter {
 
     private static final int WORD_SIZE = 4;
@@ -57,7 +59,7 @@ public class SystemConsoleHexConverter {
             byte[] subarraySwapped = swapArrayDueToWordFormat(subarray);
             sb
                 .append("0x")
-                .append(HexConverter.toHex(subarraySwapped))
+                .append(toHex(subarraySwapped))
                 .append(i + WORD_SIZE == array.length ? "" : " ");
         }
 

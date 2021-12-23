@@ -34,7 +34,6 @@
 package com.intel.bkp.verifier.command;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.header.CommandHeader;
 import com.intel.bkp.verifier.command.header.CommandHeaderManager;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
@@ -43,6 +42,8 @@ import com.intel.bkp.verifier.model.CommandIdentifier;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 public class MailboxCommandLayer implements CommandLayer {
@@ -56,13 +57,13 @@ public class MailboxCommandLayer implements CommandLayer {
         final byte[] dataBytes = data.array();
         final byte[] header = buildCommandHeader(commandCode, getArgumentsLen(dataBytes), 0, CLIENT_IDENTIFIER);
         final byte[] rawData = withAppendedHeader(dataBytes, header);
-        log.trace("Sending raw data for command {}: {}", command.name(), HexConverter.toHex(rawData));
+        log.trace("Sending raw data for command {}: {}", command.name(), toHex(rawData));
         return rawData;
     }
 
     @Override
     public byte[] retrieve(byte[] data, CommandIdentifier command) {
-        log.trace("Received raw data for response {}: {}", command.name(), HexConverter.toHex(data));
+        log.trace("Received raw data for response {}: {}", command.name(), toHex(data));
         CommandHeaderManager.validateCommandHeaderCode(data, command.name());
         return ByteBufferSafe.wrap(data).skip(COMMAND_HEADER_LEN).getRemaining();
     }

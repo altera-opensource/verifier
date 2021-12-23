@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.database.repository;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.database.table.S10TableDefinition;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +40,8 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 
 import java.sql.Connection;
 import java.util.Optional;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 public class S10CacheEntityService extends CacheEntityServiceBase {
@@ -56,7 +57,7 @@ public class S10CacheEntityService extends CacheEntityServiceBase {
     }
 
     public Optional<S10CacheEntity> read(byte[] deviceId) {
-        final String deviceIdHex = HexConverter.toHex(deviceId);
+        final String deviceIdHex = toHex(deviceId);
         log.debug("Reading cached entity for deviceId: {}", deviceIdHex);
 
         return select(getResultsHandler())

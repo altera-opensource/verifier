@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.x509.X509CertificateChainVerifier;
 import com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier;
@@ -42,6 +41,7 @@ import com.intel.bkp.verifier.x509.X509CertificateUeidVerifier;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
@@ -52,19 +52,17 @@ import static com.intel.bkp.verifier.model.AttestationOid.TCG_DICE_MULTI_TCB_INF
 import static com.intel.bkp.verifier.model.AttestationOid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.verifier.model.AttestationOid.TCG_DICE_UEID;
 import static com.intel.bkp.verifier.x509.X509CertificateBasicConstraintsVerifier.CA_TRUE_PATHLENGTH_NONE;
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_INIT;
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
 
 @Slf4j
 @Getter(AccessLevel.PACKAGE)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class DiceCertificateVerifier {
+public abstract class DiceChainVerifierBase {
 
     private static final int ROOT_BASIC_CONSTRAINTS = CA_TRUE_PATHLENGTH_NONE;
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
         TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
 
-    protected final X509CertificateExtendedKeyUsageVerifier extendedKeyUsageVerifier;
+    private final X509CertificateExtendedKeyUsageVerifier extendedKeyUsageVerifier;
     private final X509CertificateChainVerifier certificateChainVerifier;
     private final CrlVerifier crlVerifier;
     private final RootHashVerifier rootHashVerifier;
@@ -72,48 +70,44 @@ public class DiceCertificateVerifier {
     private final X509CertificateSubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier;
     private final TrustedRootHash trustedRootHash;
 
+    @Setter
     private byte[] deviceId;
 
-    public DiceCertificateVerifier(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
+    protected DiceChainVerifierBase(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
         this(new X509CertificateExtendedKeyUsageVerifier(), new X509CertificateChainVerifier(),
             new CrlVerifier(crlProvider), new RootHashVerifier(), new X509CertificateUeidVerifier(),
             new X509CertificateSubjectKeyIdentifierVerifier(), trustedRootHash);
     }
 
-    public DiceCertificateVerifier withDeviceId(byte[] deviceId) {
-        this.deviceId = deviceId;
-        return this;
-    }
+    protected abstract String[] getExpectedLeafCertKeyPurposes();
 
-    public void verifyAliasChain(LinkedList<X509Certificate> certificates) {
-        verifyCommon(certificates);
+    protected abstract void handleVerificationFailure(String failureDetails);
 
-        if (!extendedKeyUsageVerifier.certificate(certificates.getFirst())
-            .verify(KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC)) {
-            throw new SigmaException("Alias certificate is invalid.");
-        }
-    }
-
-    protected void verifyCommon(LinkedList<X509Certificate> certificates) {
+    public void verifyChain(LinkedList<X509Certificate> certificates) {
         if (!certificateChainVerifier.certificates(certificates).rootBasicConstraints(ROOT_BASIC_CONSTRAINTS)
             .knownExtensionOids(DICE_EXTENSION_OIDS).verify()) {
-            throw new SigmaException("Parent signature verification in X509 attestation chain failed.");
+            handleVerificationFailure("Parent signature verification in X509 attestation chain failed.");
         }
 
         if (!ueidVerifier.certificates(certificates).verify(deviceId)) {
-            throw new SigmaException("One of certificates in X509 attestation chain has invalid UEID extension value.");
+            handleVerificationFailure(
+                "One of certificates in X509 attestation chain has invalid UEID extension value.");
         }
 
         if (!subjectKeyIdentifierVerifier.certificates(certificates).verify()) {
-            throw new SigmaException("One of certificates in X509 attestation chain has invalid SKI extension value.");
+            handleVerificationFailure("One of certificates in X509 attestation chain has invalid SKI extension value.");
         }
 
         if (!rootHashVerifier.verifyRootHash(certificates.getLast(), trustedRootHash.getDice())) {
-            throw new SigmaException("Root hash in X509 DICE chain is different from trusted root hash.");
+            handleVerificationFailure("Root hash in X509 DICE chain is different from trusted root hash.");
         }
 
         if (!crlVerifier.certificates(certificates).doNotRequireCrlForLeafCertificate().verify()) {
-            throw new SigmaException("One of the certificates in chain is revoked.");
+            handleVerificationFailure("One of the certificates in chain is revoked.");
+        }
+
+        if (!extendedKeyUsageVerifier.certificate(certificates.getFirst()).verify(getExpectedLeafCertKeyPurposes())) {
+            handleVerificationFailure("Leaf certificate has invalid key usages.");
         }
     }
 }

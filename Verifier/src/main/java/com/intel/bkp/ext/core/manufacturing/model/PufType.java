@@ -33,12 +33,12 @@
 
 package com.intel.bkp.ext.core.manufacturing.model;
 
-import com.intel.bkp.ext.utils.HexConverter;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.EnumSet;
 import java.util.Locale;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 /**
  * The PufType enumeration.
@@ -54,7 +54,7 @@ public enum PufType {
     }
 
     public static String getPufTypeHex(PufType pufType) {
-        return HexConverter.toHex(ByteBuffer.allocate(Integer.BYTES)
+        return toHex(ByteBuffer.allocate(Integer.BYTES)
             .order(ByteOrder.BIG_ENDIAN)
             .putInt(pufType.ordinal())
             .array()

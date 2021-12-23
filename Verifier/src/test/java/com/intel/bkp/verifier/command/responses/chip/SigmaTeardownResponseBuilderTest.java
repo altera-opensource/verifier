@@ -31,39 +31,46 @@
  *
  */
 
-package com.intel.bkp.verifier.transport.hps;
+package com.intel.bkp.verifier.command.responses.chip;
 
-import com.intel.bkp.verifier.interfaces.TransportLayer;
-import com.intel.bkp.verifier.transport.tcp.TcpClient;
-import com.intel.bkp.verifier.transport.tcp.TcpConfig;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import com.intel.bkp.verifier.exceptions.SigmaException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+public class SigmaTeardownResponseBuilderTest {
 
-@Slf4j
-public class HpsTransportImpl implements TransportLayer {
+    private SigmaTeardownResponseBuilder sut;
 
-    @Setter
-    private TcpClient client = new TcpClient();
-
-    @Override
-    public void initialize(String connectionConfig) {
-        TcpConfig tcpConfig = new TcpConfig(connectionConfig);
-
-        client.initialize(tcpConfig);
+    @BeforeEach
+    void setUp() {
+        sut = new SigmaTeardownResponseBuilder();
     }
 
-    @Override
-    public byte[] sendCommand(byte[] command) {
-        log.debug("Sending command: {}", toHex(command));
-        byte[] result = client.sendPacket(command);
-        log.debug("Command result: {}", toHex(result));
-        return result;
+    @Test
+    public void build_ReturnValidObject() {
+        // when
+        final SigmaTeardownResponse msg = sut.build();
+
+        // then
+        Assertions.assertArrayEquals(new byte[0], msg.array());
     }
 
-    @Override
-    public void disconnect() {
-        client.disconnect();
+    @Test
+    public void parse_WithNoData() {
+        // given
+        byte[] message = new byte[0];
+
+        // when-then
+        Assertions.assertDoesNotThrow(() -> sut.parse(message));
+    }
+
+    @Test
+    public void parse_WithData_Throws() {
+        // given
+        byte[] message = new byte[5];
+
+        // when-then
+        Assertions.assertThrows(SigmaException.class, () -> sut.parse(message));
     }
 }

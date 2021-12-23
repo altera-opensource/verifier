@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class TransportLayerException extends RuntimeException {
+public class TransportLayerException extends VerifierRuntimeException {
     public TransportLayerException(String msg, Throwable e) {
         super(msg, e);
     }

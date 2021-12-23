@@ -81,7 +81,7 @@ class DiceAttestationRevocationServiceTest {
     private DistributionPointConnector connector;
 
     @Mock
-    private DiceCertificateVerifier diceCertificateVerifier;
+    private DiceAliasChainVerifier diceAliasChainVerifier;
 
     @Mock
     private X509CertificateParser certificateParser;
@@ -126,7 +126,7 @@ class DiceAttestationRevocationServiceTest {
         sut = new DiceAttestationRevocationService(appContext);
 
         // then
-        final var diceCertVerifier = sut.getDiceCertificateVerifier();
+        final var diceCertVerifier = sut.getDiceAliasChainVerifier();
         Assertions.assertEquals(trustedRootHash, diceCertVerifier.getTrustedRootHash());
 
         final var crlProvider = diceCertVerifier.getCrlVerifier().getCrlProvider();

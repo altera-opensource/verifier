@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class X509ParsingException extends RuntimeException {
+public class X509ParsingException extends VerifierRuntimeException {
 
     public X509ParsingException(String message, Throwable e) {
         super(message, e);

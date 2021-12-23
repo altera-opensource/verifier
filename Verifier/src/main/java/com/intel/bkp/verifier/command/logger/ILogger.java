@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command.logger;
 
-import com.intel.bkp.ext.utils.HexConverter;
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 public interface ILogger {
 
@@ -42,6 +42,6 @@ public interface ILogger {
     }
 
     default String hex() {
-        return HexConverter.toHex(array());
+        return toHex(array());
     }
 }

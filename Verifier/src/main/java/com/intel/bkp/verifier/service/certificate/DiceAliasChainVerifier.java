@@ -31,39 +31,27 @@
  *
  */
 
-package com.intel.bkp.verifier.transport.hps;
+package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.verifier.interfaces.TransportLayer;
-import com.intel.bkp.verifier.transport.tcp.TcpClient;
-import com.intel.bkp.verifier.transport.tcp.TcpConfig;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import com.intel.bkp.verifier.exceptions.SigmaException;
+import com.intel.bkp.verifier.model.TrustedRootHash;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_INIT;
+import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
 
-@Slf4j
-public class HpsTransportImpl implements TransportLayer {
+public class DiceAliasChainVerifier extends DiceChainVerifierBase {
 
-    @Setter
-    private TcpClient client = new TcpClient();
-
-    @Override
-    public void initialize(String connectionConfig) {
-        TcpConfig tcpConfig = new TcpConfig(connectionConfig);
-
-        client.initialize(tcpConfig);
+    public DiceAliasChainVerifier(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
+        super(crlProvider, trustedRootHash);
     }
 
     @Override
-    public byte[] sendCommand(byte[] command) {
-        log.debug("Sending command: {}", toHex(command));
-        byte[] result = client.sendPacket(command);
-        log.debug("Command result: {}", toHex(result));
-        return result;
+    protected String[] getExpectedLeafCertKeyPurposes() {
+        return new String[]{KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC};
     }
 
     @Override
-    public void disconnect() {
-        client.disconnect();
+    protected void handleVerificationFailure(String failureDetails) {
+        throw new SigmaException(failureDetails);
     }
 }

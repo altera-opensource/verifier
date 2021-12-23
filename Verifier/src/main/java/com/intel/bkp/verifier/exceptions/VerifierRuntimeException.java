@@ -33,13 +33,12 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class CertificateChainSigmaException extends SigmaException {
-
-    public CertificateChainSigmaException(String message, Throwable e) {
-        super(message, e);
+public class VerifierRuntimeException extends RuntimeException {
+    public VerifierRuntimeException(String message) {
+        super(message);
     }
 
-    public CertificateChainSigmaException(String message) {
-        super(message);
+    public VerifierRuntimeException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }

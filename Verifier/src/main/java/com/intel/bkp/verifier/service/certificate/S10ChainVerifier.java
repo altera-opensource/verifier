@@ -34,8 +34,6 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.ext.core.crl.CrlSerialNumberBuilder;
-import com.intel.bkp.ext.utils.HexConverter;
-import com.intel.bkp.verifier.exceptions.CertificateChainSigmaException;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.x509.X509CertificateChainVerifier;
@@ -43,17 +41,19 @@ import com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_CODE_SIGNING;
 
 @Slf4j
 @Getter(AccessLevel.PACKAGE)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class S10CertificateVerifier {
+public class S10ChainVerifier {
 
     private final X509CertificateChainVerifier certificateChainVerifier;
     private final X509CertificateExtendedKeyUsageVerifier extendedKeyUsageVerifier;
@@ -61,41 +61,40 @@ public class S10CertificateVerifier {
     private final RootHashVerifier rootHashVerifier;
     private final TrustedRootHash trustedRootHash;
 
+    @Setter
     private byte[] deviceId;
 
-    public S10CertificateVerifier(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
+    public S10ChainVerifier(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
         this(new X509CertificateChainVerifier(), new X509CertificateExtendedKeyUsageVerifier(),
             new CrlVerifier(crlProvider), new RootHashVerifier(), trustedRootHash);
     }
 
-    public S10CertificateVerifier withDevice(byte[] deviceId) {
-        this.deviceId = deviceId;
-        return this;
-    }
-
-    public void verify(LinkedList<X509Certificate> certificates) {
+    public void verifyChain(LinkedList<X509Certificate> certificates) {
         final var attCert = certificates.getFirst();
         final var rootCert = certificates.getLast();
 
         if (attCert.getSerialNumber().compareTo(CrlSerialNumberBuilder.convertToBigInteger(deviceId)) != 0) {
-            throw new SigmaException("Certificate Serial Number does not match device id.");
+            handleVerificationFailure("Certificate Serial Number does not match device id.");
         }
 
         if (!certificateChainVerifier.certificates(certificates).verify()) {
-            throw new CertificateChainSigmaException("Parent signature verification in X509 attestation chain failed.");
+            handleVerificationFailure("Parent signature verification in X509 attestation chain failed.");
         }
 
         if (!extendedKeyUsageVerifier.certificate(attCert).verify(KEY_PURPOSE_CODE_SIGNING)) {
-            throw new SigmaException("Attestation certificate is invalid.");
+            handleVerificationFailure("Attestation certificate is invalid.");
         }
 
         if (!rootHashVerifier.verifyRootHash(rootCert, trustedRootHash.getS10())) {
-            throw new SigmaException("Root hash in X509 attestation chain is different from trusted root hash.");
+            handleVerificationFailure("Root hash in X509 attestation chain is different from trusted root hash.");
         }
 
         if (!crlVerifier.certificates(certificates).verify()) {
-            throw new SigmaException(String.format("Device with device id %s is revoked.",
-                HexConverter.toHex(deviceId)));
+            handleVerificationFailure(String.format("Device with device id %s is revoked.", toHex(deviceId)));
         }
+    }
+
+    protected void handleVerificationFailure(String failureDetails) {
+        throw new SigmaException(failureDetails);
     }
 }

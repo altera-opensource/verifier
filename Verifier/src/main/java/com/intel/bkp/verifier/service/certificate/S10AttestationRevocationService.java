@@ -53,7 +53,7 @@ import java.util.LinkedList;
 public class S10AttestationRevocationService {
 
     private final X509CertificateParser certificateParser;
-    private final S10CertificateVerifier s10CertificateVerifier;
+    private final S10ChainVerifier s10ChainVerifier;
     private final DistributionPointConnector connector;
     private final DistributionPointAddressProvider addressProvider;
 
@@ -69,7 +69,7 @@ public class S10AttestationRevocationService {
 
     public S10AttestationRevocationService(DistributionPoint dp) {
         this(new X509CertificateParser(),
-            new S10CertificateVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash()),
+            new S10ChainVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash()),
             new DistributionPointConnector(dp.getProxy()),
             new DistributionPointAddressProvider(dp.getPathCer()));
     }
@@ -78,7 +78,8 @@ public class S10AttestationRevocationService {
         certificates.clear();
         certificates.addAll(fetchChain(deviceId, pufTypeHex));
 
-        s10CertificateVerifier.withDevice(deviceId).verify(certificates);
+        s10ChainVerifier.setDeviceId(deviceId);
+        s10ChainVerifier.verifyChain(certificates);
 
         return getAttestationPublicKey();
     }

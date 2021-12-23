@@ -35,7 +35,6 @@ package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.database.model.DiceRevocationCacheEntity;
@@ -69,6 +68,7 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import static com.intel.bkp.ext.core.manufacturing.model.AttFamily.AGILEX;
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 import static com.intel.bkp.verifier.model.CertificateRequestType.DEVICE_ID_ENROLLMENT;
 import static com.intel.bkp.verifier.model.CertificateRequestType.UDS_EFUSE_ALIAS;
 import static com.intel.bkp.verifier.model.CertificateRequestType.UDS_IID_PUF_ALIAS;
@@ -209,7 +209,7 @@ public class DiceAttestationComponent {
             .getSqLiteHelper()
             .getDiceRevocationCacheEntityService()
             .store(
-                new DiceRevocationCacheEntity(HexConverter.toHex(deviceId), REVOKED)
+                new DiceRevocationCacheEntity(toHex(deviceId), REVOKED)
             );
     }
 

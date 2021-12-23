@@ -34,7 +34,8 @@
 package com.intel.bkp.verifier.command.responses.attestation;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.HexConverter;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 public class UserDesignMeasurementRecord {
 
@@ -45,6 +46,6 @@ public class UserDesignMeasurementRecord {
     }
 
     public String getData() {
-        return HexConverter.toHex(measurementValue);
+        return toHex(measurementValue);
     }
 }

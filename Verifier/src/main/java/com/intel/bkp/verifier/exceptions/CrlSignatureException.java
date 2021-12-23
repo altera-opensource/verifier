@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-public class CrlSignatureException extends RuntimeException {
+public class CrlSignatureException extends VerifierRuntimeException {
 
     public CrlSignatureException(String message) {
         super(message);

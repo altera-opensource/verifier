@@ -33,17 +33,18 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 public class SigmaM2DeviceIdVerifier {
 
     public void verify(byte[] expectedDeviceId, byte[] incomingDeviceId) {
         log.debug("Verifying deviceId.");
-        final String expectedDeviceIdHex = HexConverter.toHex(expectedDeviceId);
-        final String incomingDeviceIdHex = HexConverter.toHex(incomingDeviceId);
+        final String expectedDeviceIdHex = toHex(expectedDeviceId);
+        final String incomingDeviceIdHex = toHex(incomingDeviceId);
         if (!expectedDeviceIdHex.equals(incomingDeviceIdHex)) {
             throw new SigmaException(String.format(
                 "DeviceId in M2 (%s) is different than received from GET_CHIPID command (%s).",

@@ -86,7 +86,8 @@ public class CrlVerifierTestIT {
     static void init() throws Exception {
         aliasCert = X509_PARSER.toX509(getBytesFromFile("UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer"));
         firmwareCert = X509_PARSER.toX509(getBytesFromFile("FIRMWARE_3AB5A0DC4DE7CB08.cer"));
-        deviceIdCert = X509_PARSER.toX509(getBytesFromFile("deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoH.cer"));
+        deviceIdCert = X509_PARSER.toX509(getBytesFromFile("deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A"
+            + ".cer"));
         productFamilyCert = X509_PARSER.toX509(getBytesFromFile("IPCS_agilex.cer"));
         rootCert = X509_PARSER.toX509(getBytesFromFile("DICE_RootCA.cer"));
 

@@ -38,7 +38,6 @@ import com.intel.bkp.ext.core.manufacturing.model.PufType;
 import com.intel.bkp.ext.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.ext.utils.HexConverter;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponse;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
@@ -58,6 +57,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.ByteBuffer;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -139,8 +140,8 @@ public class CreateDeviceAttestationSubKeyComponent {
             .getSqLiteHelper()
             .getS10CacheEntityService()
             .store(
-                new S10CacheEntity(HexConverter.toHex(deviceId), context, counter, pufType.name(),
-                    HexConverter.toHex(getAttestationSubKeyXY(subKeyResponseBuilder)))
+                new S10CacheEntity(toHex(deviceId), context, counter, pufType.name(),
+                    toHex(getAttestationSubKeyXY(subKeyResponseBuilder)))
             );
     }
 }

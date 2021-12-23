@@ -33,11 +33,8 @@
 
 package com.intel.bkp.verifier.command.responses.chip;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.intel.bkp.verifier.exceptions.SigmaException;
 
-@Getter
-@Setter
 public class SigmaTeardownResponseBuilder {
 
     public SigmaTeardownResponse build() {
@@ -45,6 +42,10 @@ public class SigmaTeardownResponseBuilder {
     }
 
     public SigmaTeardownResponseBuilder parse(byte[] message) {
+        if (message.length > 0) {
+            throw new SigmaException(
+                String.format("Message size invalid. Expected: %d, Actual: %d", 0, message.length));
+        }
         return this;
     }
 }

@@ -34,11 +34,12 @@
 package com.intel.bkp.verifier.command.responses.attestation;
 
 import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.HexConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
+
+import static com.intel.bkp.ext.utils.HexConverter.toHex;
 
 class UserDesignMeasurementRecordTest {
 
@@ -54,6 +55,6 @@ class UserDesignMeasurementRecordTest {
         final String result = record.getData();
 
         // then
-        Assertions.assertEquals(HexConverter.toHex(data), result);
+        Assertions.assertEquals(toHex(data), result);
     }
 }
