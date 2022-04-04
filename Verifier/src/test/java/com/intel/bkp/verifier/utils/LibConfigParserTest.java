@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -81,7 +81,7 @@ class LibConfigParserTest {
         // then
         Assertions.assertNotNull(config);
         Assertions.assertEquals(TransportLayerType.HPS, config.getTransportLayerType());
-        Assertions.assertTrue(config.getAttestationCertificateFlow().isOnlyEfuseUds());
+        Assertions.assertFalse(config.getAttestationCertificateFlow().isOnlyEfuseUds());
         Assertions.assertTrue(config.getDatabaseConfiguration().isInternalDatabase());
 
         Assertions.assertEquals("path/to/single-rooted-chain",

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,17 +33,17 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.core.certificate.X509CertificateUtils;
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.core.properties.Proxy;
+import com.intel.bkp.core.properties.TrustedRootHash;
+import com.intel.bkp.fpgacerts.url.DistributionPointAddressProvider;
+import com.intel.bkp.fpgacerts.url.params.S10Params;
+import com.intel.bkp.verifier.dp.DistributionPointChainFetcher;
 import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
 import com.intel.bkp.verifier.interfaces.IProxyCallback;
-import com.intel.bkp.verifier.model.DistributionPoint;
 import com.intel.bkp.verifier.model.LibConfig;
-import com.intel.bkp.verifier.model.Proxy;
-import com.intel.bkp.verifier.model.TrustedRootHash;
-import com.intel.bkp.verifier.model.s10.S10Params;
-import com.intel.bkp.verifier.x509.X509CertificateParser;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,6 +59,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -70,15 +71,8 @@ import static org.mockito.Mockito.when;
 class S10AttestationRevocationServiceTest {
 
     private static final String ATTESTATION_CERT_URL = "ATTESTATION_CERT_URL";
-    private static final String PARENT_CERT_URL = "PARENT_CERT_URL";
-    private static final String ROOT_CERT_URL = "ROOT_CERT_URL";
-    private static final byte[] ATTESTATION_CERT_BYTES = new byte[]{0x01, 0x01, 0x01};
-    private static final byte[] PARENT_CERT_BYTES = new byte[]{0x02, 0x02, 0x02};
-    private static final byte[] ROOT_CERT_BYTES = new byte[]{0x03, 0x03, 0x03};
     private static final byte[] DEVICE_ID = new byte[]{0x01, 0x02, 0x03};
     private static final String PUF_TYPE = PufType.getPufTypeHex(PufType.EFUSE);
-
-    private static MockedStatic<X509CertificateUtils> x509CertificateUtilsMockStatic;
 
     private static MockedStatic<ProxyCallbackFactory> proxyFactoryMockStatic;
 
@@ -95,13 +89,10 @@ class S10AttestationRevocationServiceTest {
     private PublicKey attestationPublicKey;
 
     @Mock
-    private X509CertificateParser certificateParser;
-
-    @Mock
     private S10ChainVerifier s10ChainVerifier;
 
     @Mock
-    private DistributionPointConnector connector;
+    private DistributionPointChainFetcher chainFetcher;
 
     @Mock
     private DistributionPointAddressProvider addressProvider;
@@ -114,13 +105,11 @@ class S10AttestationRevocationServiceTest {
 
     @BeforeAll
     public static void prepareStaticMock() {
-        x509CertificateUtilsMockStatic = mockStatic(X509CertificateUtils.class);
         proxyFactoryMockStatic = mockStatic(ProxyCallbackFactory.class);
     }
 
     @AfterAll
     public static void closeStaticMock() {
-        x509CertificateUtilsMockStatic.close();
         proxyFactoryMockStatic.close();
     }
 
@@ -131,7 +120,8 @@ class S10AttestationRevocationServiceTest {
         final var libConfig = mock(LibConfig.class);
         final var dp = mock(DistributionPoint.class);
         final var certPath = "path";
-        final var trustedRootHash = new TrustedRootHash("s10", "dice");
+        final var s10RootHash = "s10";
+        final var trustedRootHash = new TrustedRootHash(s10RootHash, "");
         final var host = "host";
         final var port = 123;
         final var proxy = new Proxy(host, port);
@@ -149,7 +139,7 @@ class S10AttestationRevocationServiceTest {
 
         // then
         final var s10CertVerifier = sut.getS10ChainVerifier();
-        Assertions.assertEquals(trustedRootHash, s10CertVerifier.getTrustedRootHash());
+        Assertions.assertEquals(s10RootHash, s10CertVerifier.getTrustedRootHash());
 
         final var crlProvider = s10CertVerifier.getCrlVerifier().getCrlProvider();
         Assertions.assertTrue(crlProvider instanceof DistributionPointCrlProvider);
@@ -179,23 +169,12 @@ class S10AttestationRevocationServiceTest {
         Assertions.assertEquals(rootCert, certificates.getLast());
     }
 
+    @SneakyThrows
     private void mockFetchingCertificates(byte[] deviceId, String pufType) {
         final S10Params expectedParams = S10Params.from(deviceId, pufType);
-        when(addressProvider.getAttestationCertFilename(expectedParams)).thenReturn(ATTESTATION_CERT_URL);
-
-        when(connector.getBytes(ATTESTATION_CERT_URL)).thenReturn(ATTESTATION_CERT_BYTES);
-        when(certificateParser.toX509(ATTESTATION_CERT_BYTES)).thenReturn(attestationCert);
-        when(X509CertificateUtils.isSelfSigned(attestationCert)).thenReturn(false);
-        when(certificateParser.getPathToIssuerCertificate(attestationCert)).thenReturn(PARENT_CERT_URL);
-
-        when(connector.getBytes(PARENT_CERT_URL)).thenReturn(PARENT_CERT_BYTES);
-        when(certificateParser.toX509(PARENT_CERT_BYTES)).thenReturn(parentCert);
-        when(X509CertificateUtils.isSelfSigned(parentCert)).thenReturn(false);
-        when(certificateParser.getPathToIssuerCertificate(parentCert)).thenReturn(ROOT_CERT_URL);
-
-        when(connector.getBytes(ROOT_CERT_URL)).thenReturn(ROOT_CERT_BYTES);
-        when(certificateParser.toX509(ROOT_CERT_BYTES)).thenReturn(rootCert);
-        when(X509CertificateUtils.isSelfSigned(rootCert)).thenReturn(true);
+        when(addressProvider.getAttestationCertUrl(expectedParams)).thenReturn(ATTESTATION_CERT_URL);
+        when(chainFetcher.downloadCertificateChain(ATTESTATION_CERT_URL))
+            .thenReturn(List.of(attestationCert, parentCert, rootCert));
     }
 
     private void mockAttestationKey(PublicKey key) {

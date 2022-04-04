@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -51,6 +51,7 @@ public class GetMeasurementResponse implements Response, ILogger {
     private byte[] romVersionNum = new byte[0];
     private byte[] sdmFwBuildId = new byte[0];
     private byte[] sdmFwSecurityVersionNum = new byte[0];
+    private byte deviceFamilyFuseMap = 0;
     private byte[] reserved = new byte[0];
     private byte[] publicEfuseValues = new byte[0];
     private byte[] deviceDhPubKey = new byte[0];
@@ -67,25 +68,26 @@ public class GetMeasurementResponse implements Response, ILogger {
     @Override
     public byte[] array() {
         return ByteBuffer.allocate(
-            reservedHeader.length
-                + magic.length
-                + sdmSessionId.length
-                + deviceUniqueId.length
-                + romVersionNum.length
-                + sdmFwBuildId.length
-                + sdmFwSecurityVersionNum.length
-                + reserved.length
-                + publicEfuseValues.length
-                + deviceDhPubKey.length
-                + verifierDhPubKey.length
-                + cmfDescriptorHash.length
-                + reserved2.length
-                + Byte.BYTES
-                + Byte.BYTES
-                + Short.BYTES
-                + measurementRecord.length
-                + signature.length
-                + mac.length)
+                reservedHeader.length
+                    + magic.length
+                    + sdmSessionId.length
+                    + deviceUniqueId.length
+                    + romVersionNum.length
+                    + sdmFwBuildId.length
+                    + sdmFwSecurityVersionNum.length
+                    + Byte.BYTES
+                    + reserved.length
+                    + publicEfuseValues.length
+                    + deviceDhPubKey.length
+                    + verifierDhPubKey.length
+                    + cmfDescriptorHash.length
+                    + reserved2.length
+                    + Byte.BYTES
+                    + Byte.BYTES
+                    + Short.BYTES
+                    + measurementRecord.length
+                    + signature.length
+                    + mac.length)
             .put(reservedHeader)
             .put(magic)
             .put(sdmSessionId)
@@ -93,6 +95,7 @@ public class GetMeasurementResponse implements Response, ILogger {
             .put(romVersionNum)
             .put(sdmFwBuildId)
             .put(sdmFwSecurityVersionNum)
+            .put(deviceFamilyFuseMap)
             .put(reserved)
             .put(publicEfuseValues)
             .put(deviceDhPubKey)

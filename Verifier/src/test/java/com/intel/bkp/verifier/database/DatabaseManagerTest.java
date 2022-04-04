@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.database;
 
-import com.intel.bkp.verifier.exceptions.DatabaseException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +53,7 @@ class DatabaseManagerTest {
     private DatabaseManager sut;
 
     @Test
-    void getConnection_Success() throws DatabaseException {
+    void getConnection_Success() {
         // given
         doReturn("jdbc:sqlite::memory:").when(sut).getJdbcUrl();
 

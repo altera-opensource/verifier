@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,13 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.ByteSwap;
-import com.intel.bkp.ext.utils.ByteSwapOrder;
+import com.intel.bkp.utils.ByteBufferSafe;
+import com.intel.bkp.utils.ByteSwap;
+import com.intel.bkp.utils.ByteSwapOrder;
 
 import java.nio.ByteBuffer;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
 public class DeviceStateMeasurementRecord {
 

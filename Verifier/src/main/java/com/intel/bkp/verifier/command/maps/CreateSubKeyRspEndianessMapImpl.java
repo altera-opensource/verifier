@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,10 +34,10 @@
 package com.intel.bkp.verifier.command.maps;
 
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianess.EndianessActor;
 import com.intel.bkp.verifier.endianess.EndianessStructureFields;
 
-import static com.intel.bkp.ext.utils.ByteSwapOrder.CONVERT;
+import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 public final class CreateSubKeyRspEndianessMapImpl extends BaseEndianessMapImpl {
 
@@ -47,12 +47,12 @@ public final class CreateSubKeyRspEndianessMapImpl extends BaseEndianessMapImpl 
 
     @Override
     void populateFirmwareMap() {
-        map.put(EndianessStructureFields.SUBKEY_MAGIC, CONVERT);
-        map.put(EndianessStructureFields.SUBKEY_SDM_SESSION_ID, CONVERT);
-        map.put(EndianessStructureFields.SUBKEY_ROM_VERSION_NUM, CONVERT);
-        map.put(EndianessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
-        map.put(EndianessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES, CONVERT);
-        map.put(EndianessStructureFields.SUBKEY_COUNTER, CONVERT);
+        put(EndianessStructureFields.SUBKEY_MAGIC, CONVERT);
+        put(EndianessStructureFields.SUBKEY_SDM_SESSION_ID, CONVERT);
+        put(EndianessStructureFields.SUBKEY_ROM_VERSION_NUM, CONVERT);
+        put(EndianessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
+        put(EndianessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES, CONVERT);
+        put(EndianessStructureFields.SUBKEY_COUNTER, CONVERT);
     }
 }
 

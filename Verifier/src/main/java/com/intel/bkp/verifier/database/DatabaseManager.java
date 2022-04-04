@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,7 +35,6 @@ package com.intel.bkp.verifier.database;
 
 import com.intel.bkp.verifier.exceptions.DatabaseException;
 import com.intel.bkp.verifier.model.DatabaseConfiguration;
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
@@ -45,20 +44,33 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 @Slf4j
-@NoArgsConstructor
 public class DatabaseManager {
 
     private static final String DATABASE_NAME = "verifier_core.sqlite";
 
-    private static Connection connection;
+    private static DatabaseManager INSTANCE;
 
-    private DatabaseConfiguration dbConfig = new DatabaseConfiguration();
+    private final DatabaseConfiguration dbConfig;
 
-    public DatabaseManager(DatabaseConfiguration dbConfig) {
+    private Connection connection;
+
+    private DatabaseManager(DatabaseConfiguration dbConfig) {
         this.dbConfig = dbConfig;
     }
 
-    public Connection getConnection() throws DatabaseException {
+    private DatabaseManager() {
+        this.dbConfig = null;
+    }
+
+    public static DatabaseManager instance(DatabaseConfiguration dbConfig) {
+        if (INSTANCE == null) {
+            log.debug("Creating instance of DatabaseManager.");
+            INSTANCE = new DatabaseManager(dbConfig);
+        }
+        return INSTANCE;
+    }
+
+    public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
                 connection = DriverManager.getConnection(getJdbcUrl());
@@ -70,9 +82,9 @@ public class DatabaseManager {
     }
 
     @SneakyThrows
-    public String getJdbcUrl() {
+    String getJdbcUrl() {
         final String url;
-        if (dbConfig.isInternalDatabase()) {
+        if (dbConfig != null && dbConfig.isInternalDatabase()) {
             url = ":resource:" + DATABASE_NAME;
         } else {
             File jarDirectory = new File(".");

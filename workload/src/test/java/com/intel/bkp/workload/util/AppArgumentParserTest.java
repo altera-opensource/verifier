@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,7 @@
 
 package com.intel.bkp.workload.util;
 
+import com.intel.bkp.workload.model.CommandType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -45,28 +46,35 @@ class AppArgumentParserTest {
         args[0] = "-i10";
         args[1] = "-cCREATE";
 
+        final var expected = new AppArgument("10", CommandType.CREATE,
+            null, null, null, null);
+
         // when
         final AppArgument result = AppArgumentParser.parseArguments(args);
 
         // then
-        Assertions.assertNotNull(result);
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
     void parseArgumentsAll_Success() {
         // given
+        String pufType = "EFUSE";
         String[] args = new String[6];
         args[0] = "-i10";
         args[1] = "-cCREATE";
         args[2] = "--context=00010203";
-        args[3] = "--puf-type=1";
+        args[3] = "--puf-type=" + pufType;
         args[4] = "--ref-measurement=file";
         args[5] = "--log-level=INFO";
+
+        final var expected = new AppArgument("10", CommandType.CREATE,
+            "00010203", pufType, "file", "INFO");
 
         // when
         final AppArgument result = AppArgumentParser.parseArguments(args);
 
         // then
-        Assertions.assertNotNull(result);
+        Assertions.assertEquals(expected, result);
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,25 +33,16 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.ext.crypto.CryptoUtils;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
-import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-
-import static com.intel.bkp.ext.crypto.constants.CryptoConstants.ECDSA_KEY;
-import static com.intel.bkp.ext.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
-import static com.intel.bkp.ext.utils.HexConverter.fromHex;
 
 @Slf4j
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -61,12 +52,6 @@ public class GetMeasurementVerifier {
     private GetMeasurementPakSubKeySignatureVerifier
         pakSignatureVerifier = new GetMeasurementPakSubKeySignatureVerifier();
     private SigmaM2VerifierDhPubKeyVerifier dhPubKeyVerifier = new SigmaM2VerifierDhPubKeyVerifier();
-
-    public void verify(GetMeasurementResponse response, EcdhKeyPair serviceDhKeyPair,
-        S10CacheEntity entity) {
-        final PublicKey aliasPubKey = getPublicKey(entity);
-        verify(aliasPubKey, response, serviceDhKeyPair);
-    }
 
     public void verify(PublicKey aliasPubKey, GetMeasurementResponse response, EcdhKeyPair serviceDhKeyPair) {
         verifySignature(response, aliasPubKey);
@@ -85,15 +70,4 @@ public class GetMeasurementVerifier {
     private void verifyVerifierDhPubKey(GetMeasurementResponse response, EcdhKeyPair serviceDhKeyPair) {
         dhPubKeyVerifier.verify(serviceDhKeyPair.getPublicKey(), response.getVerifierDhPubKey());
     }
-
-    private PublicKey getPublicKey(S10CacheEntity entity) {
-        try {
-            final String pubKeyXY = entity.getAlias();
-            return CryptoUtils.toEcPublicBC(fromHex(pubKeyXY), ECDSA_KEY, EC_CURVE_SPEC_384);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException
-            | EcdhKeyPairException e) {
-            throw new SigmaException("Failed to recover PublicKey from alias.", e);
-        }
-    }
-
 }

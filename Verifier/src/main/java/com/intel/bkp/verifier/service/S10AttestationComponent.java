@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,48 +33,36 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseToTcbInfoMapper;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.CacheEntityDoesNotExistException;
-import com.intel.bkp.verifier.exceptions.InternalLibraryException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.model.dice.TcbInfoAggregator;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
+import com.intel.bkp.verifier.service.measurements.DeviceMeasurementsProvider;
+import com.intel.bkp.verifier.service.measurements.DeviceMeasurementsRequest;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
-import com.intel.bkp.verifier.service.sender.GetMeasurementMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
-import com.intel.bkp.verifier.sigma.GetMeasurementVerifier;
-import com.intel.bkp.verifier.sigma.SigmaM2DeviceIdVerifier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class S10AttestationComponent {
 
-    private final GetMeasurementResponseToTcbInfoMapper measurementMapper;
-    private final GetMeasurementMessageSender getMeasurementMessageSender;
-    private final TeardownMessageSender teardownMessageSender;
-    private final GetMeasurementVerifier getMeasurementVerifier;
     private final EvidenceVerifier evidenceVerifier;
     private final S10AttestationRevocationService s10AttestationRevocationService;
-    private final SigmaM2DeviceIdVerifier deviceIdVerifier;
     private final TcbInfoAggregator tcbInfoAggregator;
+    private final DeviceMeasurementsProvider deviceMeasurementsProvider;
 
     public S10AttestationComponent() {
-        this(new GetMeasurementResponseToTcbInfoMapper(), new GetMeasurementMessageSender(),
-            new TeardownMessageSender(), new GetMeasurementVerifier(), new EvidenceVerifier(),
-            new S10AttestationRevocationService(), new SigmaM2DeviceIdVerifier(), new TcbInfoAggregator());
+        this(new EvidenceVerifier(), new S10AttestationRevocationService(), new TcbInfoAggregator(),
+            new DeviceMeasurementsProvider());
     }
 
     public VerifierExchangeResponse perform(String refMeasurement, byte[] deviceId) {
@@ -82,25 +70,18 @@ public class S10AttestationComponent {
     }
 
     VerifierExchangeResponse perform(AppContext appContext, String refMeasurement, byte[] deviceId) {
-
-        final TransportLayer transportLayer = appContext.getTransportLayer();
-        final CommandLayer commandLayer = appContext.getCommandLayer();
-
         final S10CacheEntity entity = readEntityFromDatabase(appContext, deviceId);
 
         s10AttestationRevocationService.checkAndRetrieve(deviceId, PufType.getPufTypeHex(entity.getPufType()));
 
-        final EcdhKeyPair serviceDhKeyPair = generateEcdhKeyPair();
-        final GetMeasurementResponse response =
-            getMeasurementMessageSender.send(transportLayer, commandLayer, serviceDhKeyPair, entity);
-        getMeasurementVerifier.verify(response, serviceDhKeyPair, entity);
-
-        deviceIdVerifier.verify(deviceId, response.getDeviceUniqueId());
-        teardownMessageSender.send(transportLayer, commandLayer, response.getSdmSessionId());
-
-        tcbInfoAggregator.add(measurementMapper.map(response));
+        tcbInfoAggregator.add(getMeasurementsFromDevice(entity, deviceId));
 
         return evidenceVerifier.verify(tcbInfoAggregator, refMeasurement);
+    }
+
+    private List<TcbInfo> getMeasurementsFromDevice(S10CacheEntity entity, byte[] deviceId) {
+        final var measurementsRequest = DeviceMeasurementsRequest.forS10(deviceId, entity);
+        return deviceMeasurementsProvider.getMeasurementsFromDevice(measurementsRequest);
     }
 
     private S10CacheEntity readEntityFromDatabase(AppContext appContext, byte[] deviceId) {
@@ -110,13 +91,5 @@ public class S10AttestationComponent {
             .read(deviceId);
 
         return entity.orElseThrow(CacheEntityDoesNotExistException::new);
-    }
-
-    private EcdhKeyPair generateEcdhKeyPair() {
-        try {
-            return EcdhKeyPair.generate();
-        } catch (EcdhKeyPairException e) {
-            throw new InternalLibraryException("Failed to generate ECDH keypair.", e);
-        }
     }
 }

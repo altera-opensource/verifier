@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,21 +35,24 @@ package com.intel.bkp.workload.util;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoggerLevelUtil {
 
-    public void setLogLevel(String logLevel) {
+    public static void setLogLevel(String logLevel) {
         final Level level = Optional.ofNullable(logLevel)
             .map(Level::valueOf)
             .orElse(Level.INFO);
-        Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(level);
 
-        log.info("[WORKLOAD] LogLevel set to {}.", level.toString());
+        log.info("[WORKLOAD] LogLevel set to {}.", level);
     }
 }

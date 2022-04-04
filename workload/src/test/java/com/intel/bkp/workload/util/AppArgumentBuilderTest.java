@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,6 @@
 
 package com.intel.bkp.workload.util;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
 import com.intel.bkp.workload.model.CommandType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,14 +45,14 @@ class AppArgumentBuilderTest {
     public void builder_Success() {
         // given
         CommandType command = CommandType.CREATE;
-        PufType pufType = PufType.EFUSE;
+        String pufType = "EFUSE";
 
         // when
         final AppArgument result = AppArgumentBuilder.instance()
             .transportId(transportId)
             .command(command.name())
             .context("999")
-            .pufType(String.valueOf(pufType.ordinal()))
+            .pufType(pufType)
             .refMeasurement("myTestMeasure")
             .logLevel("DEBUG")
             .build();
@@ -66,15 +65,6 @@ class AppArgumentBuilderTest {
 
         Assertions.assertEquals(command, result.getCommand());
         Assertions.assertEquals(pufType, result.getPufType());
-    }
-
-    @Test
-    public void builder_WithInvalidPufType_ThrowsException() {
-        // when
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-            AppArgumentBuilder.instance()
-                .pufType("15")
-                .build());
     }
 
     @Test

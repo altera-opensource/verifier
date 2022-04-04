@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,14 +33,14 @@
 
 package com.intel.bkp.verifier.service.sender;
 
-import com.intel.bkp.ext.utils.ByteSwap;
-import com.intel.bkp.ext.utils.ByteSwapOrder;
+import com.intel.bkp.core.command.model.CertificateRequestType;
+import com.intel.bkp.utils.ByteSwap;
+import com.intel.bkp.utils.ByteSwapOrder;
 import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessage;
 import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessageBuilder;
 import com.intel.bkp.verifier.command.responses.chip.GetCertificateResponseBuilder;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
-import com.intel.bkp.verifier.model.CertificateRequestType;
 import com.intel.bkp.verifier.model.CommandIdentifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.intel.bkp.verifier.model.CertificateRequestType.FIRMWARE;
+import static com.intel.bkp.core.command.model.CertificateRequestType.FIRMWARE;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

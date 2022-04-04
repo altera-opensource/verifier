@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,8 +35,21 @@ package com.intel.bkp.verifier;
 
 import java.io.FileInputStream;
 import java.net.URL;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+
+import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509Certificate;
+import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.toX509Crl;
 
 public class Utils {
+
+    public static X509Certificate readCertificate(String folder, String filename) throws Exception {
+        return toX509Certificate(readFromResources(folder, filename));
+    }
+
+    public static X509CRL readCrl(String folder, String filename) throws Exception {
+        return toX509Crl(readFromResources(folder, filename));
+    }
 
     public static byte[] readFromResources(String pathToFolderInResources, String filename) throws Exception {
         URL fileUrl = Thread.currentThread().getContextClassLoader()

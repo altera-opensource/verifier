@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,10 +33,10 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.core.psgcertificate.PsgSignatureBuilder;
-import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.ext.utils.ByteBufferSafe;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.psgcertificate.PsgSignatureBuilder;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.command.maps.GetMeasurementRspEndianessMapImpl;
 import com.intel.bkp.verifier.command.responses.BaseResponseBuilder;
 import com.intel.bkp.verifier.endianess.EndianessStructureFields;
@@ -47,16 +47,21 @@ import lombok.Setter;
 
 import java.nio.ByteBuffer;
 
+import static com.intel.bkp.verifier.command.responses.attestation.DeviceFamilyFuseMap.S10;
+
 @Getter
 @Setter
 public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasurementResponseBuilder> {
 
     static final int SDM_FW_BUILD_ID_LEN = 28;
-    static final int RESERVED_LEN = 4;
-    static final int PUB_EFUSE_VALUES_LEN = 256;
+    static final int DEVICE_FAMILY_FUSE_MAP_LEN = Byte.BYTES;
+    static final int RESERVED_LEN = 3;
     static final int DH_PUB_KEY_LEN = 96;
     static final int CMF_DESCRIPTOR_HASH_LEN = 48;
     static final int RESERVED2_LEN = 12;
+    static final int NO_OF_MEASUREMENT_BLOCK_LEN = Byte.BYTES;
+    static final int RESERVED3_LEN = Byte.BYTES;
+    static final int MEASUREMENT_RECORD_SIZE_LEN = Short.BYTES;
     static final int SHA_384_MAC_LEN = 48;
 
     private byte[] reservedHeader = new byte[Integer.BYTES];
@@ -66,8 +71,9 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
     private byte[] romVersionNum = new byte[Integer.BYTES];
     private byte[] sdmFwBuildId = new byte[SDM_FW_BUILD_ID_LEN];
     private byte[] sdmFwSecurityVersionNum = new byte[Integer.BYTES];
+    private byte deviceFamilyFuseMap = S10.getByteFromOrdinal();
     private byte[] reserved = new byte[RESERVED_LEN];
-    private byte[] publicEfuseValues = new byte[PUB_EFUSE_VALUES_LEN];
+    private byte[] publicEfuseValues = new byte[S10.getEfuseValuesFieldLen()];
     private byte[] deviceDhPubKey = new byte[DH_PUB_KEY_LEN];
     private byte[] verifierDhPubKey = new byte[DH_PUB_KEY_LEN];
     private byte[] cmfDescriptorHash = new byte[CMF_DESCRIPTOR_HASH_LEN];
@@ -105,6 +111,7 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
         response.setSdmFwBuildId(convert(sdmFwBuildId, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID));
         response.setSdmFwSecurityVersionNum(convert(sdmFwSecurityVersionNum,
             EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM));
+        response.setDeviceFamilyFuseMap(deviceFamilyFuseMap);
         response.setReserved(reserved);
         response.setPublicEfuseValues(
             convert(publicEfuseValues, EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES));
@@ -133,7 +140,12 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
             .get(deviceUniqueId)
             .get(romVersionNum)
             .get(sdmFwBuildId)
-            .get(sdmFwSecurityVersionNum)
+            .get(sdmFwSecurityVersionNum);
+
+        deviceFamilyFuseMap = buffer.getByte();
+        publicEfuseValues = new DeviceFamilyFuseMapFactory(deviceFamilyFuseMap).get();
+
+        buffer
             .get(reserved)
             .get(publicEfuseValues)
             .get(deviceDhPubKey)
@@ -173,23 +185,23 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
     }
 
     public byte[] getDataForSignature() {
-        int capacity =
-            magic.length
-                + sdmSessionId.length
-                + deviceUniqueId.length
-                + romVersionNum.length
-                + sdmFwBuildId.length
-                + sdmFwSecurityVersionNum.length
-                + reserved.length
-                + publicEfuseValues.length
-                + deviceDhPubKey.length
-                + verifierDhPubKey.length
-                + cmfDescriptorHash.length
-                + reserved2.length
-                + Byte.BYTES
-                + Byte.BYTES
-                + Short.BYTES
-                + measurementRecord.length;
+        int capacity = magic.length
+            + sdmSessionId.length
+            + deviceUniqueId.length
+            + romVersionNum.length
+            + sdmFwBuildId.length
+            + sdmFwSecurityVersionNum.length
+            + DEVICE_FAMILY_FUSE_MAP_LEN
+            + reserved.length
+            + publicEfuseValues.length
+            + deviceDhPubKey.length
+            + verifierDhPubKey.length
+            + cmfDescriptorHash.length
+            + reserved2.length
+            + NO_OF_MEASUREMENT_BLOCK_LEN
+            + RESERVED3_LEN
+            + MEASUREMENT_RECORD_SIZE_LEN
+            + measurementRecord.length;
 
         return ByteBuffer.allocate(capacity)
             .put(convert(magic, EndianessStructureFields.GET_MEASUREMENT_MAGIC))
@@ -198,6 +210,7 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
             .put(convert(romVersionNum, EndianessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM))
             .put(convert(sdmFwBuildId, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID))
             .put(convert(sdmFwSecurityVersionNum, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM))
+            .put(deviceFamilyFuseMap)
             .put(reserved)
             .put(convert(publicEfuseValues, EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES))
             .put(convert(deviceDhPubKey, EndianessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY))

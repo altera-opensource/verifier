@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,8 +33,8 @@
 
 package com.intel.bkp.verifier.dp;
 
+import com.intel.bkp.core.properties.Proxy;
 import com.intel.bkp.verifier.exceptions.ConnectionException;
-import com.intel.bkp.verifier.model.Proxy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -70,8 +70,11 @@ public class DistributionPointConnector {
             if (HttpURLConnection.HTTP_OK == response.statusCode()) {
                 responseBody = Optional.of(response.body());
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.error("Failed to get http response.", e);
+        } catch (InterruptedException e) {
+            log.error("Failed to get http response.", e);
+            Thread.currentThread().interrupt();
         }
         return responseBody;
     }
@@ -84,7 +87,10 @@ public class DistributionPointConnector {
             }
             throw new ConnectionException("Failed to make request to distribution point. Received wrong status code:"
                 + response.statusCode());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            throw new ConnectionException("Failed to make request to distribution point.", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new ConnectionException("Failed to make request to distribution point.", e);
         }
     }

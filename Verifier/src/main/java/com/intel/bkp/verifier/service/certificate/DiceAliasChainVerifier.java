@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,21 +33,22 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
+import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
+import com.intel.bkp.fpgacerts.verification.DiceChainVerifierBase;
 import com.intel.bkp.verifier.exceptions.SigmaException;
-import com.intel.bkp.verifier.model.TrustedRootHash;
 
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_INIT;
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
+import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_INIT;
+import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
 
 public class DiceAliasChainVerifier extends DiceChainVerifierBase {
 
-    public DiceAliasChainVerifier(ICrlProvider crlProvider, TrustedRootHash trustedRootHash) {
+    public DiceAliasChainVerifier(ICrlProvider crlProvider, String trustedRootHash) {
         super(crlProvider, trustedRootHash);
     }
 
     @Override
     protected String[] getExpectedLeafCertKeyPurposes() {
-        return new String[]{KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC};
+        return new String[]{KEY_PURPOSE_ATTEST_INIT.getOid(), KEY_PURPOSE_ATTEST_LOC.getOid()};
     }
 
     @Override

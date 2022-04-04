@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,18 +33,18 @@
 
 package com.intel.bkp.verifier.command.maps;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.utils.ByteSwapOrder;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.utils.ByteSwapOrder;
 import com.intel.bkp.verifier.endianess.EndianessStructureFields;
 import com.intel.bkp.verifier.interfaces.IEndianessMap;
 
 import java.util.EnumMap;
 
-import static com.intel.bkp.ext.utils.ByteSwapOrder.NONE;
+import static com.intel.bkp.utils.ByteSwapOrder.NONE;
 
 public abstract class BaseEndianessMapImpl implements IEndianessMap {
 
-    EnumMap<EndianessStructureFields, ByteSwapOrder> map = new EnumMap<>(EndianessStructureFields.class);
+    private final EnumMap<EndianessStructureFields, ByteSwapOrder> map = new EnumMap<>(EndianessStructureFields.class);
 
     abstract void populateFirmwareMap();
 
@@ -52,6 +52,10 @@ public abstract class BaseEndianessMapImpl implements IEndianessMap {
         if (EndianessActor.FIRMWARE == actor) {
             populateFirmwareMap();
         }
+    }
+
+    public void put(EndianessStructureFields key, ByteSwapOrder value) {
+        map.put(key, value);
     }
 
     @Override

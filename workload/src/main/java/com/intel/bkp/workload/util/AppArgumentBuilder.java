@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,14 +33,11 @@
 
 package com.intel.bkp.workload.util;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
 import com.intel.bkp.workload.model.CommandType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -50,7 +47,7 @@ public class AppArgumentBuilder {
     private String transportId;
     private CommandType command;
     private String context;
-    private PufType pufType;
+    private String pufType;
     private String refMeasurement;
     private String logLevel;
 
@@ -79,7 +76,7 @@ public class AppArgumentBuilder {
     }
 
     public AppArgumentBuilder pufType(String pufType) {
-        this.pufType = Optional.ofNullable(parseInt(pufType)).map(PufType::fromOrdinal).orElse(null);
+        this.pufType = pufType;
         return this;
     }
 
@@ -95,13 +92,5 @@ public class AppArgumentBuilder {
 
     public AppArgument build() {
         return new AppArgument(transportId, command, context, pufType, refMeasurement, logLevel);
-    }
-
-    private Integer parseInt(String number) {
-        try {
-            return number != null ? Integer.parseInt(number) : null;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number provided");
-        }
     }
 }

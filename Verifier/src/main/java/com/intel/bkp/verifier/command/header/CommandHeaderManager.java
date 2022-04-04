@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,9 @@
 
 package com.intel.bkp.verifier.command.header;
 
-import com.intel.bkp.ext.core.utils.Converter;
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.ByteSwap;
+import com.intel.bkp.utils.ByteBufferSafe;
+import com.intel.bkp.utils.ByteConverter;
+import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.verifier.exceptions.CommandFailedException;
 import com.intel.bkp.verifier.exceptions.CommandHeaderValidationException;
 import com.intel.bkp.verifier.exceptions.JtagResponseException;
@@ -48,8 +48,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.intel.bkp.ext.utils.ByteSwapOrder.B2L;
-import static com.intel.bkp.ext.utils.ByteSwapOrder.L2B;
+import static com.intel.bkp.utils.ByteSwapOrder.B2L;
+import static com.intel.bkp.utils.ByteSwapOrder.L2B;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -69,7 +69,7 @@ public class CommandHeaderManager {
         for (HeaderFields headerField : HeaderFields.values()) {
             headerFinalValue |= commandHeader.getFields().get(headerField) << headerField.getOffset();
         }
-        return Converter.toBytes(headerFinalValue);
+        return ByteConverter.toBytes(headerFinalValue);
     }
 
     public static CommandHeader parseFromFw(byte[] commandHeader) throws CommandHeaderValidationException {

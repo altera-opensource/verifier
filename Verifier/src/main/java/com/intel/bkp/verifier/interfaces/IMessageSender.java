@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,7 @@
 
 package com.intel.bkp.verifier.interfaces;
 
-import com.intel.bkp.verifier.exceptions.TransportLayerException;
-
 public interface IMessageSender {
 
-    byte[] send(TransportLayer transportLayer, byte[] message) throws TransportLayerException;
+    byte[] send(TransportLayer transportLayer, byte[] message);
 }

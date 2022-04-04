@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,16 +33,14 @@
 
 package com.intel.bkp.verifier.service.sender;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.verifier.command.logger.SigmaLogger;
 import com.intel.bkp.verifier.command.messages.attestation.GetMeasurementMessage;
 import com.intel.bkp.verifier.command.messages.attestation.GetMeasurementMessageBuilder;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
-import com.intel.bkp.verifier.database.model.S10CacheEntity;
-import com.intel.bkp.verifier.exceptions.TransportLayerException;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.CommandIdentifier;
@@ -66,24 +64,10 @@ public class GetMeasurementMessageSender {
     }
 
     public GetMeasurementResponse send(TransportLayer transportLayer, CommandLayer commandLayer,
-        EcdhKeyPair serviceDhKeyPair) throws TransportLayerException {
-        log.info("Preparing GET_MEASUREMENT ...");
-        final GetMeasurementMessage message = buildGetMeasurementMessage(serviceDhKeyPair, PufType.EFUSE);
-        SigmaLogger.log(message, GET_MEASUREMENT_MESSAGE, this.getClass());
-        return new GetMeasurementResponseBuilder()
-            .withActor(EndianessActor.FIRMWARE)
-            .parse(messageSender.send(transportLayer, commandLayer, message,
-                CommandIdentifier.GET_MEASUREMENT))
-            .withActor(EndianessActor.SERVICE)
-            .build();
-    }
-
-    public GetMeasurementResponse send(TransportLayer transportLayer, CommandLayer commandLayer,
-        EcdhKeyPair serviceDhKeyPair, S10CacheEntity entity) throws TransportLayerException {
+                                       EcdhKeyPair serviceDhKeyPair, PufType pufType, String context, int counter) {
         log.info("Preparing GET_MEASUREMENT ...");
         final GetMeasurementMessage message =
-            buildGetMeasurementMessage(serviceDhKeyPair, PufType.valueOf(entity.getPufType()), entity.getContext(),
-                entity.getCounter());
+            buildGetMeasurementMessage(serviceDhKeyPair, pufType, context, counter);
         SigmaLogger.log(message, GET_MEASUREMENT_MESSAGE, this.getClass());
         return new GetMeasurementResponseBuilder()
             .withActor(EndianessActor.FIRMWARE)
@@ -91,10 +75,6 @@ public class GetMeasurementMessageSender {
                 CommandIdentifier.GET_MEASUREMENT))
             .withActor(EndianessActor.SERVICE)
             .build();
-    }
-
-    private GetMeasurementMessage buildGetMeasurementMessage(EcdhKeyPair serviceDhKeyPair, PufType pufType) {
-        return buildGetMeasurementMessage(serviceDhKeyPair, pufType, "", 0);
     }
 
     private GetMeasurementMessage buildGetMeasurementMessage(EcdhKeyPair serviceDhKeyPair, PufType pufType,

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,16 +33,16 @@
 
 package com.intel.bkp.verifier.utils;
 
-import com.intel.bkp.ext.core.security.SecurityProviderParams;
-import com.intel.bkp.ext.core.security.SecurityProviderParamsSetter;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.core.properties.Proxy;
+import com.intel.bkp.core.properties.TrustedRootHash;
+import com.intel.bkp.core.security.SecurityProviderParams;
+import com.intel.bkp.core.security.SecurityProviderParamsSetter;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.model.AttestationCertificateFlow;
 import com.intel.bkp.verifier.model.DatabaseConfiguration;
-import com.intel.bkp.verifier.model.DistributionPoint;
 import com.intel.bkp.verifier.model.LibConfig;
-import com.intel.bkp.verifier.model.Proxy;
 import com.intel.bkp.verifier.model.TransportLayerType;
-import com.intel.bkp.verifier.model.TrustedRootHash;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
 import com.intel.bkp.verifier.model.VerifierRootQkyChain;
 import lombok.NoArgsConstructor;
@@ -247,18 +247,23 @@ public class LibConfigParser {
         try (InputStream inputStream = Files.newInputStream(configPath)) {
             prop.load(inputStream);
         } catch (IOException exception) {
-            throw new FileNotFoundException("Config file '" + configPath + "' not found.");
+            throw new FileNotFoundException(String.format("Config file '%s' not found.", configPath));
         }
     }
 
     private void loadFromClassPath(String filename, Properties prop) throws FileNotFoundException {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename)) {
             if (inputStream == null) {
-                throw new FileNotFoundException("Config file '" + filename + "' not found in the classpath.");
+                throwConfigFileNotFound(filename);
             }
             prop.load(inputStream);
         } catch (IOException exception) {
-            throw new FileNotFoundException("Config file '" + filename + "' not found in the classpath.");
+            throwConfigFileNotFound(filename);
         }
+    }
+
+    private void throwConfigFileNotFound(String filename) throws FileNotFoundException {
+        throw new FileNotFoundException(
+            String.format("Config file '%s' not found in the classpath.", filename));
     }
 }

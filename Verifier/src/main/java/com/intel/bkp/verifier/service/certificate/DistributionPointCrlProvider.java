@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,17 +33,18 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.crypto.exceptions.X509CrlParsingException;
+import com.intel.bkp.core.properties.Proxy;
+import com.intel.bkp.crypto.exceptions.X509CrlParsingException;
+import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import com.intel.bkp.verifier.exceptions.X509ParsingException;
-import com.intel.bkp.verifier.model.Proxy;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509CRL;
 
-import static com.intel.bkp.ext.crypto.x509.X509CrlParser.toX509Crl;
+import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.toX509Crl;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)

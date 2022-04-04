@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,9 @@
 
 package com.intel.bkp.verifier.command.messages.attestation;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.ext.utils.ByteSwap;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.utils.ByteBufferSafe;
+import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.verifier.command.messages.VerifierDHCertBuilder;
 import com.intel.bkp.verifier.command.messages.VerifierDhEntryManager;
 import com.intel.bkp.verifier.model.RootChainType;
@@ -43,8 +43,8 @@ import lombok.NoArgsConstructor;
 
 import java.nio.ByteBuffer;
 
-import static com.intel.bkp.ext.utils.ByteSwapOrder.B2L;
-import static com.intel.bkp.ext.utils.HexConverter.fromHex;
+import static com.intel.bkp.utils.ByteSwapOrder.B2L;
+import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.verifier.command.Magic.GET_MEASUREMENT;
 
 @NoArgsConstructor

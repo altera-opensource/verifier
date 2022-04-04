@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,9 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
+import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponse;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import org.junit.jupiter.api.Assertions;

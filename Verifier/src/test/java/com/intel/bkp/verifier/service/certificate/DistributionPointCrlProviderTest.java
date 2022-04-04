@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,17 +33,17 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.crypto.exceptions.X509CrlParsingException;
-import com.intel.bkp.ext.crypto.x509.X509CrlParser;
+import com.intel.bkp.crypto.exceptions.X509CrlParsingException;
+import com.intel.bkp.crypto.x509.parsing.X509CrlParser;
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import com.intel.bkp.verifier.exceptions.X509ParsingException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -67,7 +67,6 @@ class DistributionPointCrlProviderTest {
     @Mock
     private DistributionPointConnector connector;
 
-    @InjectMocks
     private DistributionPointCrlProvider sut;
 
     @BeforeAll
@@ -78,6 +77,11 @@ class DistributionPointCrlProviderTest {
     @AfterAll
     public static void closeStaticMock() {
         x509CrlParserMockStatic.close();
+    }
+
+    @BeforeEach
+    void prepareSut() {
+        sut = new DistributionPointCrlProvider(connector);
     }
 
     @Test

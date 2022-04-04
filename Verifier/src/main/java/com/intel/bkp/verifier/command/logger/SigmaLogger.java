@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,14 +33,17 @@
 
 package com.intel.bkp.verifier.command.logger;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SigmaLogger {
 
     public static String log(ILogger message, SigmaLoggerValues dataName, Class callingClass) {
         String msg = getMessage(message.hex(), dataName, callingClass);
-        log.trace(msg);
+        log.debug(msg);
         return msg;
     }
 
