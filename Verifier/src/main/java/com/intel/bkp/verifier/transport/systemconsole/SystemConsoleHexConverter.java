@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,17 +33,20 @@
 
 package com.intel.bkp.verifier.transport.systemconsole;
 
-import com.intel.bkp.ext.utils.ByteSwap;
-import com.intel.bkp.ext.utils.ByteSwapOrder;
-import com.intel.bkp.ext.utils.HexConverter;
+import com.intel.bkp.utils.ByteSwap;
+import com.intel.bkp.utils.ByteSwapOrder;
+import com.intel.bkp.utils.HexConverter;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SystemConsoleHexConverter {
 
     private static final int WORD_SIZE = 4;

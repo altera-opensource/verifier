@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,8 +33,8 @@
 
 package com.intel.bkp.verifier.command.responses;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.utils.ByteSwap;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.verifier.endianess.EndianessStructureFields;
 import com.intel.bkp.verifier.endianess.EndianessStructureType;
 import com.intel.bkp.verifier.interfaces.IEndianessMap;

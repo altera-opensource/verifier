@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,6 @@
 
 package com.intel.bkp.workload.service;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
 import com.intel.bkp.verifier.service.VerifierExchangeImpl;
 import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.workload.exceptions.WorkloadAppException;
@@ -76,14 +75,14 @@ class VerifierServiceTest {
     void callVerifier_WithCreateCommand_Success() {
         // given
         final String context = "0102";
-        final PufType pufType = PufType.EFUSE;
+        final String pufType = "EFUSE";
 
         AppArgument appArgument = AppArgumentBuilder
             .instance()
             .command(CommandType.CREATE.name())
             .context(context)
             .transportId(transportId)
-            .pufType(String.valueOf(pufType.ordinal()))
+            .pufType(pufType)
             .build();
 
         // when
@@ -125,7 +124,7 @@ class VerifierServiceTest {
             .instance()
             .command(CommandType.GET.name())
             .refMeasurement(refMeasurementFile)
-            .transportId(String.valueOf(transportId))
+            .transportId(transportId)
             .build();
 
         // when-then

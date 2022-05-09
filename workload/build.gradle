@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,19 +33,23 @@
 
 plugins {
     id 'io.freefair.lombok'
-    id 'java-library'
+    id 'java'
     id 'idea'
+    id 'com.github.ben-manes.versions'
 }
 
-generateLombokConfig.enabled = false
-generateLombokConfig.outputFile.set(file("${rootDir}/lombok.config"))
-
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 defaultTasks 'bootRun'
 
+apply from: rootProject.file('gradle/common.gradle')
+
+def buildVersion = ext.getBuildVersion()
+
 group = 'com.intel.bkp'
+version = buildVersion
+description = ''
 
 sourceSets {
     sealingTest {
@@ -66,31 +70,43 @@ configurations {
 }
 
 jar {
+    dependsOn configurations.fatjar
     manifest {
-        attributes ('Main-Class': "${main_class_name}")
+        attributes(
+            'Main-Class': "${main_class_name}",
+            'Implementation-Title': 'Sample FPGA Attestation Workload App',
+            'Implementation-Version': buildVersion
+        )
     }
 
-    dependsOn configurations.fatjar
     from {
         configurations.fatjar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy DuplicatesStrategy.INCLUDE
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
+
+task testReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn test
+}
+
 
 test {
     useJUnitPlatform()
 }
-
 task sealingTest(type: Test) {
     useJUnitPlatform()
     setTestClassesDirs(sourceSets.sealingTest.output.getClassesDirs())
     classpath = sourceSets.sealingTest.runtimeClasspath
     outputs.upToDateWhen { false }
 }
-
 check.dependsOn sealingTest
 sealingTest.mustRunAfter test
+
+configurations {
+    providedRuntime
+}
 
 dependencies {
     implementation project(':Verifier')

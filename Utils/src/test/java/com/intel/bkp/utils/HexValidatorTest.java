@@ -1,0 +1,111 @@
+/*
+ * This project is licensed as below.
+ *
+ * **************************************************************************
+ *
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * **************************************************************************
+ *
+ */
+
+package com.intel.bkp.utils;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+class HexValidatorTest {
+
+    private static final String DUMMY_DEVICE_ID = "8E5D38DE0C055ADB";
+    private static final String DUMMY_HEX_4BYTES_LEN = "01020304";
+    private static final String DUMMY_HEX_8BYTES_LEN = "0102030405060708";
+    private static final String DUMMY_HEX_12BYTES_LEN = "0102030405060708090A0B0C";
+    private static final List<Integer> ALLOWED_VALUES = List.of(4, 8);
+
+    @Test
+    void isValid_WithTwoAllowedValues_With4Bytes_True() {
+        // when
+        final boolean result = HexValidator.isValid(DUMMY_HEX_4BYTES_LEN, ALLOWED_VALUES);
+
+        // then
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void isValid_WithTwoAllowedValues_With8Bytes_True() {
+        // when
+        final boolean result = HexValidator.isValid(DUMMY_HEX_8BYTES_LEN, ALLOWED_VALUES);
+
+        // then
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void isValid_WithTwoAllowedValues_With12Bytes_False() {
+        // when
+        final boolean result = HexValidator.isValid(DUMMY_HEX_12BYTES_LEN, ALLOWED_VALUES);
+
+        // then
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void isValid_WithDeviceIdHex_WithLengthLong_True() {
+        // when
+        final boolean result = HexValidator.isValid(DUMMY_DEVICE_ID, Long.BYTES);
+
+        // then
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void isValid_WithDeviceIdHex_WithLengthInteger_False() {
+        // when
+        final boolean result = HexValidator.isValid(DUMMY_DEVICE_ID, Integer.BYTES);
+
+        // then
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void isValid_WithEmptyValue_False() {
+        // when
+        final boolean result = HexValidator.isValid("", Integer.BYTES);
+
+        // then
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void isValid_WithNotHexData_False() {
+        // when
+        final boolean result = HexValidator.isValid("Abc%!@", Integer.BYTES);
+
+        // then
+        Assertions.assertFalse(result);
+    }
+}

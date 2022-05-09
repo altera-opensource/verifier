@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,8 +33,8 @@
 
 package com.intel.bkp.verifier.command.messages;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.core.psgcertificate.PsgBlock0EntryBuilder;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.psgcertificate.PsgBlock0EntryBuilder;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import lombok.AllArgsConstructor;

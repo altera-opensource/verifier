@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,11 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.core.certificate.X509CertificateUtils;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.fpgacerts.url.DistributionPointAddressProvider;
+import com.intel.bkp.verifier.dp.DistributionPointChainFetcher;
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
-import com.intel.bkp.verifier.model.DistributionPoint;
-import com.intel.bkp.verifier.model.dice.DiceEnrollmentParams;
-import com.intel.bkp.verifier.model.dice.DiceParams;
-import com.intel.bkp.verifier.x509.X509CertificateParser;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -47,16 +45,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
-import java.util.Optional;
+
+import static com.intel.bkp.verifier.x509.X509UtilsWrapper.getIssuerCertUrl;
 
 @Slf4j
 @Getter(AccessLevel.PACKAGE)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class DiceAttestationRevocationService {
 
-    private final DistributionPointConnector connector;
+    private final DistributionPointChainFetcher chainFetcher;
     private final DiceAliasChainVerifier diceAliasChainVerifier;
-    private final X509CertificateParser certificateParser;
     private final DistributionPointAddressProvider addressProvider;
 
     private final LinkedList<X509Certificate> certificates = new LinkedList<>();
@@ -71,9 +69,9 @@ public class DiceAttestationRevocationService {
     }
 
     public DiceAttestationRevocationService(DistributionPoint dp) {
-        this(new DistributionPointConnector(dp.getProxy()),
-            new DiceAliasChainVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash()),
-            new X509CertificateParser(),
+        this(new DistributionPointChainFetcher(new DistributionPointConnector(dp.getProxy())),
+            new DiceAliasChainVerifier(
+                new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash().getDice()),
             new DistributionPointAddressProvider(dp.getPathCer()));
     }
 
@@ -90,26 +88,6 @@ public class DiceAttestationRevocationService {
         certificatesIID.add(x509Certificate);
     }
 
-    public Optional<X509Certificate> fmGetDeviceIdCert(DiceParams diceParams) {
-        final String url = addressProvider.getDeviceIdCertFilename(diceParams);
-        return getContent(url);
-    }
-
-    public Optional<X509Certificate> fmGetEnrollmentCert(DiceEnrollmentParams diceEnrollmentParams) {
-        final String url = addressProvider.getEnrollmentCertFilename(diceEnrollmentParams);
-        return getContent(url);
-    }
-
-    public Optional<X509Certificate> fmGetIidUdsCert(DiceParams diceParams) {
-        final String url = addressProvider.getIidUdsCertFilename(diceParams);
-        return getContent(url);
-    }
-
-    public Optional<X509Certificate> getContent(String url) {
-        return connector.tryGetBytes(url)
-            .map(certificateParser::toX509);
-    }
-
     public void verifyChains() {
         preVerifyChain();
         fetchParents();
@@ -117,24 +95,23 @@ public class DiceAttestationRevocationService {
     }
 
     private void preVerifyChain() {
-        if (certificatesIID.size() != 0) {
+        if (!certificatesIID.isEmpty()) {
             log.debug("Comparing AuthorityInformationAccess of Alias chain and IID Alias chain.");
             compareAuthorityInfoAccess();
         }
     }
 
     private void fetchParents() {
-        getParent(certificates.getLast());
-
-        while (!X509CertificateUtils.isSelfSigned(certificates.getLast())) {
-            log.debug("Not self-signed cert, moving on: {}", certificates.getLast().getSubjectDN());
-            getParent(certificates.getLast());
+        final var parents = chainFetcher.downloadCertificateChain(getIssuerCertUrl(certificates.getLast()));
+        certificates.addAll(parents);
+        if (!certificatesIID.isEmpty()) {
+            certificatesIID.addAll(parents);
         }
     }
 
     private void verifyChainsInternal() {
         log.debug("Verifying chain with EFUSE UDS that has {} certificates.", certificates.size());
-        diceAliasChainVerifier.verifyChain(certificates);
+        diceAliasChainVerifier.verifyChainWitchTcbInfoValidation(certificates);
 
         if (!certificatesIID.isEmpty()) {
             log.debug("Verifying chain with IID UDS that has {} certificates.", certificatesIID.size());
@@ -142,31 +119,13 @@ public class DiceAttestationRevocationService {
         }
     }
 
-    private void getParent(X509Certificate child) {
-        final String nextPathToIssuer = certificateParser.getPathToIssuerCertificate(child);
-        final Optional<X509Certificate> nextParentCert = getContent(nextPathToIssuer);
-
-        nextParentCert.ifPresentOrElse(this::addParentToChains,
-            () -> {
-                throw new InternalLibraryException("Parent certificate not found on Distribution Point.");
-            }
-        );
-    }
-
-    private void addParentToChains(X509Certificate x509Certificate) {
-        certificates.add(x509Certificate);
-        if (certificatesIID.size() != 0) {
-            certificatesIID.add(x509Certificate);
-        }
-    }
-
     private void compareAuthorityInfoAccess() {
-        final String pathToIssuer = certificateParser.getPathToIssuerCertificate(certificates.getLast());
-        final String pathToIssuerIid = certificateParser.getPathToIssuerCertificate(certificatesIID.getLast());
+        final String pathToIssuer = getIssuerCertUrl(certificates.getLast());
+        final String pathToIssuerIid = getIssuerCertUrl(certificatesIID.getLast());
 
         if (!pathToIssuer.equals(pathToIssuerIid)) {
             throw new InternalLibraryException(
-                "AuthorityInformationAccess from Alias chain and IID Alias chain do not match.");
+                    "AuthorityInformationAccess from Alias chain and IID Alias chain do not match.");
         }
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,9 @@
 
 package com.intel.bkp.workload.util;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
 import com.intel.bkp.workload.model.CommandType;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,11 +46,13 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@EqualsAndHashCode
 public class AppArgument {
+
     private String transportId;
     private CommandType command;
     private String context;
-    private PufType pufType;
+    private String pufType;
     private String refMeasurement;
     private String logLevel;
 }

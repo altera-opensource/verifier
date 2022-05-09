@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,29 +33,28 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.model.dice.FwIdField;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.model.evidence.MeasurementRecordHeader;
 import com.intel.bkp.verifier.model.evidence.SectionType;
 
+import java.util.EnumMap;
 import java.util.Map;
 
-import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.FWIDS_HASH_ALG;
-import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.VENDOR;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
+import static com.intel.bkp.fpgacerts.model.Oid.MEASUREMENT_TYPES;
 
 public class MeasurementRecordToTcbInfoMapper {
 
-    private static final String TYPE_PREFIX = "2.16.840.1.113741.1.15.4.";
     private static final int LAYER = 2;
 
     public TcbInfo map(MeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
         final SectionType sectionType = header.getSectionType();
 
-        final TcbInfo tcbInfo = new TcbInfo();
-        final Map<TcbInfoField, Object> map = tcbInfo.getTcbInfo();
-        createBaseMap(map, sectionType);
+        final Map<TcbInfoField, Object> map = createBaseMap(sectionType);
 
         if (SectionType.PR == sectionType) {
             map.put(TcbInfoField.INDEX, header.getSectionIndex());
@@ -69,12 +68,18 @@ public class MeasurementRecordToTcbInfoMapper {
             );
         }
 
-        return tcbInfo;
+        return new TcbInfo(map);
     }
 
-    private void createBaseMap(Map<TcbInfoField, Object> map, SectionType sectionType) {
+    private Map<TcbInfoField, Object> createBaseMap(SectionType sectionType) {
+        final var map = new EnumMap<>(TcbInfoField.class);
         map.put(TcbInfoField.VENDOR, VENDOR);
-        map.put(TcbInfoField.TYPE, TYPE_PREFIX + sectionType.getValue());
+        map.put(TcbInfoField.TYPE, getMeasurementOid(sectionType));
         map.put(TcbInfoField.LAYER, LAYER);
+        return map;
+    }
+
+    private String getMeasurementOid(final SectionType sectionType) {
+        return String.format("%s.%d", MEASUREMENT_TYPES.getOid(), sectionType.getValue());
     }
 }

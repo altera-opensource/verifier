@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,12 +33,13 @@
 
 package com.intel.bkp.verifier.model.evidence;
 
-import com.intel.bkp.verifier.model.dice.FwIdField;
-import com.intel.bkp.verifier.model.dice.MaskedVendorInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoConstants;
-import com.intel.bkp.verifier.model.dice.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 
+import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -48,8 +49,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class BaseEvidenceBlockToTcbInfoMapper {
 
     public TcbInfo map(BaseEvidenceBlock block) {
-        final TcbInfo tcbInfo = new TcbInfo();
-        final Map<TcbInfoField, Object> tcbInfoMap = tcbInfo.getTcbInfo();
+        final Map<TcbInfoField, Object> tcbInfoMap = new EnumMap<>(TcbInfoField.class);
 
         if (isNotBlank(block.getVendor())) {
             tcbInfoMap.put(TcbInfoField.VENDOR, block.getVendor());
@@ -71,7 +71,7 @@ public class BaseEvidenceBlockToTcbInfoMapper {
 
         // Assumption is that there is only 1 element in list for SHA384.
         // The assumption may change in future.
-        if (!isNull(block.getFwids()) && block.getFwids().size() > 0) {
+        if (!isNull(block.getFwids()) && !block.getFwids().isEmpty()) {
             final FwIdField field = block.getFwids().get(0);
             field.setHashAlg(field.getHashAlg().toUpperCase(Locale.ROOT));
             field.setDigest(field.getDigest().toUpperCase(Locale.ROOT));
@@ -91,6 +91,6 @@ public class BaseEvidenceBlockToTcbInfoMapper {
             tcbInfoMap.put(TcbInfoField.TYPE, block.getType().toUpperCase(Locale.ROOT));
         }
 
-        return tcbInfo;
+        return new TcbInfo(tcbInfoMap);
     }
 }

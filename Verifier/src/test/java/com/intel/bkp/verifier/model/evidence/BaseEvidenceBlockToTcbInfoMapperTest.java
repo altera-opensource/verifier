@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,15 +33,16 @@
 
 package com.intel.bkp.verifier.model.evidence;
 
-import com.intel.bkp.verifier.model.dice.FwIdField;
-import com.intel.bkp.verifier.model.dice.MaskedVendorInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 class BaseEvidenceBlockToTcbInfoMapperTest {
 
@@ -67,35 +68,37 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
     void map_AllEmpty_OnlyIndexIsSetToZero() {
         // given
         final BaseEvidenceBlock block = prepareEmptyBlock();
+        final var expectedFields = List.of(TcbInfoField.INDEX);
 
         // when
         final TcbInfo result = sut.map(block);
 
         // then
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(1, tcbInfo.size());
-        Assertions.assertEquals(0, tcbInfo.get(TcbInfoField.INDEX));
+        verifyFields(result, expectedFields);
+        Assertions.assertEquals(0, result.get(TcbInfoField.INDEX).get());
     }
 
     @Test
     void map_AllSet() {
         // given
         final BaseEvidenceBlock block = prepareFilledBlock();
+        final var expectedFields = List.of(TcbInfoField.VENDOR, TcbInfoField.MODEL, TcbInfoField.LAYER,
+            TcbInfoField.INDEX, TcbInfoField.FWIDS, TcbInfoField.TYPE, TcbInfoField.VENDOR_INFO);
 
         // when
         final TcbInfo result = sut.map(block);
 
         // then
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(7, tcbInfo.size());
-        Assertions.assertEquals(VENDOR, tcbInfo.get(TcbInfoField.VENDOR));
-        Assertions.assertEquals(MODEL, tcbInfo.get(TcbInfoField.MODEL));
-        Assertions.assertEquals(LAYER_INT, tcbInfo.get(TcbInfoField.LAYER));
-        Assertions.assertEquals(INDEX, tcbInfo.get(TcbInfoField.INDEX));
-        Assertions.assertEquals(FWIDS, tcbInfo.get(TcbInfoField.FWIDS));
-        Assertions.assertEquals(TYPE, tcbInfo.get(TcbInfoField.TYPE));
+        verifyFields(result, expectedFields);
 
-        final MaskedVendorInfo maskedVendorInfo = (MaskedVendorInfo)tcbInfo.get(TcbInfoField.VENDOR_INFO);
+        Assertions.assertEquals(VENDOR, result.get(TcbInfoField.VENDOR).get());
+        Assertions.assertEquals(MODEL, result.get(TcbInfoField.MODEL).get());
+        Assertions.assertEquals(LAYER_INT, result.get(TcbInfoField.LAYER).get());
+        Assertions.assertEquals(INDEX, result.get(TcbInfoField.INDEX).get());
+        Assertions.assertEquals(FWIDS, result.get(TcbInfoField.FWIDS).get());
+        Assertions.assertEquals(TYPE, result.get(TcbInfoField.TYPE).get());
+
+        final MaskedVendorInfo maskedVendorInfo = (MaskedVendorInfo) result.get(TcbInfoField.VENDOR_INFO).get();
         Assertions.assertEquals(VENDOR_INFO, maskedVendorInfo.getVendorInfo());
         Assertions.assertEquals(VENDOR_INFO_MASK, maskedVendorInfo.getVendorInfoMask());
     }
@@ -109,9 +112,8 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
         final TcbInfo result = sut.map(block);
 
         // then
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        final FwIdField fwIds = (FwIdField) tcbInfo.get(TcbInfoField.FWIDS);
-        Assertions.assertEquals(DIGEST, fwIds.getDigest());
+        final Optional<FwIdField> fwIds = result.get(TcbInfoField.FWIDS);
+        Assertions.assertEquals(DIGEST, fwIds.get().getDigest());
     }
 
     @Test
@@ -123,9 +125,8 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
         final TcbInfo result = sut.map(block);
 
         // then
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(VENDOR_MIXED_LETTER_SIZE, tcbInfo.get(TcbInfoField.VENDOR));
-        Assertions.assertEquals(MODEL_MIXED_LETTER_SIZE, tcbInfo.get(TcbInfoField.MODEL));
+        Assertions.assertEquals(VENDOR_MIXED_LETTER_SIZE, result.get(TcbInfoField.VENDOR).get());
+        Assertions.assertEquals(MODEL_MIXED_LETTER_SIZE, result.get(TcbInfoField.MODEL).get());
     }
 
     private BaseEvidenceBlock prepareEmptyBlock() {
@@ -156,5 +157,12 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
         block.setVendor(VENDOR_MIXED_LETTER_SIZE);
         block.setModel(MODEL_MIXED_LETTER_SIZE);
         return block;
+    }
+
+    private void verifyFields(TcbInfo tcbInfo, List<TcbInfoField> expectedFields) {
+        final var unexpectedFields = Arrays.stream(TcbInfoField.values()).filter(f -> !expectedFields.contains(f));
+
+        expectedFields.forEach(field -> Assertions.assertTrue(tcbInfo.get(field).isPresent()));
+        unexpectedFields.forEach(field -> Assertions.assertTrue(tcbInfo.get(field).isEmpty()));
     }
 }

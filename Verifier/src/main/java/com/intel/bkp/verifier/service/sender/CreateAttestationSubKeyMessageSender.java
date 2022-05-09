@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,9 @@
 
 package com.intel.bkp.verifier.service.sender;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.verifier.command.logger.SigmaLogger;
 import com.intel.bkp.verifier.command.messages.subkey.CreateAttestationSubKeyMessage;
 import com.intel.bkp.verifier.command.messages.subkey.CreateAttestationSubKeyMessageBuilder;

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,11 +33,10 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
+import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
-import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,7 +46,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import java.security.PublicKey;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -62,10 +62,10 @@ class GetMeasurementVerifierTest {
     private static EcdhKeyPair serviceDhKeyPair;
 
     @Mock
-    private GetMeasurementResponse response;
+    private PublicKey aliasPubKey;
 
     @Mock
-    private S10CacheEntity entity;
+    private GetMeasurementResponse response;
 
     @Mock
     private GetMeasurementPakSubKeySignatureVerifier pakSignatureVerifier;
@@ -84,11 +84,10 @@ class GetMeasurementVerifierTest {
     @Test
     void verify_IntegrityAndSignatureVerificationCalled() throws Exception {
         // given
-        mockAlias();
         when(response.getVerifierDhPubKey()).thenReturn(VERIFIER_DH);
 
         // when
-        sut.verify(response, serviceDhKeyPair, entity);
+        sut.verify(aliasPubKey, response, serviceDhKeyPair);
 
         // then
         verify(pakSignatureVerifier).verify(any(), eq(response));
@@ -98,25 +97,19 @@ class GetMeasurementVerifierTest {
     @Test
     void verify_SignatureFailed_Throws() throws Exception {
         // given
-        mockAlias();
         doThrow(new PsgInvalidSignatureException("test")).when(pakSignatureVerifier).verify(any(), eq(response));
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(response, serviceDhKeyPair, entity));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verify(aliasPubKey, response, serviceDhKeyPair));
     }
 
     @Test
     void verify_DhPubKeyFailed_Throws() throws Exception {
         // given
-        mockAlias();
         when(response.getVerifierDhPubKey()).thenReturn(VERIFIER_DH);
         doThrow(new SigmaException("test")).when(dhPubKeyVerifier).verify(serviceDhKeyPair.getPublicKey(), VERIFIER_DH);
 
         // when-then
-        Assertions.assertThrows(SigmaException.class, () -> sut.verify(response, serviceDhKeyPair, entity));
-    }
-
-    private void mockAlias() throws EcdhKeyPairException {
-        when(entity.getAlias()).thenReturn(toHex(EcdhKeyPair.generate().getPublicKey()));
+        Assertions.assertThrows(SigmaException.class, () -> sut.verify(aliasPubKey, response, serviceDhKeyPair));
     }
 }

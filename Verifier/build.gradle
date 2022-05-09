@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,19 +36,12 @@ plugins {
     id 'com.github.gmazzo.sqlite' version "${sqlite_plugin_version}"
     id 'java-library'
     id 'idea'
+    id 'com.github.ben-manes.versions'
 }
 
-generateLombokConfig.enabled = false
-generateLombokConfig.outputFile.set(file("${rootDir}/lombok.config"))
+apply from: rootProject.file('gradle/common.gradle')
 
-jar {
-    archiveBaseName.set('Verifier')
-    manifest {
-        attributes(
-            'Sealed': 'true'
-        )
-    }
-}
+def buildVersion = ext.getBuildVersion()
 
 configurations {
     fatjar {
@@ -56,20 +49,30 @@ configurations {
     }
 }
 
-task releaseJar(type: Jar) {
+jar {
     dependsOn configurations.fatjar
+    archiveBaseName.set('Verifier')
+    archiveVersion.set(buildVersion)
+    manifest {
+        attributes(
+            'Sealed': 'true',
+            'Implementation-Title': 'Intel FPGA Attestation Verifier library',
+            'Implementation-Version': buildVersion
+        )
+    }
     from {
         configurations.fatjar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
-    with jar
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 group = 'com.intel.bkp'
+version = buildVersion
+
 
 sourceSets {
     integrationTest {
@@ -106,6 +109,11 @@ test {
 }
 
 dependencies {
+    implementation project(':Utils')
+    implementation project(':CryptoCore')
+    implementation project(':fpgaCertCore')
+    implementation project(':ServiceCore')
+
     implementation "org.apache.commons:commons-lang3:${commons_lang3_version}"
     implementation "commons-codec:commons-codec:${commons_codec_version}"
     implementation "commons-io:commons-io:${commons_io_version}"
@@ -113,8 +121,6 @@ dependencies {
 
     implementation "javax.validation:validation-api:${validation_api_version}"
     implementation "org.slf4j:slf4j-api:${slf4j_version}"
-    implementation "ch.qos.logback:logback-classic:${logback_version}"
-    implementation "ch.qos.logback:logback-core:${logback_version}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jackson_version}"
     implementation "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
     implementation "org.bouncycastle:bcpkix-jdk15on:${bouncycastle_version}"
@@ -128,6 +134,8 @@ dependencies {
     testImplementation "org.mockito:mockito-inline:${mockito_version}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockito_version}"
     testImplementation "org.junit.platform:junit-platform-launcher:${junit5_platform_version}"
+    testImplementation "ch.qos.logback:logback-classic:${logback_version}"
+    testImplementation "ch.qos.logback:logback-core:${logback_version}"
 }
 
 task createSqliteDatabase {
@@ -147,3 +155,10 @@ task deploy(dependsOn: jar, type: Copy) {
 }
 
 compileJava.dependsOn createSqliteDatabase
+
+task copyJarToOtherProjects {
+    copy {
+        from layout.buildDirectory.dir("${buildDir}/libs")
+        into "${projectDir}/../workload/libs/"
+    }
+}

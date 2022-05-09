@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,10 +33,11 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.ext.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoConstants;
-import com.intel.bkp.verifier.model.dice.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.fpgacerts.model.Oid;
+import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.model.evidence.MeasurementRecordHeader;
 import com.intel.bkp.verifier.model.evidence.SectionType;
 import org.junit.jupiter.api.Assertions;
@@ -44,19 +45,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 
-import static com.intel.bkp.verifier.model.dice.TcbInfoField.FWIDS;
-import static com.intel.bkp.verifier.model.dice.TcbInfoField.INDEX;
-import static com.intel.bkp.verifier.model.dice.TcbInfoField.LAYER;
-import static com.intel.bkp.verifier.model.dice.TcbInfoField.TYPE;
-import static com.intel.bkp.verifier.model.dice.TcbInfoField.VENDOR;
-import static com.intel.bkp.verifier.model.dice.TcbInfoField.VENDOR_INFO;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.FWIDS;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.INDEX;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.LAYER;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.TYPE;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR_INFO;
 
 class MeasurementRecordToTcbInfoMapperTest {
 
     private static final String EXPECTED_VENDOR = TcbInfoConstants.VENDOR;
-    private static final String EXPECTED_TYPE_PREFIX = "2.16.840.1.113741.1.15.4.";
+    private static final String EXPECTED_TYPE_PREFIX = Oid.MEASUREMENT_TYPES.getOid() + ".";
     private static final int EXPECTED_LAYER = 2;
 
     private final ByteBufferSafe buffer = ByteBufferSafe.wrap(new byte[100]);
@@ -112,13 +112,12 @@ class MeasurementRecordToTcbInfoMapperTest {
     }
 
     private void verifyKeys(TcbInfo result, List<TcbInfoField> expectedKeys, List<TcbInfoField> notExpectedKeys) {
-        final Map<TcbInfoField, Object> tcbInfo = result.getTcbInfo();
-        Assertions.assertEquals(expectedKeys.size(), tcbInfo.size());
-        Assertions.assertTrue(tcbInfo.keySet().containsAll(expectedKeys));
-        Assertions.assertTrue(tcbInfo.keySet().stream().noneMatch(notExpectedKeys::contains));
 
-        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(VENDOR));
-        Assertions.assertEquals(EXPECTED_TYPE_PREFIX + header.getSectionType().getValue(), tcbInfo.get(TYPE));
-        Assertions.assertEquals(EXPECTED_LAYER, tcbInfo.get(LAYER));
+        expectedKeys.forEach(key -> Assertions.assertTrue(result.get(key).isPresent()));
+        notExpectedKeys.forEach(key -> Assertions.assertTrue(result.get(key).isEmpty()));
+
+        Assertions.assertEquals(EXPECTED_VENDOR, result.get(VENDOR).get());
+        Assertions.assertEquals(EXPECTED_TYPE_PREFIX + header.getSectionType().getValue(), result.get(TYPE).get());
+        Assertions.assertEquals(EXPECTED_LAYER, result.get(LAYER).get());
     }
 }

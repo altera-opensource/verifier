@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,11 +33,11 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.ext.core.certificate.X509CertificateUtils;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.fpgacerts.url.DistributionPointAddressProvider;
+import com.intel.bkp.fpgacerts.url.params.S10Params;
+import com.intel.bkp.verifier.dp.DistributionPointChainFetcher;
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
-import com.intel.bkp.verifier.model.DistributionPoint;
-import com.intel.bkp.verifier.model.s10.S10Params;
-import com.intel.bkp.verifier.x509.X509CertificateParser;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -46,15 +46,15 @@ import lombok.extern.slf4j.Slf4j;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 @Getter(AccessLevel.PACKAGE)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class S10AttestationRevocationService {
 
-    private final X509CertificateParser certificateParser;
     private final S10ChainVerifier s10ChainVerifier;
-    private final DistributionPointConnector connector;
+    private final DistributionPointChainFetcher chainFetcher;
     private final DistributionPointAddressProvider addressProvider;
 
     private final LinkedList<X509Certificate> certificates = new LinkedList<>();
@@ -68,9 +68,8 @@ public class S10AttestationRevocationService {
     }
 
     public S10AttestationRevocationService(DistributionPoint dp) {
-        this(new X509CertificateParser(),
-            new S10ChainVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash()),
-            new DistributionPointConnector(dp.getProxy()),
+        this(new S10ChainVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash().getS10()),
+            new DistributionPointChainFetcher(new DistributionPointConnector(dp.getProxy())),
             new DistributionPointAddressProvider(dp.getPathCer()));
     }
 
@@ -89,33 +88,12 @@ public class S10AttestationRevocationService {
         return attCert.getPublicKey();
     }
 
-    private LinkedList<X509Certificate> fetchChain(byte[] deviceId, String pufTypeHex) {
+    private List<X509Certificate> fetchChain(byte[] deviceId, String pufTypeHex) {
         log.debug("Building PufAttestation certificate chain.");
 
         final var s10Params = S10Params.from(deviceId, pufTypeHex);
-        final String attestationCertificatePath = addressProvider.getAttestationCertFilename(s10Params);
-        final var attestationCert = downloadCertificate(attestationCertificatePath);
-
-        final var certs = new LinkedList<X509Certificate>();
-        certs.add(attestationCert);
-        return fetchParents(certs);
+        final String attestationCertificateUrl = addressProvider.getAttestationCertUrl(s10Params);
+        return chainFetcher.downloadCertificateChain(attestationCertificateUrl);
     }
 
-    private LinkedList<X509Certificate> fetchParents(LinkedList<X509Certificate> certs) {
-        while (!X509CertificateUtils.isSelfSigned(certs.getLast())) {
-            log.debug("Not self-signed cert, moving on: {}", certs.getLast().getSubjectDN());
-            certs.add(getParent(certs.getLast()));
-        }
-
-        return certs;
-    }
-
-    private X509Certificate getParent(X509Certificate child) {
-        final String parentPath = certificateParser.getPathToIssuerCertificate(child);
-        return downloadCertificate(parentPath);
-    }
-
-    private X509Certificate downloadCertificate(String url) {
-        return certificateParser.toX509(connector.getBytes(url));
-    }
 }

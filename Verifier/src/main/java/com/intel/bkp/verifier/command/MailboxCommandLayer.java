@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command;
 
-import com.intel.bkp.ext.utils.ByteBufferSafe;
+import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.command.header.CommandHeader;
 import com.intel.bkp.verifier.command.header.CommandHeaderManager;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
 @Slf4j
 public class MailboxCommandLayer implements CommandLayer {
@@ -57,26 +57,26 @@ public class MailboxCommandLayer implements CommandLayer {
         final byte[] dataBytes = data.array();
         final byte[] header = buildCommandHeader(commandCode, getArgumentsLen(dataBytes), 0, CLIENT_IDENTIFIER);
         final byte[] rawData = withAppendedHeader(dataBytes, header);
-        log.trace("Sending raw data for command {}: {}", command.name(), toHex(rawData));
+        log.debug("Sending raw data for command {}: {}", command.name(), toHex(rawData));
         return rawData;
     }
 
     @Override
     public byte[] retrieve(byte[] data, CommandIdentifier command) {
-        log.trace("Received raw data for response {}: {}", command.name(), toHex(data));
+        log.debug("Received raw data for response {}: {}", command.name(), toHex(data));
         CommandHeaderManager.validateCommandHeaderCode(data, command.name());
         return ByteBufferSafe.wrap(data).skip(COMMAND_HEADER_LEN).getRemaining();
     }
 
-    private int getArgumentsLen(byte[] dataBytes) {
+    protected int getArgumentsLen(byte[] dataBytes) {
         return (int)Math.ceil((double)dataBytes.length / Integer.BYTES);
     }
 
-    private byte[] buildCommandHeader(int commandCode, int argumentsLength, int id, int client) {
+    protected byte[] buildCommandHeader(int commandCode, int argumentsLength, int id, int client) {
         return CommandHeaderManager.buildForFw(new CommandHeader(commandCode, argumentsLength, id, client));
     }
 
-    private byte[] withAppendedHeader(byte[] data, byte[] header) {
+    protected byte[] withAppendedHeader(byte[] data, byte[] header) {
         return ByteBuffer.allocate(header.length + data.length)
             .put(header)
             .put(data)

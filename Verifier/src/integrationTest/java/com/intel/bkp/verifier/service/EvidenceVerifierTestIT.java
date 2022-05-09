@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,17 +33,16 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
 import com.intel.bkp.verifier.Utils;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoAggregator;
-import com.intel.bkp.verifier.model.dice.TcbInfoExtensionParser;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
-import com.intel.bkp.verifier.x509.X509CertificateParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -52,6 +51,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509Certificate;
 import java.util.List;
+
+import static com.intel.bkp.verifier.x509.X509UtilsWrapper.toX509;
 
 @ExtendWith(MockitoExtension.class)
 public class EvidenceVerifierTestIT {
@@ -77,8 +78,6 @@ public class EvidenceVerifierTestIT {
     private static X509Certificate firmwareCert;
     private static X509Certificate deviceIdEnrollmentCert;
 
-    private static final X509CertificateParser X509_PARSER = new X509CertificateParser();
-
     private final GetMeasurementResponseToTcbInfoMapper measurementMapper = new GetMeasurementResponseToTcbInfoMapper();
     private TcbInfoExtensionParser tcbInfoExtensionParser = new TcbInfoExtensionParser();
     private TcbInfoAggregator tcbInfoAggregator = new TcbInfoAggregator();
@@ -93,9 +92,9 @@ public class EvidenceVerifierTestIT {
         responseS10 = readResponse(FILENAME_STRATIX_RESPONSE);
         responseAgilex = readResponse(FILENAME_AGILEX_RESPONSE);
 
-        aliasCert = X509_PARSER.toX509(readCertificate(ALIAS_CERT));
-        firmwareCert = X509_PARSER.toX509(readCertificate(FIRMWARE_CERT));
-        deviceIdEnrollmentCert = X509_PARSER.toX509(readCertificate(DEVICE_ID_ENROLLMENT_CERT));
+        aliasCert = toX509(readCertificate(ALIAS_CERT));
+        firmwareCert = toX509(readCertificate(FIRMWARE_CERT));
+        deviceIdEnrollmentCert = toX509(readCertificate(DEVICE_ID_ENROLLMENT_CERT));
     }
 
     private static String readEvidence(String filename) throws Exception {
@@ -132,12 +131,11 @@ public class EvidenceVerifierTestIT {
         // given
         final List<TcbInfo> tcbInfosFromGetMeasurementResponse = measurementMapper.map(responseAgilex);
 
-        tcbInfoExtensionParser.parse(aliasCert);
-        tcbInfoExtensionParser.parse(firmwareCert);
-        tcbInfoExtensionParser.parse(deviceIdEnrollmentCert);
+        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(aliasCert));
+        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(firmwareCert));
+        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(deviceIdEnrollmentCert));
 
         tcbInfoAggregator.add(tcbInfosFromGetMeasurementResponse);
-        tcbInfoAggregator.add(tcbInfoExtensionParser.getTcbInfos());
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilex);

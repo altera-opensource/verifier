@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,13 @@
 
 package com.intel.bkp.verifier.service.sender;
 
+import com.intel.bkp.core.command.model.CertificateRequestType;
 import com.intel.bkp.verifier.command.logger.SigmaLogger;
 import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessage;
 import com.intel.bkp.verifier.command.messages.chip.GetCertificateMessageBuilder;
 import com.intel.bkp.verifier.command.responses.chip.GetCertificateResponseBuilder;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
-import com.intel.bkp.verifier.model.CertificateRequestType;
 import com.intel.bkp.verifier.model.CommandIdentifier;
 import lombok.extern.slf4j.Slf4j;
 

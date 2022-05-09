@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,37 +33,34 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseToTcbInfoMapper;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
 import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.database.repository.S10CacheEntityService;
 import com.intel.bkp.verifier.exceptions.CacheEntityDoesNotExistException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.model.dice.TcbInfoAggregator;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
+import com.intel.bkp.verifier.service.measurements.DeviceMeasurementsProvider;
+import com.intel.bkp.verifier.service.measurements.DeviceMeasurementsRequest;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
-import com.intel.bkp.verifier.service.sender.GetMeasurementMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
-import com.intel.bkp.verifier.sigma.GetMeasurementVerifier;
-import com.intel.bkp.verifier.sigma.SigmaM2DeviceIdVerifier;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,8 +68,9 @@ import static org.mockito.Mockito.when;
 class S10AttestationComponentTest {
 
     private static final String REF_MEASUREMENT = "0102";
-    private static final byte[] DEVICE_ID = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-    private static final byte[] SDM_SESSION_ID = { 0, 0, 0, 1 };
+    private static final byte[] DEVICE_ID = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
+
+    private static MockedStatic<DeviceMeasurementsRequest> deviceMeasurementsRequestMockStatic;
 
     @Mock
     private AppContext appContext;
@@ -84,24 +82,6 @@ class S10AttestationComponentTest {
     private S10CacheEntity cacheEntity;
 
     @Mock
-    private CommandLayer commandLayer;
-
-    @Mock
-    private TransportLayer transportLayer;
-
-    @Mock
-    private GetMeasurementResponseToTcbInfoMapper measurementMapper;
-
-    @Mock
-    private GetMeasurementMessageSender getMeasurementMessageSender;
-
-    @Mock
-    private TeardownMessageSender teardownMessageSender;
-
-    @Mock
-    private GetMeasurementVerifier getMeasurementVerifier;
-
-    @Mock
     private EvidenceVerifier evidenceVerifier;
 
     @Mock
@@ -111,7 +91,13 @@ class S10AttestationComponentTest {
     private S10CacheEntityService s10CacheEntityService;
 
     @Mock
-    private SigmaM2DeviceIdVerifier deviceIdVerifier;
+    private DeviceMeasurementsRequest deviceMeasurementsRequest;
+
+    @Mock
+    private DeviceMeasurementsProvider deviceMeasurementsProvider;
+
+    @Mock
+    private List<TcbInfo> measurements;
 
     @Mock
     private TcbInfoAggregator tcbInfoAggregator;
@@ -119,37 +105,38 @@ class S10AttestationComponentTest {
     @InjectMocks
     private S10AttestationComponent sut;
 
-    private GetMeasurementResponseBuilder getMeasurementResponseBuilder =
-        new GetMeasurementResponseBuilder();
+    @BeforeAll
+    public static void prepareStaticMock() {
+        deviceMeasurementsRequestMockStatic = mockStatic(DeviceMeasurementsRequest.class);
+    }
+
+    @AfterAll
+    public static void closeStaticMock() {
+        deviceMeasurementsRequestMockStatic.close();
+    }
 
     @Test
     void perform_Success() {
         // given
-        mockAppContext();
-        mockDatabaseConnection();
-
-        getMeasurementResponseBuilder.setSdmSessionId(SDM_SESSION_ID);
-        doReturn(getMeasurementResponseBuilder.build())
-            .when(getMeasurementMessageSender)
-            .send(eq(transportLayer), eq(commandLayer), any(EcdhKeyPair.class), eq(cacheEntity));
-        when(evidenceVerifier.verify(eq(tcbInfoAggregator), eq(REF_MEASUREMENT))).thenReturn(VerifierExchangeResponse.OK);
+        final var pufType = PufType.IID;
+        mockEntityInDatabase(DEVICE_ID, pufType);
+        when(DeviceMeasurementsRequest.forS10(DEVICE_ID, cacheEntity)).thenReturn(deviceMeasurementsRequest);
+        when(deviceMeasurementsProvider.getMeasurementsFromDevice(deviceMeasurementsRequest)).thenReturn(measurements);
+        when(evidenceVerifier.verify(eq(tcbInfoAggregator), eq(REF_MEASUREMENT))).thenReturn
+            (VerifierExchangeResponse.OK);
 
         // when
         VerifierExchangeResponse result = sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID);
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK, result);
-        verify(s10AttestationRevocationService).checkAndRetrieve(DEVICE_ID,
-            PufType.getPufTypeHex(PufType.IID));
-        verify(getMeasurementVerifier).verify(any(), any(), eq(cacheEntity));
-        verify(deviceIdVerifier).verify(eq(DEVICE_ID), any());
-        verify(teardownMessageSender).send(transportLayer, commandLayer, SDM_SESSION_ID);
+        verify(s10AttestationRevocationService).checkAndRetrieve(DEVICE_ID, PufType.getPufTypeHex(pufType));
+        verify(tcbInfoAggregator).add(measurements);
     }
 
     @Test
     void perform_EntityDoesNotExist() {
         // given
-        mockAppContext();
         mockEmptyDatabase();
 
         // when-then
@@ -157,15 +144,10 @@ class S10AttestationComponentTest {
             () -> sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
     }
 
-    private void mockAppContext() {
-        when(appContext.getTransportLayer()).thenReturn(transportLayer);
-        when(appContext.getCommandLayer()).thenReturn(commandLayer);
-    }
-
-    private void mockDatabaseConnection() {
+    private void mockEntityInDatabase(byte[] deviceId, PufType pufType) {
         mockSqliteHelper();
-        when(s10CacheEntityService.read(DEVICE_ID)).thenReturn(Optional.of(cacheEntity));
-        when(cacheEntity.getPufType()).thenReturn("IID");
+        when(s10CacheEntityService.read(deviceId)).thenReturn(Optional.of(cacheEntity));
+        when(cacheEntity.getPufType()).thenReturn(pufType.name());
     }
 
     private void mockEmptyDatabase() {

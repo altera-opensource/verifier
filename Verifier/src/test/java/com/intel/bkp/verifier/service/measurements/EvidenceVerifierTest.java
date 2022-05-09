@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,13 @@
 
 package com.intel.bkp.verifier.service.measurements;
 
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.model.dice.MaskedVendorInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoAggregator;
-import com.intel.bkp.verifier.model.dice.TcbInfoField;
-import com.intel.bkp.verifier.model.dice.TcbInfoKey;
-import com.intel.bkp.verifier.model.dice.TcbInfoValue;
 import com.intel.bkp.verifier.model.evidence.BaseEvidenceBlock;
 import com.intel.bkp.verifier.model.evidence.Rim;
 import com.intel.bkp.verifier.model.evidence.RimRecords;
@@ -67,15 +67,12 @@ class EvidenceVerifierTest {
     private static final String VENDOR_INFO_INVALID = "1111111111111111";
     private static final String VENDOR_INFO_MASK = "FFFFFFFF000000FF";
     private static final int INDEX = 0;
-    private final Map<TcbInfoField, Object> tcbInfoMap = new HashMap<>(Map.of(TcbInfoField.VENDOR, VENDOR,
+    private static final TcbInfo TCB_INFO = new TcbInfo(Map.of(TcbInfoField.VENDOR, VENDOR,
         TcbInfoField.VENDOR_INFO, new MaskedVendorInfo(VENDOR_INFO, VENDOR_INFO_MASK)));
     private final Map<TcbInfoKey, TcbInfoValue> tcbInfoResponseMap = new HashMap<>();
 
     @Mock
     private BaseEvidenceBlock block;
-
-    @Mock
-    private TcbInfo tcbInfo;
 
     @Mock
     private TcbInfoAggregator tcbInfoAggregator;
@@ -116,8 +113,7 @@ class EvidenceVerifierTest {
     @Test
     void verify_ValidatesBlockAndReturnsOk() {
         // given
-        when(tcbInfo.getTcbInfo()).thenReturn(tcbInfoMap);
-        when(rimMapper.map(any())).thenReturn(List.of(tcbInfo));
+        when(rimMapper.map(any())).thenReturn(List.of(TCB_INFO));
         when(rimParser.parse(REF_MEASUREMENT)).thenReturn(mockRim());
         mockResponse();
 
@@ -131,8 +127,7 @@ class EvidenceVerifierTest {
     @Test
     void verify_ValidationFailsDueToKeyNotFound_ReturnsFail() {
         // given
-        when(tcbInfo.getTcbInfo()).thenReturn(tcbInfoMap);
-        when(rimMapper.map(any())).thenReturn(List.of(tcbInfo));
+        when(rimMapper.map(any())).thenReturn(List.of(TCB_INFO));
         when(rimParser.parse(REF_MEASUREMENT)).thenReturn(mockRim());
 
         // when
@@ -145,8 +140,7 @@ class EvidenceVerifierTest {
     @Test
     void verify_ValidationFailsDueToWrongValue_ReturnsFail() {
         // given
-        when(tcbInfo.getTcbInfo()).thenReturn(tcbInfoMap);
-        when(rimMapper.map(any())).thenReturn(List.of(tcbInfo));
+        when(rimMapper.map(any())).thenReturn(List.of(TCB_INFO));
         when(rimParser.parse(REF_MEASUREMENT)).thenReturn(mockRim());
         mockWrongResponse();
 

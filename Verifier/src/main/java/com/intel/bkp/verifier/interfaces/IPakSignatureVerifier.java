@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,10 +33,10 @@
 
 package com.intel.bkp.verifier.interfaces;
 
-import com.intel.bkp.ext.core.psgcertificate.PsgCertificateHelper;
-import com.intel.bkp.ext.core.psgcertificate.PsgSignatureBuilder;
-import com.intel.bkp.ext.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.ext.crypto.constants.CryptoConstants;
+import com.intel.bkp.core.psgcertificate.PsgCertificateHelper;
+import com.intel.bkp.core.psgcertificate.PsgSignatureBuilder;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.crypto.constants.CryptoConstants;
 
 import java.security.PublicKey;
 

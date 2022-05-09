@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,8 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
+import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
+import com.intel.bkp.fpgacerts.verification.RootHashVerifier;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,8 +43,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_INIT;
-import static com.intel.bkp.verifier.x509.X509CertificateExtendedKeyUsageVerifier.KEY_PURPOSE_ATTEST_LOC;
+import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_INIT;
+import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
 
 @ExtendWith(MockitoExtension.class)
 class DiceAliasChainVerifierTest {
@@ -59,7 +61,10 @@ class DiceAliasChainVerifierTest {
     @Test
     void getExpectedLeafCertKeyPurposes_ReturnsPurposesForAliasCertificate() {
         // given
-        final String[] aliasCertificateKeyPurposes = new String[]{KEY_PURPOSE_ATTEST_INIT, KEY_PURPOSE_ATTEST_LOC};
+        final String[] aliasCertificateKeyPurposes = new String[]{
+                KEY_PURPOSE_ATTEST_INIT.getOid(),
+                KEY_PURPOSE_ATTEST_LOC.getOid()
+        };
 
         // when
         final String[] result = sut.getExpectedLeafCertKeyPurposes();

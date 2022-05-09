@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,8 +41,8 @@ import com.intel.bkp.verifier.model.CommandIdentifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static com.intel.bkp.ext.utils.HexConverter.fromHex;
-import static com.intel.bkp.verifier.model.CertificateRequestType.FIRMWARE;
+import static com.intel.bkp.core.command.model.CertificateRequestType.FIRMWARE;
+import static com.intel.bkp.utils.HexConverter.fromHex;
 
 public class MailboxCommandLayerTest {
     private MailboxCommandLayer sut = new MailboxCommandLayer();

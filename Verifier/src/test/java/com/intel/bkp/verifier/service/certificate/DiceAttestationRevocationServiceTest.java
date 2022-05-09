@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,28 +33,20 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.core.properties.Proxy;
+import com.intel.bkp.core.properties.TrustedRootHash;
 import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
 import com.intel.bkp.verifier.interfaces.IProxyCallback;
-import com.intel.bkp.verifier.model.DistributionPoint;
 import com.intel.bkp.verifier.model.LibConfig;
-import com.intel.bkp.verifier.model.Proxy;
-import com.intel.bkp.verifier.model.TrustedRootHash;
-import com.intel.bkp.verifier.model.dice.DiceEnrollmentParams;
-import com.intel.bkp.verifier.model.dice.DiceParams;
-import com.intel.bkp.verifier.x509.X509CertificateParser;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.security.cert.X509Certificate;
-import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -64,30 +56,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DiceAttestationRevocationServiceTest {
 
-    private static final String DEVICE_ID_NAME = "DEVICE_ID_NAME";
-    private static final String ENROLLMENT_NAME = "ENROLLMENT_NAME";
-    private static final String IID_NAME = "IID_NAME";
-    private static final Optional<byte[]> EMPTY_CERT = Optional.empty();
-    private static final byte[] NOT_EMPTY_CERT = new byte[]{};
-    private static final DiceParams DICE_PARAMS = new DiceParams("SKI", "UID");
-    private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS = new DiceEnrollmentParams("SKIER", "SVN", "UID");
-
     private static MockedStatic<ProxyCallbackFactory> proxyFactoryMockStatic;
-
-    @Mock
-    private X509Certificate certificate;
-
-    @Mock
-    private DistributionPointConnector connector;
-
-    @Mock
-    private DiceAliasChainVerifier diceAliasChainVerifier;
-
-    @Mock
-    private X509CertificateParser certificateParser;
-
-    @Mock
-    private DistributionPointAddressProvider addressProvider;
 
     @InjectMocks
     private DiceAttestationRevocationService sut;
@@ -109,7 +78,8 @@ class DiceAttestationRevocationServiceTest {
         final var libConfig = mock(LibConfig.class);
         final var dp = mock(DistributionPoint.class);
         final var certPath = "path";
-        final var trustedRootHash = new TrustedRootHash("s10", "dice");
+        final var diceRootHash = "dice";
+        final var trustedRootHash = new TrustedRootHash("", diceRootHash);
         final var host = "host";
         final var port = 123;
         final var proxy = new Proxy(host, port);
@@ -127,7 +97,7 @@ class DiceAttestationRevocationServiceTest {
 
         // then
         final var diceCertVerifier = sut.getDiceAliasChainVerifier();
-        Assertions.assertEquals(trustedRootHash, diceCertVerifier.getTrustedRootHash());
+        Assertions.assertEquals(diceRootHash, diceCertVerifier.getTrustedRootHash());
 
         final var crlProvider = diceCertVerifier.getCrlVerifier().getCrlProvider();
         Assertions.assertTrue(crlProvider instanceof DistributionPointCrlProvider);
@@ -136,91 +106,5 @@ class DiceAttestationRevocationServiceTest {
         Assertions.assertEquals(certPath, addressProvider.getCertificateUrlPrefix());
 
         proxyFactoryMockStatic.verify(() -> ProxyCallbackFactory.get(host, port), times(2));
-    }
-
-    @Test
-    void fmGetDeviceIdCert_WithEmpty() {
-        // given
-        when(addressProvider.getDeviceIdCertFilename(DICE_PARAMS)).thenReturn(DEVICE_ID_NAME);
-        when(connector.tryGetBytes(DEVICE_ID_NAME)).thenReturn(EMPTY_CERT);
-
-        // when
-        final Optional<X509Certificate> result = sut.fmGetDeviceIdCert(DICE_PARAMS);
-
-        // then
-        Assertions.assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void fmGetDeviceIdCert_ReturnsCert() {
-        // given
-        when(addressProvider.getDeviceIdCertFilename(DICE_PARAMS)).thenReturn(DEVICE_ID_NAME);
-        when(connector.tryGetBytes(DEVICE_ID_NAME)).thenReturn(Optional.of(NOT_EMPTY_CERT));
-        when(certificateParser.toX509(NOT_EMPTY_CERT)).thenReturn(certificate);
-
-        // when
-        final Optional<X509Certificate> result = sut.fmGetDeviceIdCert(DICE_PARAMS);
-
-        // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(certificate, result.get());
-    }
-
-    @Test
-    void fmGetEnrollmentCert_WithEmpty() {
-        // given
-        when(addressProvider.getEnrollmentCertFilename(DICE_ENROLLMENT_PARAMS))
-            .thenReturn(ENROLLMENT_NAME);
-        when(connector.tryGetBytes(ENROLLMENT_NAME)).thenReturn(EMPTY_CERT);
-
-        // when
-        final Optional<X509Certificate> result = sut.fmGetEnrollmentCert(DICE_ENROLLMENT_PARAMS);
-
-        // then
-        Assertions.assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void fmGetEnrollmentCert_ReturnsCert() {
-        // given
-        when(addressProvider.getEnrollmentCertFilename(DICE_ENROLLMENT_PARAMS)).
-            thenReturn(ENROLLMENT_NAME);
-        when(connector.tryGetBytes(ENROLLMENT_NAME)).thenReturn(Optional.of(NOT_EMPTY_CERT));
-        when(certificateParser.toX509(NOT_EMPTY_CERT)).thenReturn(certificate);
-
-        // when
-        final Optional<X509Certificate> result = sut.fmGetEnrollmentCert(DICE_ENROLLMENT_PARAMS);
-
-        // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(certificate, result.get());
-    }
-
-    @Test
-    void fmGetIidUdsCert_WithEmpty() {
-        // given
-        when(addressProvider.getIidUdsCertFilename(DICE_PARAMS)).thenReturn(IID_NAME);
-        when(connector.tryGetBytes(IID_NAME)).thenReturn(EMPTY_CERT);
-
-        // when
-        final Optional<X509Certificate> result = sut.fmGetIidUdsCert(DICE_PARAMS);
-
-        // then
-        Assertions.assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void fmGetIidUdsCert_ReturnsCert() {
-        // given
-        when(addressProvider.getIidUdsCertFilename(DICE_PARAMS)).thenReturn(IID_NAME);
-        when(connector.tryGetBytes(IID_NAME)).thenReturn(Optional.of(NOT_EMPTY_CERT));
-        when(certificateParser.toX509(NOT_EMPTY_CERT)).thenReturn(certificate);
-
-        // when
-        final Optional<X509Certificate> result = sut.fmGetIidUdsCert(DICE_PARAMS);
-
-        // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(certificate, result.get());
     }
 }

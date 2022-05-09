@@ -4,7 +4,7 @@
   ~
   ~ ***************************************************************************
   ~
-  ~ Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+  ~ Copyright 2020-2022 Intel Corporation. All Rights Reserved.
   ~
   ~ Redistribution and use in source and binary forms, with or without
   ~ modification, are permitted provided that the following conditions are met:
@@ -59,4 +59,8 @@
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>
+
+    <logger name="com.intel.bkp.verifier" level="DEBUG"/>
+    <logger name="com.intel.bkp.fpgacerts" level="DEBUG"/>
+    <logger name="com.intel.bkp.crypto" level="DEBUG"/>
 </configuration>

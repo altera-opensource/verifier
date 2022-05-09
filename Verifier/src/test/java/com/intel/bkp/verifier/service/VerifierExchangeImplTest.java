@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
+import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.verifier.exceptions.InitSessionFailedException;
 import com.intel.bkp.verifier.exceptions.TransportLayerException;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
@@ -48,7 +48,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -81,7 +81,7 @@ class VerifierExchangeImplTest {
     private VerifierExchangeImpl sutSpy;
 
     @Test
-    void createDeviceAttestationSubKey_ContextNotHex_ReturnsError() throws Exception {
+    void createDeviceAttestationSubKey_ContextNotHex_ReturnsError() {
         // given
         String context = "not-a-valid-hex";
 
@@ -195,7 +195,7 @@ class VerifierExchangeImplTest {
     }
 
     @Test
-    void healthCheck_ExceptionThrown_ReturnsError() throws Exception {
+    void healthCheck_ExceptionThrown_ReturnsError() {
         // given
         mockAppContext();
         when(transportLayer.sendCommand(any())).thenThrow(TransportLayerException.class);
@@ -208,10 +208,10 @@ class VerifierExchangeImplTest {
     }
 
     @Test
-    void healthCheck_Succcess_ReturnsOk() throws Exception {
+    void healthCheck_Succcess_ReturnsOk() {
         // given
         mockAppContext();
-        when(transportLayer.sendCommand(any())).thenReturn(new byte[] { 0x01, 0x02 });
+        when(transportLayer.sendCommand(any())).thenReturn(new byte[]{0x01, 0x02});
 
         // when
         int result = sutSpy.healthCheckInternal(appContext, TRANSPORT_ID);
@@ -221,7 +221,7 @@ class VerifierExchangeImplTest {
     }
 
     @Test
-    void healthCheck_EmptyResponse_ReturnsError() throws Exception {
+    void healthCheck_EmptyResponse_ReturnsError() {
         // given
         mockAppContext();
         when(transportLayer.sendCommand(any())).thenReturn(new byte[0]);
@@ -234,7 +234,7 @@ class VerifierExchangeImplTest {
     }
 
     @Test
-    void healthCheck_NullResponse_ReturnsError() throws Exception {
+    void healthCheck_NullResponse_ReturnsError() {
         // given
         mockAppContext();
         when(transportLayer.sendCommand(any())).thenReturn(null);
@@ -247,7 +247,7 @@ class VerifierExchangeImplTest {
     }
 
     @Test
-    void healthCheck_CallInitializeAndDisconnect() throws Exception {
+    void healthCheck_CallInitializeAndDisconnect() {
         // given
         mockAppContext();
         when(transportLayer.sendCommand(any())).thenReturn(new byte[0]);
@@ -264,7 +264,7 @@ class VerifierExchangeImplTest {
         when(appContext.getTransportLayer()).thenReturn(transportLayer);
     }
 
-    private void mockInitSessionComponent() throws TransportLayerException, InitSessionFailedException {
+    private void mockInitSessionComponent() throws InitSessionFailedException {
         when(initSessionComponent.initializeSessionForDeviceId()).thenReturn(deviceId);
     }
 }

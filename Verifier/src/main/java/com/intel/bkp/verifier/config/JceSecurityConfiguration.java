@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,14 @@
 
 package com.intel.bkp.verifier.config;
 
-import com.intel.bkp.ext.core.exceptions.JceSecurityProviderException;
-import com.intel.bkp.ext.core.security.ISecurityProvider;
-import com.intel.bkp.ext.core.security.JceSecurityProvider;
-import com.intel.bkp.ext.core.security.SecurityProviderParams;
-import com.intel.bkp.ext.core.security.params.ProviderProperties;
+import com.intel.bkp.core.exceptions.JceSecurityProviderException;
+import com.intel.bkp.core.security.ISecurityProvider;
+import com.intel.bkp.core.security.JceSecurityProvider;
+import com.intel.bkp.core.security.SecurityProviderParams;
+import com.intel.bkp.core.security.params.ProviderProperties;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
-import lombok.RequiredArgsConstructor;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
@@ -47,13 +48,13 @@ import java.security.Provider;
 import java.security.Security;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JceSecurityConfiguration {
 
     private static ISecurityProvider securityProvider = null;
 
-    public ISecurityProvider getSecurityProvider(SecurityProviderParams securityProviderParams) {
+    public static ISecurityProvider getSecurityProvider(SecurityProviderParams securityProviderParams) {
         if (securityProvider == null) {
             initializeJceProvider(getProviderClassName(securityProviderParams));
 
@@ -64,7 +65,7 @@ public class JceSecurityConfiguration {
         return securityProvider;
     }
 
-    private String getProviderClassName(SecurityProviderParams params) {
+    private static String getProviderClassName(SecurityProviderParams params) {
         return Optional.ofNullable(params)
             .map(SecurityProviderParams::getProvider)
             .map(ProviderProperties::getClassName)

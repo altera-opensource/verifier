@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,18 +33,17 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
 import com.intel.bkp.verifier.Utils;
-import com.intel.bkp.verifier.model.dice.FwIdField;
-import com.intel.bkp.verifier.model.dice.TcbInfo;
-import com.intel.bkp.verifier.model.dice.TcbInfoField;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 
 class GetMeasurementResponseToTcbInfoMapperTest {
 
@@ -126,42 +125,43 @@ class GetMeasurementResponseToTcbInfoMapperTest {
     }
 
     private void assertDeviceStateSectionStratix(List<TcbInfo> tcbInfos) {
-        final Map<TcbInfoField, Object> deviceStateSection = tcbInfos.get(0).getTcbInfo();
-        Assertions.assertEquals(EXPECTED_DEVICE_DATA_STRATIX, deviceStateSection.get(TcbInfoField.VENDOR_INFO));
+        final TcbInfo deviceStateSection = tcbInfos.get(0);
+        Assertions.assertEquals(EXPECTED_DEVICE_DATA_STRATIX, deviceStateSection.get(TcbInfoField.VENDOR_INFO).get());
     }
 
     private void assertDeviceStateSectionAgilex(List<TcbInfo> tcbInfos) {
-        final Map<TcbInfoField, Object> deviceStateSection = tcbInfos.get(0).getTcbInfo();
-        Assertions.assertEquals(EXPECTED_DEVICE_DATA_AGILEX, deviceStateSection.get(TcbInfoField.VENDOR_INFO));
+        final TcbInfo deviceStateSection = tcbInfos.get(0);
+        Assertions.assertEquals(EXPECTED_DEVICE_DATA_AGILEX, deviceStateSection.get(TcbInfoField.VENDOR_INFO).get());
     }
 
     private void assertIoSection(List<TcbInfo> tcbInfos) {
-        final Map<TcbInfoField, Object> ioSection = tcbInfos.get(1).getTcbInfo();
+        final TcbInfo ioSection = tcbInfos.get(1);
         Assertions.assertEquals(EXPECTED_IO_DATA, fwIdToHash(ioSection));
     }
 
     private void assertCoreSection(List<TcbInfo> tcbInfos) {
-        final Map<TcbInfoField, Object> coreSection = tcbInfos.get(2).getTcbInfo();
+        final TcbInfo coreSection = tcbInfos.get(2);
         Assertions.assertEquals(EXPECTED_CORE_DATA, fwIdToHash(coreSection));
     }
 
     private void assertPrSectionStratix(List<TcbInfo> tcbInfos) {
-        final Map<TcbInfoField, Object> prSection1 = tcbInfos.get(3).getTcbInfo();
+        final TcbInfo prSection1 = tcbInfos.get(3);
         Assertions.assertEquals(EXPECTED_PR1_DATA, fwIdToHash(prSection1));
     }
 
     private void assertPrSectionsAgilex(List<TcbInfo> tcbInfos) {
-        final Map<TcbInfoField, Object> prSection1 = tcbInfos.get(3).getTcbInfo();
+        final TcbInfo prSection1 = tcbInfos.get(3);
         Assertions.assertEquals(EXPECTED_PR1_DATA, fwIdToHash(prSection1));
-        Assertions.assertEquals(SECTION_INDEX_PR1, (Integer)prSection1.get(TcbInfoField.INDEX));
+        Assertions.assertEquals(SECTION_INDEX_PR1, prSection1.get(TcbInfoField.INDEX).get());
 
-        final Map<TcbInfoField, Object> prSection2 = tcbInfos.get(4).getTcbInfo();
+        final TcbInfo prSection2 = tcbInfos.get(4);
         Assertions.assertEquals(EXPECTED_PR2_DATA, fwIdToHash(prSection2));
-        Assertions.assertEquals(SECTION_INDEX_PR2, (Integer)prSection2.get(TcbInfoField.INDEX));
+        Assertions.assertEquals(SECTION_INDEX_PR2, prSection2.get(TcbInfoField.INDEX).get());
     }
 
-    private String fwIdToHash(Map<TcbInfoField, Object> section) {
-        final FwIdField field = (FwIdField)section.get(TcbInfoField.FWIDS);
+    private String fwIdToHash(TcbInfo tcbInfo) {
+        final FwIdField field = (FwIdField) tcbInfo.get(TcbInfoField.FWIDS)
+            .orElseThrow(() -> new RuntimeException("Expected FwId field in TcbInfo, but it does not exist."));
         return field.getDigest();
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,7 +41,7 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import java.sql.Connection;
 import java.util.Optional;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
 @Slf4j
 public class S10CacheEntityService extends CacheEntityServiceBase {

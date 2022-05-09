@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,8 +33,8 @@
 
 package com.intel.bkp.verifier.service.measurements;
 
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
 import com.intel.bkp.verifier.Utils;
-import com.intel.bkp.verifier.model.dice.FwIdField;
 import com.intel.bkp.verifier.model.evidence.BaseEvidenceBlock;
 import com.intel.bkp.verifier.model.evidence.Rim;
 import org.junit.jupiter.api.Assertions;
@@ -46,8 +46,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.FWIDS_HASH_ALG;
-import static com.intel.bkp.verifier.model.dice.TcbInfoConstants.VENDOR;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
 
 @ExtendWith(MockitoExtension.class)
 class RimParserTest {

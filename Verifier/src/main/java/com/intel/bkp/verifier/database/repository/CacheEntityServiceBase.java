@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ public abstract class CacheEntityServiceBase implements IMigratable {
         }
     }
 
-    protected void updateSchema(int currentMigrationVersion) throws DatabaseException {
+    protected void updateSchema(int currentMigrationVersion) {
         final Map<Integer, String> migrationQuery = Optional.ofNullable(tableDefinition.getMigrationQuery())
             .orElse(Map.of());
 
@@ -80,7 +80,7 @@ public abstract class CacheEntityServiceBase implements IMigratable {
         }
     }
 
-    protected <T> T select(ResultSetHandler<T> handler) throws DatabaseException {
+    protected <T> T select(ResultSetHandler<T> handler) {
         try {
             return runner.query(connection, tableDefinition.getSelectSQL(), handler);
         } catch (SQLException e) {
@@ -88,7 +88,7 @@ public abstract class CacheEntityServiceBase implements IMigratable {
         }
     }
 
-    protected void insert(Object[] params) throws DatabaseException {
+    protected void insert(Object[] params) {
         try {
             runner.insert(connection, tableDefinition.getInsertSQL(), scalarHandler, params);
         } catch (SQLException e) {

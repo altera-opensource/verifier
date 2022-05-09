@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,11 +33,11 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
-import com.intel.bkp.ext.core.psgcertificate.model.PsgPublicKey;
-import com.intel.bkp.ext.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.ext.crypto.exceptions.EcdhKeyPairException;
+import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
+import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
+import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponse;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
@@ -58,7 +58,7 @@ import java.nio.ByteBuffer;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)

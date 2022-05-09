@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,6 +39,7 @@ import com.intel.bkp.verifier.command.responses.chip.SigmaTeardownResponseBuilde
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.CommandIdentifier;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -84,8 +85,8 @@ class TeardownMessageSenderTest {
         when(messageSender.send(transportLayer, commandLayer, message, CommandIdentifier.SIGMA_TEARDOWN))
             .thenReturn(RESPONSE);
 
-        // when
-        sut.send(transportLayer, commandLayer);
+        // when-then
+        Assertions.assertDoesNotThrow(() -> sut.send(transportLayer, commandLayer));
     }
 
     @Test
@@ -96,7 +97,7 @@ class TeardownMessageSenderTest {
         when(messageSender.send(transportLayer, commandLayer, message, CommandIdentifier.SIGMA_TEARDOWN))
             .thenReturn(RESPONSE);
 
-        // when
-        sut.send(transportLayer, commandLayer, SDM_SESSION_ID);
+        // when-then
+        Assertions.assertDoesNotThrow(() -> sut.send(transportLayer, commandLayer, SDM_SESSION_ID));
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.ext.core.manufacturing.model.PufType;
+import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.interfaces.VerifierExchange;
@@ -46,7 +46,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.intel.bkp.ext.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -67,10 +67,10 @@ public class VerifierExchangeImpl implements VerifierExchange {
 
     @Override
     @SuppressWarnings("unchecked")
-    public int createDeviceAttestationSubKey(String transportId, String context, PufType pufType) {
+    public int createDeviceAttestationSubKey(String transportId, String context, String pufType) {
         try (AppContext appContext = AppContext.instance()) {
             appContext.init();
-            return createSubKeyInternal(appContext, transportId, context, pufType);
+            return createSubKeyInternal(appContext, transportId, context, PufType.valueOf(pufType));
         } catch (Exception e) {
             log.error("Create attestation subkey failed: ", e);
             return VerifierExchangeResponse.ERROR.getCode();

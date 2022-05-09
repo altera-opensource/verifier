@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2021 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,11 +34,11 @@
 package com.intel.bkp.verifier.command.maps;
 
 
-import com.intel.bkp.ext.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianess.EndianessActor;
 import com.intel.bkp.verifier.endianess.EndianessStructureFields;
 
-import static com.intel.bkp.ext.utils.ByteSwapOrder.CONVERT;
-import static com.intel.bkp.ext.utils.ByteSwapOrder.NONE;
+import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static com.intel.bkp.utils.ByteSwapOrder.NONE;
 
 public final class GetMeasurementRspEndianessMapImpl extends BaseEndianessMapImpl {
 
@@ -48,18 +48,18 @@ public final class GetMeasurementRspEndianessMapImpl extends BaseEndianessMapImp
 
     @Override
     void populateFirmwareMap() {
-        map.put(EndianessStructureFields.GET_MEASUREMENT_MAGIC, CONVERT);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID, CONVERT);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID, NONE);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM, CONVERT);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID, NONE);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES, CONVERT);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY, NONE);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY, NONE);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH, NONE);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_RECORD_LEN, CONVERT);
-        map.put(EndianessStructureFields.GET_MEASUREMENT_MAC, NONE);
+        put(EndianessStructureFields.GET_MEASUREMENT_MAGIC, CONVERT);
+        put(EndianessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID, CONVERT);
+        put(EndianessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID, NONE);
+        put(EndianessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM, CONVERT);
+        put(EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID, NONE);
+        put(EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
+        put(EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES, CONVERT);
+        put(EndianessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY, NONE);
+        put(EndianessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY, NONE);
+        put(EndianessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH, NONE);
+        put(EndianessStructureFields.GET_MEASUREMENT_RECORD_LEN, CONVERT);
+        put(EndianessStructureFields.GET_MEASUREMENT_MAC, NONE);
     }
 }
 
