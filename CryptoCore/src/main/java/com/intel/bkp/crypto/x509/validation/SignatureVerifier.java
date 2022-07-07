@@ -65,7 +65,7 @@ public class SignatureVerifier {
         } catch (CRLException | NoSuchAlgorithmException | InvalidKeyException
                 | NoSuchProviderException | SignatureException e) {
             log.debug("Failed to verify X509 CRL signature.\nCertificate subject: {}\nCRL issuer: {}\nmessage: {}",
-                parent.getSubjectDN(), crl.getIssuerX500Principal(), e.getMessage());
+                parent.getSubjectX500Principal(), crl.getIssuerX500Principal(), e.getMessage());
             return false;
         }
     }

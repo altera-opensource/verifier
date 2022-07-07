@@ -69,7 +69,7 @@ public class UeidVerifier {
 
     public boolean verifyCertificate(final X509Certificate certificate, final byte[] deviceId) {
         if (!containsUeidExtension(certificate)) {
-            log.debug("Certificate does not contain UEID extension: {}", certificate.getSubjectDN());
+            log.debug("Certificate does not contain UEID extension: {}", certificate.getSubjectX500Principal());
             return true;
         }
 
@@ -89,7 +89,7 @@ public class UeidVerifier {
         try {
             return Optional.of(extensionParser.parse(certificate));
         } catch (Exception ex) {
-            log.error("Failed to parse UEID extension of certificate: {}", certificate.getSubjectDN());
+            log.error("Failed to parse UEID extension of certificate: {}", certificate.getSubjectX500Principal());
             return Optional.empty();
         }
     }
@@ -151,7 +151,7 @@ public class UeidVerifier {
     }
 
     private Optional<DiceCertificateSubject> parseSubject(final X509Certificate certificate) {
-        final String subject = certificate.getSubjectDN().getName();
+        final String subject = certificate.getSubjectX500Principal().getName();
         try {
             return Optional.of(DiceCertificateSubject.parse(subject));
         } catch (Exception ex) {

@@ -48,7 +48,7 @@ public class DiceCertificateSubject {
 
     private static final Character DICE_SUBJECT_DELIMITER = ':';
     private static final int COMPONENTS_COUNT = 5;
-    private static final String COMPANY_NAME = "Intel";
+    static final String COMPANY_NAME = "Intel";
 
     private final String companyName;
     private final String familyName;
@@ -221,7 +221,9 @@ public class DiceCertificateSubject {
         }
 
         public static Stream<Rdn> parseDomainName(String domainName) {
-            return Arrays.stream(StringUtils.split(domainName, RDNS_SEPARATOR))
+            final String domainNameWithoutSeparatingSpaces =
+                domainName.replace(RDNS_SEPARATOR + " ", RDNS_SEPARATOR.toString());
+            return Arrays.stream(StringUtils.split(domainNameWithoutSeparatingSpaces, RDNS_SEPARATOR))
                 .map(Rdn::fromString);
         }
 

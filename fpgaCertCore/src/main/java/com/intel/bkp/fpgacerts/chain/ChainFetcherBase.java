@@ -90,7 +90,7 @@ public abstract class ChainFetcherBase {
 
     private Runnable handleNoIssuerCertUrl(X509Certificate currentCert) {
         return () -> {
-            throw getNoIssuerCertUrlException(currentCert.getSubjectDN().getName());
+            throw getNoIssuerCertUrlException(currentCert.getSubjectX500Principal().getName());
         };
     }
 }

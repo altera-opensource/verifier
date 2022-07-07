@@ -34,26 +34,19 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.core.manufacturing.model.PufType;
-import com.intel.bkp.core.properties.DistributionPoint;
-import com.intel.bkp.core.properties.Proxy;
 import com.intel.bkp.core.properties.TrustedRootHash;
 import com.intel.bkp.fpgacerts.url.DistributionPointAddressProvider;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
 import com.intel.bkp.verifier.dp.DistributionPointChainFetcher;
-import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
-import com.intel.bkp.verifier.interfaces.IProxyCallback;
-import com.intel.bkp.verifier.model.LibConfig;
+import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.PublicKey;
@@ -62,7 +55,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,8 +65,6 @@ class S10AttestationRevocationServiceTest {
     private static final String ATTESTATION_CERT_URL = "ATTESTATION_CERT_URL";
     private static final byte[] DEVICE_ID = new byte[]{0x01, 0x02, 0x03};
     private static final String PUF_TYPE = PufType.getPufTypeHex(PufType.EFUSE);
-
-    private static MockedStatic<ProxyCallbackFactory> proxyFactoryMockStatic;
 
     @Mock
     private X509Certificate attestationCert;
@@ -103,36 +93,18 @@ class S10AttestationRevocationServiceTest {
     @Captor
     private ArgumentCaptor<LinkedList<X509Certificate>> certificatesCaptor;
 
-    @BeforeAll
-    public static void prepareStaticMock() {
-        proxyFactoryMockStatic = mockStatic(ProxyCallbackFactory.class);
-    }
-
-    @AfterAll
-    public static void closeStaticMock() {
-        proxyFactoryMockStatic.close();
-    }
-
     @Test
     void constructor_configuresProperly() {
         // given
         final var appContext = mock(AppContext.class);
-        final var libConfig = mock(LibConfig.class);
-        final var dp = mock(DistributionPoint.class);
+        final var dpConnector = mock(DistributionPointConnector.class);
         final var certPath = "path";
         final var s10RootHash = "s10";
         final var trustedRootHash = new TrustedRootHash(s10RootHash, "");
-        final var host = "host";
-        final var port = 123;
-        final var proxy = new Proxy(host, port);
-        final var proxyCallback = mock(IProxyCallback.class);
 
-        when(appContext.getLibConfig()).thenReturn(libConfig);
-        when(libConfig.getDistributionPoint()).thenReturn(dp);
-        when(dp.getPathCer()).thenReturn(certPath);
-        when(dp.getTrustedRootHash()).thenReturn(trustedRootHash);
-        when(dp.getProxy()).thenReturn(proxy);
-        when(ProxyCallbackFactory.get(host, port)).thenReturn(proxyCallback);
+        when(appContext.getDpConnector()).thenReturn(dpConnector);
+        when(appContext.getDpTrustedRootHash()).thenReturn(trustedRootHash);
+        when(appContext.getDpPathCer()).thenReturn(certPath);
 
         // when
         sut = new S10AttestationRevocationService(appContext);
@@ -147,7 +119,7 @@ class S10AttestationRevocationServiceTest {
         final var addressProvider = sut.getAddressProvider();
         Assertions.assertEquals(certPath, addressProvider.getCertificateUrlPrefix());
 
-        proxyFactoryMockStatic.verify(() -> ProxyCallbackFactory.get(host, port), times(2));
+        verify(appContext, times(2)).getDpConnector();
     }
 
     @Test

@@ -36,6 +36,7 @@ package com.intel.bkp.fpgacerts.verification;
 import com.intel.bkp.crypto.x509.validation.ChainVerifier;
 import com.intel.bkp.crypto.x509.validation.ExtendedKeyUsageVerifier;
 import com.intel.bkp.crypto.x509.validation.SubjectKeyIdentifierVerifier;
+import com.intel.bkp.fpgacerts.dice.subject.DiceSubjectVerifier;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoVerifier;
 import com.intel.bkp.fpgacerts.dice.ueid.UeidVerifier;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
@@ -72,14 +73,15 @@ public abstract class DiceChainVerifierBase {
     private final SubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier;
     private final String trustedRootHash;
     private final TcbInfoVerifier tcbInfoVerifier;
+    private final DiceSubjectVerifier diceSubjectVerifier;
 
     @Setter
     private byte[] deviceId;
 
     protected DiceChainVerifierBase(ICrlProvider crlProvider, String trustedRootHash) {
-        this(new ExtendedKeyUsageVerifier(), new ChainVerifier(),
-            new CrlVerifier(crlProvider), new RootHashVerifier(), new UeidVerifier(),
-            new SubjectKeyIdentifierVerifier(), trustedRootHash, new TcbInfoVerifier());
+        this(new ExtendedKeyUsageVerifier(), new ChainVerifier(), new CrlVerifier(crlProvider), new RootHashVerifier(),
+            new UeidVerifier(), new SubjectKeyIdentifierVerifier(), trustedRootHash, new TcbInfoVerifier(),
+            new DiceSubjectVerifier());
     }
 
     protected abstract String[] getExpectedLeafCertKeyPurposes();
@@ -117,6 +119,10 @@ public abstract class DiceChainVerifierBase {
 
         if (!extendedKeyUsageVerifier.certificate(certificates.getFirst()).verify(getExpectedLeafCertKeyPurposes())) {
             handleVerificationFailure("Leaf certificate has invalid key usages.");
+        }
+
+        if (!diceSubjectVerifier.certificates(certificates).verify()) {
+            handleVerificationFailure("DICE subject validation failed.");
         }
     }
 

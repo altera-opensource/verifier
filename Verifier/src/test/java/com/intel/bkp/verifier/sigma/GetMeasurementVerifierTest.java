@@ -68,7 +68,7 @@ class GetMeasurementVerifierTest {
     private GetMeasurementResponse response;
 
     @Mock
-    private GetMeasurementPakSubKeySignatureVerifier pakSignatureVerifier;
+    private GetMeasurementSignatureVerifier pakSignatureVerifier;
 
     @Mock
     private SigmaM2VerifierDhPubKeyVerifier dhPubKeyVerifier;

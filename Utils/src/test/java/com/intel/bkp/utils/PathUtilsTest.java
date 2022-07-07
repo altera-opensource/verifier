@@ -41,6 +41,8 @@ class PathUtilsTest {
     private static final String EXPECTED_PATH_WITH_SLASH = "/test/path/";
     private static final String EXPECTED_PATH_NO_SLASH = "/test/path";
 
+    private static final String EXPECTED_BASE_FILE_NAME = "xyz";
+
     @Test
     void checkTrailingSlash_WithTrailingSlash_DoNothing() {
         // when
@@ -89,7 +91,7 @@ class PathUtilsTest {
     @Test
     void buildPath_NoSlashes_Success() {
         // given
-        String expected = "test/path";
+        final String expected = "test/path";
 
         // when
         final String result = PathUtils.buildPath("test", "path");
@@ -101,7 +103,7 @@ class PathUtilsTest {
     @Test
     void buildPath_WithSlashes_Success() {
         // given
-        String expected = "test/path";
+        final String expected = "test/path";
 
         // when
         final String result = PathUtils.buildPath("test/", "path/");
@@ -113,7 +115,7 @@ class PathUtilsTest {
     @Test
     void buildPath_WithBlankFirstFragment_Success() {
         // given
-        String expected = "path";
+        final String expected = "path";
 
         // when
         final String result = PathUtils.buildPath(" ", "path");
@@ -125,7 +127,7 @@ class PathUtilsTest {
     @Test
     void buildPath_WithEmptyMiddleFragment_Success() {
         // given
-        String expected = "test/path";
+        final String expected = "test/path";
 
         // when
         final String result = PathUtils.buildPath("test", "", "path");
@@ -137,12 +139,60 @@ class PathUtilsTest {
     @Test
     void buildPath_WithNullLastFragment_Success() {
         // given
-        String expected = "test";
+        final String expected = "test";
 
         // when
         final String result = PathUtils.buildPath("test", null);
 
         // then
         Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    void getFileNameWithoutExtension_WithLongPath_ResultOnlyBaseName() {
+        // given
+        final String path = String.format("/long/path/to/file/%s.cer", EXPECTED_BASE_FILE_NAME);
+
+        // when
+        final String result = PathUtils.getFileNameWithoutExtension(path);
+
+        // then
+        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+    }
+
+    @Test
+    void getFileNameWithoutExtension_WithLongPath_WithoutExtension_ResultOnlyBaseName() {
+        // given
+        final String path = String.format("/long/path/to/file/%s", EXPECTED_BASE_FILE_NAME);
+
+        // when
+        final String result = PathUtils.getFileNameWithoutExtension(path);
+
+        // then
+        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+    }
+
+    @Test
+    void getFileNameWithoutExtension_WithOnlyFileName_WithExtension_ResultOnlyBaseName() {
+        // given
+        final String path = String.format("%s.cer", EXPECTED_BASE_FILE_NAME);
+
+        // when
+        final String result = PathUtils.getFileNameWithoutExtension(path);
+
+        // then
+        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+    }
+
+    @Test
+    void getFileNameWithoutExtension_WithNotPrefixedPath_ResultOnlyBaseName() {
+        // given
+        final String path = String.format("test/%s.cer", EXPECTED_BASE_FILE_NAME);
+
+        // when
+        final String result = PathUtils.getFileNameWithoutExtension(path);
+
+        // then
+        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
     }
 }

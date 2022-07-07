@@ -71,9 +71,8 @@ public class FileBasedProvider implements IKeystoreManager {
                 setOnlyOwnerPermissionsOnFile(inputStreamParam);
             }
         } else {
-            try (FileInputStream inputStream = new FileInputStream(inputStreamParam)) {
-                keyStore.load(inputStream, Optional.ofNullable(password).orElse("").toCharArray());
-            }
+            keyStore.load(new FileInputStream(inputStreamParam),
+                Optional.ofNullable(password).orElse("").toCharArray());
         }
     }
 
@@ -85,8 +84,8 @@ public class FileBasedProvider implements IKeystoreManager {
 
     private void storeInternal(KeyStore keyStore, String inputStreamParam, String password)
         throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(inputStreamParam)) {
-            keyStore.store(fileOutputStream, Optional.ofNullable(password).orElse("").toCharArray());
+        try (FileOutputStream out = new FileOutputStream(inputStreamParam)) {
+            keyStore.store(out, Optional.ofNullable(password).orElse("").toCharArray());
         }
     }
 

@@ -33,11 +33,9 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.core.properties.DistributionPoint;
 import com.intel.bkp.fpgacerts.url.DistributionPointAddressProvider;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
 import com.intel.bkp.verifier.dp.DistributionPointChainFetcher;
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -64,13 +62,10 @@ public class S10AttestationRevocationService {
     }
 
     public S10AttestationRevocationService(AppContext appContext) {
-        this(appContext.getLibConfig().getDistributionPoint());
-    }
-
-    public S10AttestationRevocationService(DistributionPoint dp) {
-        this(new S10ChainVerifier(new DistributionPointCrlProvider(dp.getProxy()), dp.getTrustedRootHash().getS10()),
-            new DistributionPointChainFetcher(new DistributionPointConnector(dp.getProxy())),
-            new DistributionPointAddressProvider(dp.getPathCer()));
+        this(new S10ChainVerifier(new DistributionPointCrlProvider(appContext),
+                appContext.getDpTrustedRootHash().getS10()),
+            new DistributionPointChainFetcher(appContext.getDpConnector()),
+            new DistributionPointAddressProvider(appContext.getDpPathCer()));
     }
 
     public PublicKey checkAndRetrieve(byte[] deviceId, String pufTypeHex) {

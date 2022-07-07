@@ -56,7 +56,7 @@ public abstract class DiceParamsParserBase<T extends DiceParams> {
     protected abstract T getDiceParams(String ski, DiceCertificateSubject subject);
 
     public T parse(@NonNull X509Certificate certificate) {
-        log.debug("Parsing Dice URL params from certificate: {}", certificate.getSubjectDN());
+        log.debug("Parsing Dice URL params from certificate: {}", certificate.getSubjectX500Principal());
 
         final String ski = keyIdentifierProvider.getKeyIdentifierInBase64Url(certificate, keyIdentifierMappingFunc);
         final DiceCertificateSubject subject = domainNameParser.parse(certificate, domainNameMappingFunc);

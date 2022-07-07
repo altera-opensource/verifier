@@ -46,7 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.security.Principal;
+import javax.security.auth.x500.X500Principal;
 import java.security.cert.X509Certificate;
 
 import static org.mockito.Mockito.when;
@@ -66,7 +66,7 @@ class DiceParamsIssuerParserTest {
     private static X509Certificate certificate;
 
     @Mock
-    private static Principal principal;
+    private static X500Principal principal;
 
     private DiceParamsIssuerParser sut;
 
@@ -103,7 +103,7 @@ class DiceParamsIssuerParserTest {
     @Test
     void parse_certWithIssuerDNThatIsNotInDiceFormat_Throws() {
         // given
-        when(certificate.getIssuerDN()).thenReturn(principal);
+        when(certificate.getIssuerX500Principal()).thenReturn(principal);
         when(principal.getName()).thenReturn("CN=ValidCommonName:ButNotInDiceFormat");
         when(certificate.getExtensionValue(AKI_OID)).thenReturn(firmwareCert.getExtensionValue(AKI_OID));
 

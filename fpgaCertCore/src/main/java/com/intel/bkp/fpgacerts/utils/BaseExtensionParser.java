@@ -61,7 +61,7 @@ public abstract class BaseExtensionParser<T> {
     public abstract T parse(@NonNull final X509Certificate certificate);
 
     protected void logExtensionParsingStart(final X509Certificate cert, final String extensionName) {
-        log.debug(START_LOG_MESSAGE, extensionName, cert.getSubjectDN());
+        log.debug(START_LOG_MESSAGE, extensionName, cert.getSubjectX500Principal());
     }
 
     protected Optional<ASN1Encodable> getExtension(@NonNull final X509Certificate certificate,
@@ -77,6 +77,6 @@ public abstract class BaseExtensionParser<T> {
     }
 
     protected String getExtensionParsingError(final X509Certificate certificate) {
-        return String.format(ERROR_MESSAGE, extensionName, certificate.getSubjectDN());
+        return String.format(ERROR_MESSAGE, extensionName, certificate.getSubjectX500Principal());
     }
 }

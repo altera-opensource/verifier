@@ -37,91 +37,85 @@ import com.intel.bkp.core.exceptions.JceSecurityProviderException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreSpi;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
+import java.security.KeyStoreException;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
+@ExtendWith(MockitoExtension.class)
 class FileBasedProviderTest {
 
-    private static final String KEYSTORE_INPUT_PARAM = "myParamTest";
-    private static final String PASSWORD_KEYSTORE = "password";
+    @TempDir
+    File tempDir;
 
-    @Mock
-    private KeyStoreSpi keyStoreSpiMock;
+    private static final String KEYSTORE_PASSWORD = "keyPass";
+    private static final String KEYSTORE_TYPE = "PKCS12";
 
-    @Mock
-    private File mockFile;
-
-    private KeyStore keyStoreMock;
+    private File keystoreFile;
+    private KeyStore keystore;
 
     private final FileBasedProvider sut = new FileBasedProvider();
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        keyStoreMock = spy(new KeyStore(keyStoreSpiMock, null, "test") {
-        });
-        try {
-            doNothing().when(keyStoreSpiMock).engineLoad(any(), any());
-            keyStoreMock.load(null);
-        } catch (IOException | NoSuchAlgorithmException | CertificateException e) {
-            e.printStackTrace();
-        }
+    void setUp() throws Exception {
+        keystoreFile = initKeystore();
+        keystore = KeyStore.getInstance(KEYSTORE_TYPE);
     }
 
     @Test
     void load_withEmptyKeystoreInputPath_ThrowsInitializeSecurityException() {
         // then
         Assertions.assertThrows(JceSecurityProviderException.class,
-            () -> sut.load(keyStoreMock, null, PASSWORD_KEYSTORE));
+            () -> sut.load(keystore, null, KEYSTORE_PASSWORD));
     }
 
     @Test
     void load_WithFileNotExists_PerformInternalStore() {
-        // given
-        when(mockFile.exists()).thenReturn(false);
-
         // when
-        Assertions.assertDoesNotThrow(() -> sut.load(keyStoreMock, KEYSTORE_INPUT_PARAM, PASSWORD_KEYSTORE));
+        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
     void load_WithFileIsDir_PerformInternalStore() {
-        // given
-        when(mockFile.exists()).thenReturn(false);
-        when(mockFile.isDirectory()).thenReturn(true);
-
         // when
-        Assertions.assertDoesNotThrow(() -> sut.load(keyStoreMock, KEYSTORE_INPUT_PARAM, PASSWORD_KEYSTORE));
+        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
     void load_WithFileExists_PerformInternalStore() {
-        // given
-        when(mockFile.exists()).thenReturn(true);
-
         // when
-        Assertions.assertDoesNotThrow(() -> sut.load(keyStoreMock, KEYSTORE_INPUT_PARAM, PASSWORD_KEYSTORE));
+        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
-    void store_Success() {
+    void store_Success() throws Exception {
         // given
-        when(mockFile.exists()).thenReturn(true);
+        sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD);
 
         // when
-        Assertions.assertDoesNotThrow(() -> sut.store(keyStoreMock, KEYSTORE_INPUT_PARAM, PASSWORD_KEYSTORE));
+        Assertions.assertDoesNotThrow(() -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+    }
+
+    @Test
+    void store_WithoutInitializingKeystore_ThrowsException() {
+        // when
+        Assertions.assertThrows(KeyStoreException.class,
+            () -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+    }
+
+    private File initKeystore() throws Exception {
+        final KeyStore instance = KeyStore.getInstance(KEYSTORE_TYPE);
+        char[] password = KEYSTORE_PASSWORD.toCharArray();
+        instance.load(null, password);
+        final File keystoreFile = new File(tempDir, "tmpKeystore2.p12");
+
+        try (FileOutputStream out = new FileOutputStream(keystoreFile)) {
+            instance.store(out, password);
+        }
+        return keystoreFile;
     }
 }

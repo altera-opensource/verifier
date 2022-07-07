@@ -32,11 +32,9 @@
  */
 
 plugins {
-    id 'io.freefair.lombok'
     id 'com.github.gmazzo.sqlite' version "${sqlite_plugin_version}"
     id 'java-library'
     id 'idea'
-    id 'com.github.ben-manes.versions'
 }
 
 apply from: rootProject.file('gradle/common.gradle')
@@ -67,8 +65,8 @@ jar {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 group = 'com.intel.bkp'
 version = buildVersion
@@ -155,6 +153,7 @@ task deploy(dependsOn: jar, type: Copy) {
 }
 
 compileJava.dependsOn createSqliteDatabase
+processResources.dependsOn createSqliteDatabase
 
 task copyJarToOtherProjects {
     copy {

@@ -54,8 +54,8 @@ class X509UtilsWrapperTest {
 
     // https://tsci.intel.com/content/IPCS/certs/IPCSSigningCA.cer
     private static final String PARENT_CERT_FILENAME = "IPCSSigningCA.cer";
-    private static final String CERT_SUBJECT = "C=US,ST=CA,L=Santa Clara,O=Intel Corporation,OU=Intel PUF " +
-            "Certificate Service,CN=IPCS Signing Cert Test";
+    private static final String CERT_SUBJECT = "CN=IPCS Signing Cert Test, OU=Intel PUF Certificate Service, "
+        + "O=Intel Corporation, L=Santa Clara, ST=CA, C=US";
     private static final String ISSUER_URL = "https://tsci.intel.com/content/IPCS/certs/IPCS.cer";
 
     private static byte[] certificate;
@@ -71,7 +71,7 @@ class X509UtilsWrapperTest {
         X509Certificate result = X509UtilsWrapper.toX509(certificate);
 
         // then
-        Assertions.assertEquals(CERT_SUBJECT, result.getSubjectDN().toString());
+        Assertions.assertEquals(CERT_SUBJECT, result.getSubjectX500Principal().toString());
     }
 
     @Test

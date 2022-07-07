@@ -33,37 +33,47 @@
 
 package com.intel.bkp.verifier.dp;
 
-import com.intel.bkp.core.properties.DistributionPoint;
 import com.intel.bkp.fpgacerts.chain.DistributionPointCertificate;
 import com.intel.bkp.fpgacerts.dice.IpcsCertificateFetcher;
+import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 
 import java.security.cert.X509Certificate;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class DistributionPointIpcsCertificateFetcher extends IpcsCertificateFetcher {
+
+    private static final String DEVICE_ID_CERT_NAME = "IPCS DeviceId";
+    private static final String IID_UDS_CERT_NAME = "IPCS IID UDS";
+    private static final String ENROLLMENT_CERT_NAME = "IPCS Enrollment";
 
     public DistributionPointIpcsCertificateFetcher() {
         this(AppContext.instance());
     }
 
     DistributionPointIpcsCertificateFetcher(AppContext appContext) {
-        this(appContext.getLibConfig().getDistributionPoint());
+        super(new DistributionPointCertificateFetcher(appContext.getDpConnector()), appContext.getDpPathCer());
     }
 
-    DistributionPointIpcsCertificateFetcher(DistributionPoint dp) {
-        super(new DistributionPointCertificateFetcher(new DistributionPointConnector(dp.getProxy())), dp.getPathCer());
+    public X509Certificate fetchDeviceIdX509Cert() {
+        return fetchAsX509Certificate(super::fetchDeviceIdCert, DEVICE_ID_CERT_NAME);
     }
 
-    public Optional<X509Certificate> fetchDeviceIdX509Cert() {
-        return super.fetchDeviceIdCert().map(DistributionPointCertificate::getX509Cert);
+    public X509Certificate fetchIidUdsX509Cert() {
+        return fetchAsX509Certificate(super::fetchIidUdsCert, IID_UDS_CERT_NAME);
     }
 
-    public Optional<X509Certificate> fetchIidUdsX509Cert() {
-        return super.fetchIidUdsCert().map(DistributionPointCertificate::getX509Cert);
+    public X509Certificate fetchEnrollmentX509Cert() {
+        return fetchAsX509Certificate(super::fetchEnrollmentCert, ENROLLMENT_CERT_NAME);
     }
 
-    public Optional<X509Certificate> fetchEnrollmentX509Cert() {
-        return super.fetchEnrollmentCert().map(DistributionPointCertificate::getX509Cert);
+    private X509Certificate fetchAsX509Certificate(Supplier<Optional<DistributionPointCertificate>> certSupplier,
+                                                   String certName) {
+        return certSupplier
+            .get()
+            .map(DistributionPointCertificate::getX509Cert)
+            .orElseThrow(() -> new InternalLibraryException(
+                "%s certificate not found on Distribution Point.".formatted(certName)));
     }
 }

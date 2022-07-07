@@ -67,10 +67,7 @@ public class DiceRevocationCacheEntityService extends CacheEntityServiceBase {
     }
 
     private Object[] getParams(DiceRevocationCacheEntity entity) {
-        return new Object[] {
-            entity.getDeviceId(),
-            entity.getRevoked()
-        };
+        return new Object[]{entity.getDeviceId()};
     }
 
     private BeanListHandler<DiceRevocationCacheEntity> getResultsHandler() {

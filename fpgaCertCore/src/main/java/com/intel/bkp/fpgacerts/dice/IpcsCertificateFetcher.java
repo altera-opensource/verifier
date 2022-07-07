@@ -42,7 +42,6 @@ import com.intel.bkp.fpgacerts.url.params.DiceParams;
 import com.intel.bkp.fpgacerts.url.params.parsing.DiceEnrollmentParamsIssuerParser;
 import com.intel.bkp.fpgacerts.url.params.parsing.DiceParamsIssuerParser;
 import com.intel.bkp.fpgacerts.url.params.parsing.DiceParamsSubjectParser;
-import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,14 +50,11 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class IpcsCertificateFetcher {
 
     private final ICertificateFetcher certificateFetcher;
-    private final DiceParamsSubjectParser diceParamsSubjectParser;
-    private final DiceParamsIssuerParser diceParamsIssuerParser;
-    private final DiceEnrollmentParamsIssuerParser diceEnrollmentParamsIssuerParser;
     private final DistributionPointAddressProvider addressProvider;
+    private final DiceParamsProvider paramsProvider;
 
     // Below certs are used as input, to determine URL parameters - at least one must be set
     private Optional<X509Certificate> firmwareCert;
@@ -75,6 +71,17 @@ public class IpcsCertificateFetcher {
     public IpcsCertificateFetcher(ICertificateFetcher certificateFetcher, String certificateUrlPrefix) {
         this(certificateFetcher, new DiceParamsSubjectParser(), new DiceParamsIssuerParser(),
             new DiceEnrollmentParamsIssuerParser(), new DistributionPointAddressProvider(certificateUrlPrefix));
+    }
+
+    IpcsCertificateFetcher(ICertificateFetcher certificateFetcher,
+                           DiceParamsSubjectParser diceParamsSubjectParser,
+                           DiceParamsIssuerParser diceParamsIssuerParser,
+                           DiceEnrollmentParamsIssuerParser diceEnrollmentParamsIssuerParser,
+                           DistributionPointAddressProvider addressProvider) {
+        this.certificateFetcher = certificateFetcher;
+        this.addressProvider = addressProvider;
+        this.paramsProvider = new DiceParamsProvider(
+            diceParamsSubjectParser, diceParamsIssuerParser, diceEnrollmentParamsIssuerParser);
         clear();
     }
 
@@ -135,59 +142,33 @@ public class IpcsCertificateFetcher {
     }
 
     public Optional<DistributionPointCertificate> fetchDeviceIdCert() {
-        deviceIdCert = deviceIdCert.or(() -> Optional.of(fetchDeviceIdCert(getDiceParams())));
+        deviceIdCert = deviceIdCert.or(() -> Optional.of(fetchDeviceIdCertInternal()));
         return deviceIdCert.get();
     }
 
-    private Optional<DistributionPointCertificate> fetchDeviceIdCert(DiceParams diceParams) {
-        final String url = addressProvider.getDeviceIdCertUrl(diceParams);
+    private Optional<DistributionPointCertificate> fetchDeviceIdCertInternal() {
+        final String url = addressProvider.getDeviceIdCertUrl(paramsProvider.getDeviceIdParams());
         return fetch(url);
     }
 
     public Optional<DistributionPointCertificate> fetchIidUdsCert() {
-        iidUdsCert = iidUdsCert.or(() -> Optional.of(fetchIidUdsCert(getDiceParams())));
+        iidUdsCert = iidUdsCert.or(() -> Optional.of(fetchIidUdsCertInternal()));
         return iidUdsCert.get();
     }
 
-    private Optional<DistributionPointCertificate> fetchIidUdsCert(DiceParams diceParams) {
-        final String url = addressProvider.getIidUdsCertUrl(diceParams);
+    private Optional<DistributionPointCertificate> fetchIidUdsCertInternal() {
+        final String url = addressProvider.getIidUdsCertUrl(paramsProvider.getIidUdsParams());
         return fetch(url);
     }
 
     public Optional<DistributionPointCertificate> fetchEnrollmentCert() {
-        enrollmentCert = enrollmentCert.or(() -> Optional.of(fetchEnrollmentCert(getDiceEnrollmentParams())));
+        enrollmentCert = enrollmentCert.or(() -> Optional.of(fetchEnrollmentCertInternal()));
         return enrollmentCert.get();
     }
 
-    private Optional<DistributionPointCertificate> fetchEnrollmentCert(DiceEnrollmentParams diceEnrollmentParams) {
-        final String url = addressProvider.getEnrollmentCertUrl(diceEnrollmentParams);
+    private Optional<DistributionPointCertificate> fetchEnrollmentCertInternal() {
+        final String url = addressProvider.getEnrollmentCertUrl(paramsProvider.getEnrollmentParams());
         return fetch(url);
-    }
-
-    private DiceParams getDiceParams() {
-        return getDiceParamsBasedOnFirmwareCertIssuer()
-            .or(this::getDiceParamsBasedOnDeviceIdEnrollmentCertSubject)
-            .orElseThrow(this::getNoCertificatesException);
-    }
-
-    private Optional<DiceParams> getDiceParamsBasedOnFirmwareCertIssuer() {
-        return firmwareCert
-            .map(diceParamsIssuerParser::parse);
-    }
-
-    private Optional<DiceParams> getDiceParamsBasedOnDeviceIdEnrollmentCertSubject() {
-        return deviceIdEnrollmentCert
-            .map(diceParamsSubjectParser::parse);
-    }
-
-    private DiceEnrollmentParams getDiceEnrollmentParams() {
-        return getEnrollmentParamsBasedOnDeviceIdEnrollmentCertIssuer()
-            .orElseThrow(this::getNoDeviceIdCertificateException);
-    }
-
-    private Optional<DiceEnrollmentParams> getEnrollmentParamsBasedOnDeviceIdEnrollmentCertIssuer() {
-        return deviceIdEnrollmentCert
-            .map(diceEnrollmentParamsIssuerParser::parse);
     }
 
     private Optional<DistributionPointCertificate> fetch(String url) {
@@ -199,13 +180,57 @@ public class IpcsCertificateFetcher {
         return fetchedCert;
     }
 
-    private IpcsCertificateFetcherNotInitializedException getNoCertificatesException() {
-        return new IpcsCertificateFetcherNotInitializedException(
-            "Neither firmware nor deviceIdEnrollment certificate were provided - failed to determine URL params.");
-    }
+    @RequiredArgsConstructor
+    private class DiceParamsProvider {
 
-    private IpcsCertificateFetcherNotInitializedException getNoDeviceIdCertificateException() {
-        return new IpcsCertificateFetcherNotInitializedException(
-            "DeviceIdEnrollment certificate was not provided - failed to determine enrollment URL params.");
+        private final DiceParamsSubjectParser diceParamsSubjectParser;
+        private final DiceParamsIssuerParser diceParamsIssuerParser;
+        private final DiceEnrollmentParamsIssuerParser diceEnrollmentParamsIssuerParser;
+
+        public DiceParams getDeviceIdParams() {
+            return getDiceParamsBasedOnFirmwareCertIssuer()
+                .or(this::getDiceParamsBasedOnDeviceIdEnrollmentCertSubject)
+                .orElseThrow(this::getNoCertificatesException);
+        }
+
+        public DiceParams getIidUdsParams() {
+            return getDiceParamsBasedOnDeviceIdEnrollmentCertIssuer()
+                .orElseThrow(this::getNoDeviceIdCertificateException);
+        }
+
+        public DiceEnrollmentParams getEnrollmentParams() {
+            return getEnrollmentParamsBasedOnDeviceIdEnrollmentCertIssuer()
+                .orElseThrow(this::getNoDeviceIdCertificateException);
+        }
+
+        private Optional<DiceParams> getDiceParamsBasedOnFirmwareCertIssuer() {
+            return firmwareCert
+                .map(diceParamsIssuerParser::parse);
+        }
+
+        private Optional<DiceParams> getDiceParamsBasedOnDeviceIdEnrollmentCertSubject() {
+            return deviceIdEnrollmentCert
+                .map(diceParamsSubjectParser::parse);
+        }
+
+        private Optional<DiceParams> getDiceParamsBasedOnDeviceIdEnrollmentCertIssuer() {
+            return deviceIdEnrollmentCert
+                .map(diceParamsIssuerParser::parse);
+        }
+
+        private Optional<DiceEnrollmentParams> getEnrollmentParamsBasedOnDeviceIdEnrollmentCertIssuer() {
+            return deviceIdEnrollmentCert
+                .map(diceEnrollmentParamsIssuerParser::parse);
+        }
+
+        private IpcsCertificateFetcherNotInitializedException getNoCertificatesException() {
+            return new IpcsCertificateFetcherNotInitializedException(
+                "Neither firmware nor deviceIdEnrollment certificate were provided - failed to determine URL params.");
+        }
+
+        private IpcsCertificateFetcherNotInitializedException getNoDeviceIdCertificateException() {
+            return new IpcsCertificateFetcherNotInitializedException(
+                "DeviceIdEnrollment certificate was not provided - failed to determine URL params.");
+        }
     }
 }

@@ -44,7 +44,7 @@ import java.security.cert.X509Certificate;
 public final class DiceEnrollmentParamsIssuerParser extends DiceParamsParserBase<DiceEnrollmentParams> {
 
     public DiceEnrollmentParamsIssuerParser() {
-        super(KeyIdentifierUtils::getAuthorityKeyIdentifier, X509Certificate::getIssuerDN);
+        super(KeyIdentifierUtils::getAuthorityKeyIdentifier, X509Certificate::getIssuerX500Principal);
     }
 
     @Override

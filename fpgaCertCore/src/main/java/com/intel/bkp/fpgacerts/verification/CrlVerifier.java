@@ -45,8 +45,11 @@ import java.math.BigInteger;
 import java.security.Principal;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 
 import static com.intel.bkp.crypto.x509.utils.CrlDistributionPointsUtils.getCrlUrl;
 import static com.intel.bkp.crypto.x509.utils.X509CrlUtils.isRevoked;
@@ -55,6 +58,18 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class CrlVerifier {
+
+    static final String CHECKING_REVOCATION_LOG_FORMAT = "Checking if certificate is revoked based on CRL: {}";
+    static final String NO_EXTENSION_WHEN_REQUIRED_LOG_FORMAT =
+        "Certificate does not have required CRLDistributionPoints extension: {}";
+    static final String NO_EXTENSION_WHEN_NOT_REQUIRED_LOG_FORMAT =
+        "Certificate does not have CRLDistributionPoints extension but it was not required: {}";
+    static final String SIGNATURE_VALIDATION_PASSED_LOG_FORMAT =
+        "Verified CRL signature using public key of certificate: {}";
+    static final String SIGNATURE_VALIDATION_FAILED_LOG_MSG = "Failed to verify signature of CRL";
+    static final String INVALID_NEXT_UPDATE_LOG_MSG =
+        "CRL might be invalid! It is either expired, or does not contain mandatory NextUpdate field.";
+    static final String CERT_IS_REVOKED_LOG_FORMAT = "Certificate {} with serial number {} is revoked.";
 
     @Getter
     private final SignatureVerifier signatureVerifier;
@@ -89,19 +104,19 @@ public class CrlVerifier {
             return true;
         }
 
-        log.debug("Checking if certificate is revoked based on CRL: {}", cert.getSubjectDN());
+        log.debug(CHECKING_REVOCATION_LOG_FORMAT, cert.getSubjectX500Principal());
         return getCrlUrl(cert)
-                .map(crlUrl -> handleCrl(crlUrl, cert, certificateChainIterator))
-                .orElseGet(() -> handleNoCrl(requireCrl, cert.getSubjectDN(), certificateChainIterator));
+            .map(crlUrl -> handleCrl(crlUrl, cert, certificateChainIterator))
+            .orElseGet(() -> handleNoCrl(requireCrl, cert.getSubjectX500Principal(), certificateChainIterator));
     }
 
     private boolean handleNoCrl(boolean requireCrl, Principal certSubject,
                                 ListIterator<X509Certificate> certificateChainIterator) {
         if (requireCrl) {
-            log.error("Certificate does not have required CRLDistributionPoints extension: {}", certSubject);
+            log.error(NO_EXTENSION_WHEN_REQUIRED_LOG_FORMAT, certSubject);
             return false;
         }
-        log.debug("Certificate does not have CRLDistributionPoints extension but it was not required: {}", certSubject);
+        log.debug(NO_EXTENSION_WHEN_NOT_REQUIRED_LOG_FORMAT, certSubject);
 
         final X509Certificate nextCert = certificateChainIterator.next();
         return verifyRecursive(nextCert, certificateChainIterator, true);
@@ -111,14 +126,14 @@ public class CrlVerifier {
                               ListIterator<X509Certificate> certificateChainIterator) {
         final X509CRL crl = crlProvider.getCrl(crlUrl);
         verifyCrlSignature(crl, certificateChainIterator.nextIndex());
+        verifyNextUpdate(crl);
 
         final BigInteger serialNumber = certificate.getSerialNumber();
         return isRevoked(crl, serialNumber)
-                ? handleRevokedCertificate(certificate.getSubjectDN(), serialNumber)
-                : verifyRecursive(certificateChainIterator.next(), certificateChainIterator, true);
+               ? handleRevokedCertificate(certificate.getSubjectX500Principal(), serialNumber)
+               : verifyRecursive(certificateChainIterator.next(), certificateChainIterator, true);
 
     }
-
 
     private void verifyCrlSignature(final X509CRL crl, final int issuerCertIndex) {
         final var issuerCertsIterator = certificates.listIterator(issuerCertIndex);
@@ -126,17 +141,28 @@ public class CrlVerifier {
         while (issuerCertsIterator.hasNext()) {
             final X509Certificate potentialIssuer = issuerCertsIterator.next();
             if (signatureVerifier.verify(crl, potentialIssuer)) {
-                log.debug("Verified CRL signature using public key of certificate: {}", potentialIssuer.getSubjectDN());
+                log.debug(SIGNATURE_VALIDATION_PASSED_LOG_FORMAT, potentialIssuer.getSubjectX500Principal());
                 return;
             }
         }
 
-        log.info("WARNING: Verification of CRL signature omitted for debug purposes.");
-        //throw new CrlSignatureException("Failed to verify signature of CRL");
+        throw new CrlSignatureException(SIGNATURE_VALIDATION_FAILED_LOG_MSG);
+    }
+
+    private void verifyNextUpdate(X509CRL crl) {
+        if (!isNextUpdateValid(crl)) {
+            log.warn(INVALID_NEXT_UPDATE_LOG_MSG);
+        }
+    }
+
+    private boolean isNextUpdateValid(X509CRL crl) {
+        return Optional.ofNullable(crl.getNextUpdate())
+            .map(date -> date.after(Date.from(Instant.now())))
+            .orElse(false);
     }
 
     private boolean handleRevokedCertificate(Principal certificateSubject, BigInteger serial) {
-        log.error("Certificate {} with serial number {} is revoked.", certificateSubject, toHex(serial.byteValue()));
+        log.error(CERT_IS_REVOKED_LOG_FORMAT, certificateSubject, toHex(serial.byteValue()));
         return false;
     }
 }

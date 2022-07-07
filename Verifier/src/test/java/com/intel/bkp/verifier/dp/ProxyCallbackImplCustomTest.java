@@ -58,6 +58,6 @@ class ProxyCallbackImplCustomTest {
         // then
         final List<Proxy> proxies = result.select(new URI("https://google.com"));
         Assertions.assertEquals(1, proxies.size());
-        Assertions.assertEquals("HTTP @ test:123", proxies.get(0).toString());
+        Assertions.assertEquals("HTTP @ test/<unresolved>:123", proxies.get(0).toString());
     }
 }

@@ -58,6 +58,6 @@ public class KeyUsageVerifier {
     }
 
     private void logIncorrectKeyUsage(final X509Certificate certificate) {
-        log.error("Certificate does not have required KeyUsage: {}.", certificate.getSubjectDN());
+        log.error("Certificate does not have required KeyUsage: {}.", certificate.getSubjectX500Principal());
     }
 }

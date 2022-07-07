@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.core.properties.Proxy;
 import com.intel.bkp.crypto.exceptions.X509CrlParsingException;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
@@ -52,8 +51,8 @@ public class DistributionPointCrlProvider implements ICrlProvider {
 
     private final DistributionPointConnector connector;
 
-    public DistributionPointCrlProvider(Proxy proxy) {
-        this(new DistributionPointConnector(proxy));
+    public DistributionPointCrlProvider(AppContext appContext) {
+        this(appContext.getDpConnector());
     }
 
     @Override

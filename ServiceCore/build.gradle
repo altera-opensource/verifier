@@ -40,9 +40,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions'
     id 'java-library'
-    id 'io.freefair.lombok'
     id 'idea'
 }
 
@@ -58,8 +56,8 @@ jar {
     }
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 group = 'com.intel.bkp'
 version = getBuildVersion()

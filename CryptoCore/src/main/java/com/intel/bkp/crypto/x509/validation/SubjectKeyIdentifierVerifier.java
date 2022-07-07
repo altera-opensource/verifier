@@ -62,7 +62,7 @@ public class SubjectKeyIdentifierVerifier {
     private boolean verifyCertificate(final X509Certificate certificate) {
         final Optional<byte[]> skiFromCert = Optional.ofNullable(getSubjectKeyIdentifier(certificate));
         if (skiFromCert.isEmpty()) {
-            log.debug("Certificate does not contain SKI extension: {}", certificate.getSubjectDN());
+            log.debug("Certificate does not contain SKI extension: {}", certificate.getSubjectX500Principal());
             return true;
         }
 
@@ -70,7 +70,8 @@ public class SubjectKeyIdentifierVerifier {
         final boolean valid = Arrays.equals(calculatedSki, skiFromCert.get());
         if (!valid) {
             log.error("Certificate has incorrect SKI value: {}\nExpected (calculated with method 2 from RFC7093): {}"
-                + "\nActual: {}", certificate.getSubjectDN(), toHex(calculatedSki), toHex(skiFromCert.get()));
+                    + "\nActual: {}", certificate.getSubjectX500Principal(), toHex(calculatedSki),
+                toHex(skiFromCert.get()));
         }
         return valid;
     }

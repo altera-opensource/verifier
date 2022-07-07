@@ -37,13 +37,13 @@ import com.intel.bkp.core.endianess.EndianessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponse;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
-import com.intel.bkp.verifier.interfaces.IPakSignatureVerifier;
+import com.intel.bkp.verifier.interfaces.ISignatureVerifier;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.PublicKey;
 
 @Slf4j
-public class CreateAttestationSubKeyPakSignatureVerifier implements IPakSignatureVerifier {
+public class CreateAttestationSubKeyPakSignatureVerifier implements ISignatureVerifier {
 
     public void verify(PublicKey pakPublicKey,
         CreateAttestationSubKeyResponse response) throws PsgInvalidSignatureException {

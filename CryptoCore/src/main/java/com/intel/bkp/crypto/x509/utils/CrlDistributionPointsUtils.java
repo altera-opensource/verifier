@@ -34,7 +34,7 @@
 package com.intel.bkp.crypto.x509.utils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
@@ -79,7 +79,7 @@ public class CrlDistributionPointsUtils {
     }
 
     private static String getGeneralNameAsString(GeneralName name) {
-        return DERIA5String.getInstance(name.getName()).getString();
+        return ASN1IA5String.getInstance(name.getName()).toString();
     }
 
     private static boolean isUniformResourceIdentifier(GeneralName name) {

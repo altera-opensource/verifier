@@ -36,13 +36,9 @@ package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.verifier.database.model.DiceRevocationCacheEntity;
 import com.intel.bkp.verifier.database.repository.DiceRevocationCacheEntityService;
-import com.intel.bkp.verifier.model.DiceRevocationStatus;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
-
 import static com.intel.bkp.utils.HexConverter.toHex;
-import static com.intel.bkp.verifier.model.DiceRevocationStatus.REVOKED;
 
 @RequiredArgsConstructor
 public class DiceRevocationCacheService {
@@ -58,22 +54,12 @@ public class DiceRevocationCacheService {
     }
 
     public boolean isRevoked(byte[] deviceId) {
-        return readEntityFromDatabase(deviceId)
-            .map(DiceRevocationCacheEntity::isRevoked)
-            .orElse(false);
-    }
-
-    private Optional<DiceRevocationCacheEntity> readEntityFromDatabase(byte[] deviceId) {
-        return entityService.read(deviceId);
+        return entityService.read(deviceId).isPresent();
     }
 
     public void saveAsRevoked(byte[] deviceId) {
-        createEntityInDatabase(deviceId, REVOKED);
-    }
-
-    private void createEntityInDatabase(byte[] deviceId, DiceRevocationStatus status) {
         entityService.store(
-            new DiceRevocationCacheEntity(toHex(deviceId), status)
+            new DiceRevocationCacheEntity(toHex(deviceId))
         );
     }
 }

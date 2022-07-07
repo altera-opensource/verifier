@@ -33,37 +33,48 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.fpgacerts.chain.DistributionPointCertificate;
 import com.intel.bkp.fpgacerts.dice.IEnrollmentFlowDetector;
 import com.intel.bkp.fpgacerts.dice.IpcsCertificateFetcher;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.security.cert.X509Certificate;
-import java.util.Optional;
+import static com.intel.bkp.utils.HexConverter.toHex;
 
+@Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class EnrollmentFlowDetector implements IEnrollmentFlowDetector {
+
     private final byte[] deviceId;
     private final IpcsCertificateFetcher certFetcher;
     private final DiceRevocationCacheService diceRevocationCacheService;
 
-    public static EnrollmentFlowDetector instance(X509Certificate firmwareCert, byte[] deviceId,
-                                                  IpcsCertificateFetcher certFetcher) {
-        certFetcher.setFirmwareCert(firmwareCert);
+    public static EnrollmentFlowDetector instance(byte[] deviceId, IpcsCertificateFetcher certFetcher) {
         return new EnrollmentFlowDetector(deviceId, certFetcher, new DiceRevocationCacheService());
     }
 
     @Override
     public boolean isEnrollmentFlow() {
-        return isRevoked() || getDeviceIdCertificate().isEmpty();
+        return isRevoked() || deviceIdCertificateNotFound();
     }
 
     private boolean isRevoked() {
-        return diceRevocationCacheService.isRevoked(deviceId);
+        final boolean isRevoked = diceRevocationCacheService.isRevoked(deviceId);
+        if (isRevoked) {
+            logEnrollmentFlowDetected("device %s was previously cached as revoked.".formatted(toHex(deviceId)));
+        }
+        return isRevoked;
     }
 
-    private Optional<DistributionPointCertificate> getDeviceIdCertificate() {
-        return certFetcher.fetchDeviceIdCert();
+    private boolean deviceIdCertificateNotFound() {
+        final boolean notFound = certFetcher.fetchDeviceIdCert().isEmpty();
+        if (notFound) {
+            logEnrollmentFlowDetected("deviceId certificate not found.");
+        }
+        return notFound;
+    }
+
+    private void logEnrollmentFlowDetected(String details) {
+        log.debug("Detected enrollment flow - {}", details);
     }
 }

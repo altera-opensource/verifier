@@ -115,7 +115,7 @@ public class TcbInfoVerifier {
     }
 
     private String getFamilyName(X509Certificate certificate) {
-        return DiceCertificateSubject.parse(certificate.getSubjectDN().getName()).getFamilyName();
+        return DiceCertificateSubject.parse(certificate.getSubjectX500Principal().getName()).getFamilyName();
     }
 
     private boolean verifyAllTcbInfosAreValid() {
@@ -130,7 +130,7 @@ public class TcbInfoVerifier {
 
     public boolean verifyCertificate(final X509Certificate certificate) {
         if (!containsTcbInfoExtension(certificate)) {
-            log.debug("Certificate does not contain TcbInfo extension: {}", certificate.getSubjectDN());
+            log.debug("Certificate does not contain TcbInfo extension: {}", certificate.getSubjectX500Principal());
             return true;
         }
 
@@ -139,7 +139,7 @@ public class TcbInfoVerifier {
             && verifyThereAreNoDifferentValuesForGivenTcbInfoKeyInChain(tcbInfos);
 
         if (!valid) {
-            log.error("Certificate has invalid TcbInfo extension value: {}", certificate.getSubjectDN());
+            log.error("Certificate has invalid TcbInfo extension value: {}", certificate.getSubjectX500Principal());
         }
 
         return valid;

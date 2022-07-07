@@ -253,7 +253,7 @@ class JceSecurityProviderTest {
     void createSecurityObject_returnsEcKeyPair() throws Exception {
         // given
         prepareEcKey(false);
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -267,7 +267,7 @@ class JceSecurityProviderTest {
     void createSecurityObject_WithKeyType_returnsRSAKey() throws Exception {
         // given
         prepareEcKey(false);
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -281,7 +281,7 @@ class JceSecurityProviderTest {
     void createSecurityObject_WithKeyType_returnsAESKey() throws Exception {
         // given
         prepareEcKey(false);
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -295,7 +295,7 @@ class JceSecurityProviderTest {
     void createSecurityObject_WithKeyType_returnsEcKeyPair() throws Exception {
         // given
         prepareEcKey(false);
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -309,7 +309,7 @@ class JceSecurityProviderTest {
     void decryptRSA_ThrowsException() throws Exception {
         // given
         prepareEcKey(false);
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         Assertions.assertThrows(JceSecurityProviderException.class,
@@ -319,7 +319,7 @@ class JceSecurityProviderTest {
     @Test
     void deleteSecurityObject_deletesObject() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -332,7 +332,7 @@ class JceSecurityProviderTest {
     @Test
     void deleteSecurityObject_throwsExceptionDueToUnknownReason() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(false);
+        final var keyStore = prepareKeyStore(false);
         securityService.setKeyStore(keyStore);
         Assertions.assertThrows(JceSecurityProviderException.class,
             () -> securityService.deleteSecurityObject(testKeyAliasNegative));
@@ -341,7 +341,20 @@ class JceSecurityProviderTest {
     @Test
     void existsSecurityObject_returnsTrue() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
+        securityService.setKeyStore(keyStore);
+
+        // when
+        final boolean result = securityService.existsSecurityObject(testKeyAliasPositive);
+
+        // then
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void existsSecurityObject_UninitializedKeystore_ShouldReloadAndReturnTrue() throws Exception {
+        // given
+        final var keyStore = prepareKeyStore(false);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -354,7 +367,7 @@ class JceSecurityProviderTest {
     @Test
     void importSecretKey_Success() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
         SecretKey secretKey = CryptoUtils.genAesBC();
 
@@ -362,14 +375,14 @@ class JceSecurityProviderTest {
         securityService.importSecretKey(testKeyAliasPositive, secretKey);
 
         // then
-        SecretKey result = (SecretKey)keyStore.getKey(testKeyAliasPositive, "".toCharArray());
+        SecretKey result = (SecretKey) keyStore.getKey(testKeyAliasPositive, "".toCharArray());
         Assertions.assertEquals(secretKey, result);
     }
 
     @Test
     void getPubKeyFromSecurityObject_returnsPubKey() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         // when
@@ -382,7 +395,7 @@ class JceSecurityProviderTest {
 
     @Test
     void getPubKeyFromSecurityObject_throwsExceptionDueToNullCertificateInChain() throws Exception {
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         Assertions.assertThrows(JceSecurityProviderException.class,
@@ -392,7 +405,7 @@ class JceSecurityProviderTest {
     @Test
     void getPubKeyFromSecurityObject_throwsExceptionDueToNullCertificateChain() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         Assertions.assertThrows(JceSecurityProviderException.class,
@@ -401,7 +414,7 @@ class JceSecurityProviderTest {
 
     @Test
     void getPubKeyFromSecurityObject_throwsExceptionDueToEmptyCertificateChain() throws Exception {
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         Assertions.assertThrows(JceSecurityProviderException.class,
@@ -410,7 +423,7 @@ class JceSecurityProviderTest {
 
     @Test
     void getPubKeyFromSecurityObject_throwsExceptionDueToNullPublicKey() throws Exception {
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
         Assertions.assertThrows(JceSecurityProviderException.class,
@@ -420,7 +433,7 @@ class JceSecurityProviderTest {
     @Test
     void signObject_ReturnsSignature() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         final KeyPair keyPair = prepareEcKey(true);
         assert keyPair != null;
         KeystoreUtils.storeKeyWithCertificate(securityService.getProvider(), keyStore, keyPair,
@@ -438,7 +451,7 @@ class JceSecurityProviderTest {
     @Test
     void signObject_throwsExceptionDueToKeyStoreNotInitialized() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(false);
+        final var keyStore = prepareKeyStore(false);
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
@@ -449,7 +462,7 @@ class JceSecurityProviderTest {
     @Test
     void signObject_throwsExceptionDueToUnrecoverableKey() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
@@ -460,7 +473,7 @@ class JceSecurityProviderTest {
     @Test
     void signObject_throwsExceptionDueToNoAlgorithm() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
@@ -471,7 +484,7 @@ class JceSecurityProviderTest {
     @Test
     void signObject_throwsExceptionDueToInvalidKey() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         prepareEcKey(false);
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
@@ -483,7 +496,7 @@ class JceSecurityProviderTest {
     @Test
     void signObject_throwsExceptionDueToContentError() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         final KeyPair keyPair = prepareEcKey(true);
         assert keyPair != null;
         KeystoreUtils.storeKeyWithCertificate(securityService.getProvider(), keyStore, keyPair,
@@ -498,8 +511,9 @@ class JceSecurityProviderTest {
     @Test
     void getKeyFromSecurityObject_WithMissingKeyObject_Success() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
-        SecretKey secretKey = AesUtils.genAES(provider, CryptoConstants.AES_KEY, CryptoConstants.AES_KEY_SIZE);;
+        final var keyStore = prepareKeyStore(true);
+        SecretKey secretKey = AesUtils.genAES(provider, CryptoConstants.AES_KEY, CryptoConstants.AES_KEY_SIZE);
+
         KeystoreUtils.storeSecretKey(keyStore, secretKey, testKeyAliasPositive);
         securityService.setKeyStore(keyStore);
 
@@ -519,7 +533,7 @@ class JceSecurityProviderTest {
     @Test
     void getPrivateKeyFromSecurityObject_WithMissingKeyObject_Success() throws Exception {
         // given
-        KeyStore keyStore = prepareKeyStore(true);
+        final var keyStore = prepareKeyStore(true);
         final KeyPair keyPair = prepareEcKey(true);
         assert keyPair != null;
         KeystoreUtils.storeKeyWithCertificate(securityService.getProvider(), keyStore, keyPair,
