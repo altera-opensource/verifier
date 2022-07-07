@@ -33,64 +33,37 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.core.properties.DistributionPoint;
-import com.intel.bkp.core.properties.Proxy;
 import com.intel.bkp.core.properties.TrustedRootHash;
-import com.intel.bkp.verifier.dp.ProxyCallbackFactory;
-import com.intel.bkp.verifier.interfaces.IProxyCallback;
-import com.intel.bkp.verifier.model.LibConfig;
-import org.junit.jupiter.api.AfterAll;
+import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DiceAttestationRevocationServiceTest {
 
-    private static MockedStatic<ProxyCallbackFactory> proxyFactoryMockStatic;
-
     @InjectMocks
     private DiceAttestationRevocationService sut;
-
-    @BeforeAll
-    public static void prepareStaticMock() {
-        proxyFactoryMockStatic = mockStatic(ProxyCallbackFactory.class);
-    }
-
-    @AfterAll
-    public static void closeStaticMock() {
-        proxyFactoryMockStatic.close();
-    }
 
     @Test
     void constructor_configuresProperly() {
         // given
         final var appContext = mock(AppContext.class);
-        final var libConfig = mock(LibConfig.class);
-        final var dp = mock(DistributionPoint.class);
+        final var dpConnector = mock(DistributionPointConnector.class);
         final var certPath = "path";
         final var diceRootHash = "dice";
         final var trustedRootHash = new TrustedRootHash("", diceRootHash);
-        final var host = "host";
-        final var port = 123;
-        final var proxy = new Proxy(host, port);
-        final var proxyCallback = mock(IProxyCallback.class);
 
-        when(appContext.getLibConfig()).thenReturn(libConfig);
-        when(libConfig.getDistributionPoint()).thenReturn(dp);
-        when(dp.getPathCer()).thenReturn(certPath);
-        when(dp.getTrustedRootHash()).thenReturn(trustedRootHash);
-        when(dp.getProxy()).thenReturn(proxy);
-        when(ProxyCallbackFactory.get(host, port)).thenReturn(proxyCallback);
+        when(appContext.getDpConnector()).thenReturn(dpConnector);
+        when(appContext.getDpTrustedRootHash()).thenReturn(trustedRootHash);
+        when(appContext.getDpPathCer()).thenReturn(certPath);
 
         // when
         sut = new DiceAttestationRevocationService(appContext);
@@ -105,6 +78,6 @@ class DiceAttestationRevocationServiceTest {
         final var addressProvider = sut.getAddressProvider();
         Assertions.assertEquals(certPath, addressProvider.getCertificateUrlPrefix());
 
-        proxyFactoryMockStatic.verify(() -> ProxyCallbackFactory.get(host, port), times(2));
+        verify(appContext, times(2)).getDpConnector();
     }
 }

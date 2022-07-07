@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.database.model;
 
-import com.intel.bkp.verifier.model.DiceRevocationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,9 +43,4 @@ import lombok.NoArgsConstructor;
 public class DiceRevocationCacheEntity {
 
     private String deviceId;
-    private DiceRevocationStatus revoked;
-
-    public boolean isRevoked() {
-        return DiceRevocationStatus.REVOKED == revoked;
-    }
 }

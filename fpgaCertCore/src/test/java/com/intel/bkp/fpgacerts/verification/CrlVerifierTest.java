@@ -35,10 +35,13 @@ package com.intel.bkp.fpgacerts.verification;
 
 import com.intel.bkp.crypto.x509.utils.CrlDistributionPointsUtils;
 import com.intel.bkp.crypto.x509.validation.SignatureVerifier;
+import com.intel.bkp.fpgacerts.LogUtils;
 import com.intel.bkp.fpgacerts.exceptions.CrlSignatureException;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,20 +51,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.org.lidalia.slf4jext.Level;
 
 import java.math.BigInteger;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import static com.intel.bkp.fpgacerts.verification.CrlVerifier.INVALID_NEXT_UPDATE_LOG_MSG;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -123,6 +131,11 @@ class CrlVerifierTest {
     @BeforeEach
     void setUpClass() {
         sut.certificates(certificates);
+    }
+
+    @AfterEach
+    void clearLogs() {
+        LogUtils.clearLogs(sut.getClass());
     }
 
     @Test
@@ -204,20 +217,87 @@ class CrlVerifierTest {
     }
 
     @Test
-    void verify_WithCertWithoutCrlExtension_CrlNotRequired_ReturnTrue() {
+    void verify_CrlWithoutNextUpdate_LogsWarning() {
         // given
+        when(leafCRL.getNextUpdate()).thenReturn(null);
         mockChainWith2Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByDirectParent();
+        mockLeafCertIsNotRevoked();
+
+        // when-then
+        Assertions.assertTrue(() -> sut.verify());
+
+        // then
+        Assertions.assertTrue(getWarningLogs().anyMatch(log -> log.contains(INVALID_NEXT_UPDATE_LOG_MSG)));
+    }
+
+    @Test
+    void verify_CrlExpired_LogsWarning() {
+        // given
+        final Date yesterday = DateUtils.addDays(new Date(), -1);
+        when(leafCRL.getNextUpdate()).thenReturn(yesterday);
+        mockChainWith2Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByDirectParent();
+        mockLeafCertIsNotRevoked();
+
+        // when-then
+        Assertions.assertTrue(() -> sut.verify());
+
+        // then
+        Assertions.assertTrue(getWarningLogs().anyMatch(log -> log.contains(INVALID_NEXT_UPDATE_LOG_MSG)));
+    }
+
+    @Test
+    void verify_CrlNotExpired_DoesNotLogWarning() {
+        // given
+        final Date tomorrow = DateUtils.addDays(new Date(), 1);
+        when(leafCRL.getNextUpdate()).thenReturn(tomorrow);
+        mockChainWith2Certs();
+        mockLeafCrlOnDp();
+        mockLeafCrlSignedByDirectParent();
+        mockLeafCertIsNotRevoked();
+
+        // when-then
+        Assertions.assertTrue(() -> sut.verify());
+
+        // then
+        Assertions.assertTrue(getWarningLogs().findAny().isEmpty());
+    }
+
+    @Test
+    void verify_WithLeafCertWithoutCrlExtension_LeafCrlNotRequired_ReturnTrue() {
+        // given
+        mockChainWith3Certs();
         mockLeafCertDoesNotContainUrlToCrl();
+        mockParentCrlOnDp();
+        mockParentCrlSignedByRoot(false);
 
         // when-then
         Assertions.assertTrue(() -> sut.doNotRequireCrlForLeafCertificate().verify());
+
+        // then
+        verify(signatureVerifier).verify(parentCRL, rootCertificate);
+        verifyNoMoreInteractions(signatureVerifier);
+    }
+
+    @Test
+    void verify_WithIntermediateCertWithoutCrlExtension_LeafCrlNotRequired_ReturnFalse() {
+        // given
+        mockChainWith3Certs();
+        mockLeafCertDoesNotContainUrlToCrl();
+        mockIntermediateCertDoesNotContainUrlToCrl();
+
+        // when-then
+        Assertions.assertFalse(() -> sut.doNotRequireCrlForLeafCertificate().verify());
 
         // then
         verifyNoInteractions(signatureVerifier);
     }
 
     @Test
-    void verify_WithCertWithoutCrlExtension_CrlRequired_ReturnFalse() {
+    void verify_WithLeafCertWithoutCrlExtension_LeafCrlRequired_ReturnFalse() {
         // given
         mockChainWith2Certs();
         mockLeafCertDoesNotContainUrlToCrl();
@@ -253,6 +333,11 @@ class CrlVerifierTest {
     }
 
     @SneakyThrows
+    private void mockIntermediateCertDoesNotContainUrlToCrl() {
+        when(CrlDistributionPointsUtils.getCrlUrl(parentCertificate)).thenReturn(Optional.empty());
+    }
+
+    @SneakyThrows
     private void mockParentCrlOnDp() {
         when(CrlDistributionPointsUtils.getCrlUrl(parentCertificate)).thenReturn(Optional.of(PARENT_CRL_PATH));
         when(crlProvider.getCrl(PARENT_CRL_PATH)).thenReturn(parentCRL);
@@ -285,7 +370,15 @@ class CrlVerifierTest {
     }
 
     private void mockParentCrlSignedByRoot() {
-        when(certificateChainIterator.nextIndex()).thenReturn(1, 2);
+        mockParentCrlSignedByRoot(true);
+    }
+
+    private void mockParentCrlSignedByRoot(boolean leafCrlExists) {
+        if (leafCrlExists) {
+            when(certificateChainIterator.nextIndex()).thenReturn(1, 2);
+        } else {
+            when(certificateChainIterator.nextIndex()).thenReturn(2);
+        }
         when(certificates.listIterator(2)).thenReturn(parentCertIssuerCertsIterator);
         when(parentCertIssuerCertsIterator.hasNext()).thenReturn(true, false);
         when(parentCertIssuerCertsIterator.next()).thenReturn(rootCertificate);
@@ -316,5 +409,9 @@ class CrlVerifierTest {
         final X509CRLEntry crlEntry = mock(X509CRLEntry.class);
         when(crl.getRevokedCertificates()).thenReturn((Set) Set.of(crlEntry));
         when(crlEntry.getSerialNumber()).thenReturn(revokedSerialNumber);
+    }
+
+    private Stream<String> getWarningLogs() {
+        return LogUtils.getLogs(sut.getClass(), Level.WARN);
     }
 }

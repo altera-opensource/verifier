@@ -49,8 +49,7 @@ import java.security.PublicKey;
 @NoArgsConstructor
 public class GetMeasurementVerifier {
 
-    private GetMeasurementPakSubKeySignatureVerifier
-        pakSignatureVerifier = new GetMeasurementPakSubKeySignatureVerifier();
+    private GetMeasurementSignatureVerifier signatureVerifier = new GetMeasurementSignatureVerifier();
     private SigmaM2VerifierDhPubKeyVerifier dhPubKeyVerifier = new SigmaM2VerifierDhPubKeyVerifier();
 
     public void verify(PublicKey aliasPubKey, GetMeasurementResponse response, EcdhKeyPair serviceDhKeyPair) {
@@ -58,12 +57,11 @@ public class GetMeasurementVerifier {
         verifyVerifierDhPubKey(response, serviceDhKeyPair);
     }
 
-    private void verifySignature(GetMeasurementResponse response, PublicKey pufAttestationPubKey) {
+    private void verifySignature(GetMeasurementResponse response, PublicKey aliasPubKey) {
         try {
-            pakSignatureVerifier.verify(pufAttestationPubKey, response);
+            signatureVerifier.verify(aliasPubKey, response);
         } catch (PsgInvalidSignatureException e) {
-            throw new SigmaException("GetMeasurementResponse signature "
-                + "verification with PufAttestationPubKey failed.", e);
+            throw new SigmaException("GetMeasurementResponse signature verification failed.", e);
         }
     }
 

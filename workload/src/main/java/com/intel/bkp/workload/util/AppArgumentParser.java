@@ -90,7 +90,8 @@ public class AppArgumentParser {
         Option context = new Option(null, "context", true, "Random value provided as seed");
         options.addOption(context);
 
-        Option pufType = new Option(null, "puf-type", true, "Puf type enum value");
+        Option pufType = new Option(null, "puf-type", true, "Puf type enum value. "
+            + "Possible values: IID, INTEL, EFUSE, IIDUSER, INTEL_USER");
         options.addOption(pufType);
 
         Option refMeasure = new Option(null, "ref-measurement", true, "reference evidence with policy");

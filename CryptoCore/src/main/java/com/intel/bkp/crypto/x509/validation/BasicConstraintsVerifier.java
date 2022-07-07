@@ -63,13 +63,13 @@ public class BasicConstraintsVerifier {
 
     private void logMissingBasicConstraints(X509Certificate certificate) {
         log.error("Certificate is missing BasicConstraints extension: {}.",
-                certificate.getSubjectDN());
+            certificate.getSubjectX500Principal());
     }
 
     private void logUnexpectedBasicConstraintsValue(X509Certificate certificate, int expected, int actual) {
         log.error("Certificate has incorrect BasicConstraints value: {}%nExpected: {}%nActual: {}",
-                certificate.getSubjectDN(), basicConstraintsValueToString(expected),
-                basicConstraintsValueToString(actual));
+            certificate.getSubjectX500Principal(), basicConstraintsValueToString(expected),
+            basicConstraintsValueToString(actual));
     }
 
     private String basicConstraintsValueToString(int value) {

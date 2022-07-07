@@ -135,7 +135,7 @@ class IpcsCertificateFetcherTest {
     public void fetchDeviceIdCert_OnlyDeviceIdEnrollmentCert_Success() {
         // given
         sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
-        mockParsingParamsFromDeviceIdEnrollmentCert();
+        mockParsingParamsFromDeviceIdEnrollmentCertSubject();
         mockDeviceIdUrl();
         mockFetchingCertificate();
 
@@ -187,6 +187,9 @@ class IpcsCertificateFetcherTest {
 
     @Test
     public void fetchEnrollmentCert_OnlyFirmwareCert_Throws() {
+        // given
+        sut.setFirmwareCert(firmwareCert);
+
         // when-then
         Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchEnrollmentCert());
     }
@@ -246,43 +249,19 @@ class IpcsCertificateFetcherTest {
     }
 
     @Test
-    public void fetchIidUdsCert_OnlyFirmwareCert_Success() {
+    public void fetchIidUdsCert_OnlyFirmwareCert_Throws() {
         // given
         sut.setFirmwareCert(firmwareCert);
-        mockParsingParamsFromFirmwareCert();
-        mockIidUdsUrl();
-        mockFetchingCertificate();
 
-        // when
-        final var result = sut.fetchIidUdsCert();
-
-        // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
-    }
-
-    @Test
-    public void fetchIidUdsCert_BothCerts_UsesFirmwareCert() {
-        // given
-        sut.setFirmwareCert(firmwareCert);
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
-        mockParsingParamsFromFirmwareCert();
-        mockIidUdsUrl();
-        mockFetchingCertificate();
-
-        // when
-        final var result = sut.fetchIidUdsCert();
-
-        // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
+        // when-then
+        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIidUdsCert());
     }
 
     @Test
     public void fetchIidUdsCert_OnlyDeviceIdEnrollmentCert_Success() {
         // given
         sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
-        mockParsingParamsFromDeviceIdEnrollmentCert();
+        mockParsingParamsFromDeviceIdEnrollmentCertIssuer();
         mockIidUdsUrl();
         mockFetchingCertificate();
 
@@ -297,8 +276,8 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchIidUdsCert_SecondInvocation_ReturnsPreviouslyFetchedCert() {
         // given
-        sut.setFirmwareCert(firmwareCert);
-        mockParsingParamsFromFirmwareCert();
+        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        mockParsingParamsFromDeviceIdEnrollmentCertIssuer();
         mockIidUdsUrl();
         mockFetchingCertificate();
 
@@ -314,8 +293,8 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchIidUdsCert_NoCertFetched_ReturnsEmptyOptional() {
         // given
-        sut.setFirmwareCert(firmwareCert);
-        mockParsingParamsFromFirmwareCert();
+        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        mockParsingParamsFromDeviceIdEnrollmentCertIssuer();
         mockIidUdsUrl();
         mockFetchingCertificateDoesNotExist();
 
@@ -330,8 +309,12 @@ class IpcsCertificateFetcherTest {
         when(diceParamsIssuerParser.parse(firmwareCert)).thenReturn(DICE_PARAMS);
     }
 
-    private void mockParsingParamsFromDeviceIdEnrollmentCert() {
+    private void mockParsingParamsFromDeviceIdEnrollmentCertSubject() {
         when(diceParamsSubjectParser.parse(deviceIdEnrollmentCert)).thenReturn(DICE_PARAMS);
+    }
+
+    private void mockParsingParamsFromDeviceIdEnrollmentCertIssuer() {
+        when(diceParamsIssuerParser.parse(deviceIdEnrollmentCert)).thenReturn(DICE_PARAMS);
     }
 
     private void mockParsingEnrollmentParamsFromDeviceIdEnrollmentCert() {

@@ -71,6 +71,7 @@ import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class JceSecurityProvider implements ISecurityProvider {
 
@@ -106,20 +107,22 @@ public class JceSecurityProvider implements ISecurityProvider {
     protected String inputStreamParam;
     private final IKeystoreManagerChooser chooserCallback;
 
-    private final RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
-        .handle(KeyStoreException.class)
-        .withDelay(Duration.ofSeconds(DELAY_SECONDS))
-        .withMaxRetries(MAX_RETRIES)
-        .abortOn(UnrecoverableKeyException.class)
-        .onRetry(e -> reloadKeystore());
+    private final RetryPolicy<Object> retryPolicy = prepareRetryPolicy(Optional.empty());
+    private final RetryPolicy<Object> retryPolicyWithResult = prepareRetryPolicy(Optional.of(Objects::isNull));
+    private final RetryPolicy<Object> retryPolicyWithBoolean = prepareRetryPolicy(Optional.of(o -> !((boolean) o)));
 
-    private final RetryPolicy<Object> retryPolicyWithResult = new RetryPolicy<>()
-        .handle(KeyStoreException.class)
-        .handleResultIf(Objects::isNull)
-        .withDelay(Duration.ofSeconds(DELAY_SECONDS))
-        .withMaxRetries(MAX_RETRIES)
-        .abortOn(UnrecoverableKeyException.class)
-        .onRetry(e -> reloadKeystore());
+    private RetryPolicy<Object> prepareRetryPolicy(Optional<Predicate<Object>> handleResultIfPredicate) {
+        final var retryPolicy = new RetryPolicy<>()
+            .handle(KeyStoreException.class)
+            .withDelay(Duration.ofSeconds(DELAY_SECONDS))
+            .withMaxRetries(MAX_RETRIES)
+            .abortOn(UnrecoverableKeyException.class)
+            .onRetry(e -> reloadKeystore());
+
+        return handleResultIfPredicate
+            .map(retryPolicy::handleResultIf)
+            .orElse(retryPolicy);
+    }
 
     public JceSecurityProvider(SecurityProviderParams params, IKeystoreManagerChooser chooserCallback) {
         this.securityProviderParams = params;
@@ -271,7 +274,8 @@ public class JceSecurityProvider implements ISecurityProvider {
 
     public synchronized boolean existsSecurityObject(String name) {
         try {
-            return Failsafe.with(retryPolicyWithResult).get(() -> keyStore.isKeyEntry(name));
+            System.out.println("Looking for key: " + name);
+            return Failsafe.with(retryPolicyWithBoolean).get(() -> keyStore.isKeyEntry(name));
         } catch (FailsafeException e) {
             throw new JceSecurityProviderException(
                 String.format("Failed to check if security object '%1s' exists.", name), e);
@@ -300,7 +304,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     public byte[] signObject(byte[] content, String name) {
         try {
             final PrivateKey privateKey = Failsafe.with(retryPolicyWithResult).get(
-                () -> (PrivateKey)keyStore.getKey(name, "".toCharArray())
+                () -> (PrivateKey) keyStore.getKey(name, "".toCharArray())
             );
             return EcUtils.signEcData(privateKey, content, ecProperties.getSignatureAlgorithm(),
                 provider);
@@ -316,7 +320,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     public SecretKey getKeyFromSecurityObject(String name) {
         try {
             return Failsafe.with(retryPolicyWithResult)
-                .get(() -> (SecretKey)keyStore.getKey(name, "".toCharArray())
+                .get(() -> (SecretKey) keyStore.getKey(name, "".toCharArray())
                 );
         } catch (FailsafeException e) {
             throw new JceSecurityProviderException(
@@ -327,7 +331,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     public PrivateKey getPrivateKeyFromSecurityObject(String name) {
         try {
             return Failsafe.with(retryPolicyWithResult)
-                .get(() -> (PrivateKey)keyStore.getKey(name, "".toCharArray())
+                .get(() -> (PrivateKey) keyStore.getKey(name, "".toCharArray())
                 );
         } catch (FailsafeException e) {
             throw new JceSecurityProviderException(

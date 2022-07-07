@@ -25,7 +25,7 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
 
 # Prerequisites
 
-1. Java 11
+1. Java 17
 
 2. [FCS Server](https://github.com/altera-opensource/fcs_server) should be up and running on HPS, with TCP traffic enabled
 
@@ -98,21 +98,21 @@ e.g.,
 
 ### \[Stratix10 only\] Create Attestation SubKey
    
-Provide #PUF_TYPE# identifier and #CONTEXT# (hex string up to 28 bytes)
+Provide #PUF_TYPE# string identifier and #CONTEXT# (hex string up to 28 bytes)
 
     java -jar ./out/workload.jar -i “host:#HOST#; port:#PORT#” -c CREATE --puf-type #PUF_TYPE# --context #CONTEXT#
 
 where:
 
-- PUF_TYPE is an integer identifier of enum:
+- PUF_TYPE is a string identifier of enum:
 
-    `0 - IID, 1 - INTEL, 2 - UDS_EFUSE, 3 - IIDUSER, 4 - INTEL_USER`
+  `IID, INTEL, EFUSE, IIDUSER, INTEL_USER`
 
 - CONTEXT is random hex value provided as seed to SDM FW and cached by Verifier, max 28 bytes length
 
 e.g.,    
 
-    java -jar ./out/workload.jar -i “host:localhost; port:50001” -c CREATE --puf-type 2 --context 01020304050607080A0B0C0D0E0F0F112233445566778899AABBCC
+    java -jar ./out/workload.jar -i “host:localhost; port:50001” -c CREATE --puf-type EFUSE --context 01020304050607080A0B0C0D0E0F0F112233445566778899AABBCC
 
 ### Get device attestation
     

@@ -64,7 +64,7 @@ class DiceTableDefinitionTest {
         sut.getColumnsForCreateTable(stringBuilder);
 
         // then
-        Assertions.assertEquals("deviceid TEXT PRIMARY KEY UNIQUE,revoked INTEGER NOT NULL",
+        Assertions.assertEquals("deviceid TEXT PRIMARY KEY UNIQUE",
             stringBuilder.toString());
     }
 
@@ -77,7 +77,7 @@ class DiceTableDefinitionTest {
         sut.getColumnsForInsert(stringBuilder);
 
         // then
-        Assertions.assertEquals("deviceid,revoked",
+        Assertions.assertEquals("deviceid",
             stringBuilder.toString());
     }
 
@@ -87,6 +87,6 @@ class DiceTableDefinitionTest {
         final int result = sut.getColumnLength();
 
         // then
-        Assertions.assertEquals(2, result);
+        Assertions.assertEquals(1, result);
     }
 }

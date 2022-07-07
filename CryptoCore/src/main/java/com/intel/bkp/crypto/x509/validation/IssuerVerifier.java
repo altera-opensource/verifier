@@ -68,6 +68,6 @@ public class IssuerVerifier {
 
     private void logMismatchedIssuer(final X509Certificate child, final X509Certificate parent) {
         log.error("Certificate has Issuer ({}) that does not match Subject of parent certificate ({}).",
-                child.getIssuerDN(), parent.getSubjectDN());
+            child.getIssuerX500Principal(), parent.getSubjectX500Principal());
     }
 }

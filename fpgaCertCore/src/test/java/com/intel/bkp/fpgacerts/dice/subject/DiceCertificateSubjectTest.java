@@ -191,6 +191,24 @@ class DiceCertificateSubjectTest {
     }
 
     @Test
+    public void parse_SubjectWithAdditionalRDNsWithSpaces_DoesNotThrow() {
+        // given
+        final String subjectWithAdditionalRDNsWithSpaces = "O=Intel Corporation, CN=Intel:Agilex:ER:FF:0123, C=US";
+
+        // when-then
+        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithAdditionalRDNsWithSpaces));
+    }
+
+    @Test
+    public void parse_SubjectWithAdditionalRDNsWithoutSpaces_DoesNotThrow() {
+        // given
+        final String subjectWithAdditionalRDNsWithoutSpaces = "O=Intel Corporation,CN=Intel:Agilex:ER:FF:0123,C=US";
+
+        // when-then
+        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithAdditionalRDNsWithoutSpaces));
+    }
+
+    @Test
     void build_correctData_Success() {
         // given
         final var familyName = AttFamily.AGILEX.getFamilyName();
@@ -244,6 +262,6 @@ class DiceCertificateSubjectTest {
 
     @SneakyThrows
     private String getSubjectOfCertificate(String fileName) {
-        return Utils.readCertificate(TEST_FOLDER, fileName).getSubjectDN().getName();
+        return Utils.readCertificate(TEST_FOLDER, fileName).getSubjectX500Principal().getName();
     }
 }

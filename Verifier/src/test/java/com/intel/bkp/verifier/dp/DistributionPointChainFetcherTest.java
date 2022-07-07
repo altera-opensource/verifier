@@ -182,7 +182,7 @@ class DistributionPointChainFetcherTest {
     }
 
     private void mockSubject(X509Certificate cert) {
-        when(cert.getSubjectDN()).thenReturn(new X500Principal(SUBJECT));
+        when(cert.getSubjectX500Principal()).thenReturn(new X500Principal(SUBJECT));
     }
 
 }

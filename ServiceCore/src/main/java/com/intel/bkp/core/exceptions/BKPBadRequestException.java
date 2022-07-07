@@ -47,8 +47,8 @@ public class BKPBadRequestException extends BKPRuntimeException {
         super(errorCode, throwable);
     }
 
-    public BKPBadRequestException(IErrorCode errorCode, String message) {
-        super(errorCode, message);
+    public BKPBadRequestException(IErrorCode errorCode, String internalMessage) {
+        super(errorCode, internalMessage);
     }
 
     public BKPBadRequestException(IErrorCode errorCode, String internalMessage, Throwable exception) {

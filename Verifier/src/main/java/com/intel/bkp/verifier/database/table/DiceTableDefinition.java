@@ -39,7 +39,6 @@ import lombok.Getter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.intel.bkp.verifier.database.table.DiceTableDefinition.Columns.REVOKED;
 import static com.intel.bkp.verifier.database.table.DiceTableDefinition.Columns.UID;
 import static com.intel.bkp.verifier.database.table.SQLiteChangelog.V1;
 
@@ -60,14 +59,12 @@ public final class DiceTableDefinition extends TableDefinitionBase {
 
     @Override
     protected void getColumnsForCreateTable(StringBuilder sb) {
-        buildColumnCreate(sb, UID.getColName(), "TEXT PRIMARY KEY UNIQUE");
-        buildColumnCreate(sb, REVOKED.getColName(), "INTEGER NOT NULL", false);
+        buildColumnCreate(sb, UID.getColName(), "TEXT PRIMARY KEY UNIQUE", false);
     }
 
     @Override
     protected void getColumnsForInsert(StringBuilder sb) {
-        buildColumnInsert(sb, UID.getColName());
-        buildColumnInsert(sb, REVOKED.getColName(), false);
+        buildColumnInsert(sb, UID.getColName(), false);
     }
 
     @Override
@@ -77,8 +74,7 @@ public final class DiceTableDefinition extends TableDefinitionBase {
 
     @AllArgsConstructor
     enum Columns {
-        UID("deviceid"),
-        REVOKED("revoked");
+        UID("deviceid");
 
         @Getter
         private final String colName;

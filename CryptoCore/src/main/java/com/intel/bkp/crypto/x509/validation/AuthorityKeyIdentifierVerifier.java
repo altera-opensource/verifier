@@ -61,6 +61,7 @@ public class AuthorityKeyIdentifierVerifier {
     }
 
     private void logMismatchedAKI(final X509Certificate child) {
-        log.error("Certificate has AKI that does not match SKI of parent certificate: {}.", child.getSubjectDN());
+        log.error("Certificate has AKI that does not match SKI of parent certificate: {}.",
+            child.getSubjectX500Principal());
     }
 }

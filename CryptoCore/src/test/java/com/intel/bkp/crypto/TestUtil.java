@@ -39,7 +39,6 @@ import com.intel.bkp.crypto.exceptions.X509CrlParsingException;
 import com.intel.bkp.crypto.x509.generation.X509CertificateBuilder;
 import com.intel.bkp.crypto.x509.generation.X509CertificateBuilderParams;
 import lombok.SneakyThrows;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
@@ -58,6 +57,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -168,7 +168,7 @@ public class TestUtil {
             .replaceAll(System.lineSeparator(), "")
             .replaceAll(tagPattern, "");
 
-        return Base64.decodeBase64(content);
+        return Base64.getDecoder().decode(content);
     }
 
     public static String getResourceAsString(String pathToFolderInResources, String filename) throws IOException {

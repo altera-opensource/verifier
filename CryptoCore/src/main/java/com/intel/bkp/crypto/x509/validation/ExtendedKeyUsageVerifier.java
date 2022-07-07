@@ -54,7 +54,7 @@ public class ExtendedKeyUsageVerifier {
     }
 
     public boolean verify(String... keyPurposes) {
-        final String subjectDN = certificate.getSubjectDN().getName();
+        final String subjectDN = certificate.getSubjectX500Principal().getName();
         try {
             final boolean valid = Optional.ofNullable(certificate.getExtendedKeyUsage())
                 .map(c -> Arrays.stream(keyPurposes).anyMatch(c::contains))

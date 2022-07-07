@@ -117,7 +117,7 @@ class UeidVerifierTest {
         final byte[] invalidUeidValue = fromHex(VALID_UEID_VALUE + "010203");
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(invalidUeidValue);
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(VALID_SUBJECT));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(VALID_SUBJECT));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
@@ -133,7 +133,7 @@ class UeidVerifierTest {
         final String expectedErrorMessage = "Failed to parse subject of certificate: " + SUBJECT_NOT_IN_EXPECTED_FORMAT;
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(VALID_UEID_VALUE));
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(SUBJECT_NOT_IN_EXPECTED_FORMAT));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(SUBJECT_NOT_IN_EXPECTED_FORMAT));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
@@ -149,7 +149,7 @@ class UeidVerifierTest {
         final byte[] mismatchedDeviceId = VALID_UID;
         final String expectedErrorMessage = String.format("Certificate has UEID extension with uid that does not match "
                 + "deviceId: %s\nExpected: %s\nActual: %s",
-            certWithUeidExtension.getSubjectDN(), toHex(mismatchedDeviceId), toHex(DEVICE_ID));
+            certWithUeidExtension.getSubjectX500Principal(), toHex(mismatchedDeviceId), toHex(DEVICE_ID));
 
 
         // when
@@ -169,7 +169,7 @@ class UeidVerifierTest {
             SUBJECT_WITH_DIFFERENT_DEVICE_ID, DIFFERENT_UID, toHex(VALID_UID));
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(VALID_UEID_VALUE));
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(SUBJECT_WITH_DIFFERENT_DEVICE_ID));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(SUBJECT_WITH_DIFFERENT_DEVICE_ID));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
@@ -186,7 +186,7 @@ class UeidVerifierTest {
             "Failed to recognize family name from subject of certificate: " + SUBJECT_WITH_UNKNOWN_FAMILY;
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(VALID_UEID_VALUE));
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(SUBJECT_WITH_UNKNOWN_FAMILY));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(SUBJECT_WITH_UNKNOWN_FAMILY));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
@@ -204,7 +204,7 @@ class UeidVerifierTest {
             SUBJECT_WITH_DIFFERENT_FAMILY);
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(VALID_UEID_VALUE));
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(SUBJECT_WITH_DIFFERENT_FAMILY));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(SUBJECT_WITH_DIFFERENT_FAMILY));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
@@ -219,7 +219,7 @@ class UeidVerifierTest {
         // given
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(VALID_UEID_VALUE));
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(VALID_SUBJECT));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(VALID_SUBJECT));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
@@ -233,7 +233,7 @@ class UeidVerifierTest {
         // given
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(VALID_UEID_VALUE));
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal(VALID_SUBJECT));
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(VALID_SUBJECT));
 
         // when
         final boolean valid = sut.certificates(List.of(certificate, certWithUeidExtension)).verify(DEVICE_ID);

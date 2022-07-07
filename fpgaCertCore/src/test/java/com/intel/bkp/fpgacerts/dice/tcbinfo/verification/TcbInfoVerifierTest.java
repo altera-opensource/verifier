@@ -44,8 +44,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.security.auth.x500.X500Principal;
 import java.lang.reflect.Field;
-import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +55,6 @@ import java.util.stream.Collectors;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -155,12 +154,12 @@ class TcbInfoVerifierTest {
         // given
         final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
         final int tcbInfosInChain = 3;
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockTcbInfoExtension(parentCertificate, TCBINFO_WITH_ROM_EXT_HASH_LAYER);
         mockTcbInfoExtension(rootCertificate, TCBINFO_WITH_LAYER_2);
         mockAllFieldsVerifiersToPassValidation();
-        mockRequiredMeasurementsExistanceVerifier(true);
+        mockRequiredMeasurementsExistenceVerifier(true);
 
         // when
         final boolean result = sut.certificates(chain).verify();
@@ -179,10 +178,10 @@ class TcbInfoVerifierTest {
     void verify_NotAllRequiredMeasurements_Fails() {
         // given
         final var chain = List.of(childCertificate, parentCertificate);
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockAllFieldsVerifiersToPassValidation();
-        mockRequiredMeasurementsExistanceVerifier(false);
+        mockRequiredMeasurementsExistenceVerifier(false);
 
         // when
         final boolean result = sut.certificates(chain).verify();
@@ -195,11 +194,11 @@ class TcbInfoVerifierTest {
     void verify_OneCertWithoutTcbInfo_Success() {
         // given
         final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockTcbInfoExtension(parentCertificate, TCBINFO_WITH_ROM_EXT_HASH_LAYER);
         mockAllFieldsVerifiersToPassValidation();
-        mockRequiredMeasurementsExistanceVerifier(true);
+        mockRequiredMeasurementsExistenceVerifier(true);
 
         // when
         final boolean result = sut.certificates(chain).verify();
@@ -237,7 +236,7 @@ class TcbInfoVerifierTest {
     void verify_OneOfFieldsIsIncorrect_Fails() {
         // given
         final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
 
         // when
@@ -251,7 +250,7 @@ class TcbInfoVerifierTest {
     void verify_OneOfFieldsCantBeVerified_Fails() {
         // given
         final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockOneOfFieldVerifiersToThrow();
 
@@ -266,7 +265,7 @@ class TcbInfoVerifierTest {
     void verify_DifferentValuesForTheSameTcbInfoKey_Fails() {
         // given
         final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_ROM_EXT_HASH_LAYER);
         mockTcbInfoExtension(parentCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockTcbInfoExtension(rootCertificate, TCBINFO_WITH_CMF_HASH_LAYER_DIFFERENT_DIGEST);
@@ -283,12 +282,12 @@ class TcbInfoVerifierTest {
     void verify_IdenticalValuesForTheSameTcbInfoKey_Success() {
         // given
         final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
-        mockFamilyName(FAMILY_NAME);
+        mockFamilyName();
         mockTcbInfoExtension(childCertificate, TCBINFO_WITH_ROM_EXT_HASH_LAYER);
         mockTcbInfoExtension(parentCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockTcbInfoExtension(rootCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
         mockAllFieldsVerifiersToPassValidation();
-        mockRequiredMeasurementsExistanceVerifier(true);
+        mockRequiredMeasurementsExistenceVerifier(true);
 
         // when
         final boolean result = sut.certificates(chain).verify();
@@ -297,44 +296,17 @@ class TcbInfoVerifierTest {
         Assertions.assertTrue(result);
     }
 
-//    @Test
-//    void verify_DifferentFamilyNameInCertSubject_Fails() {
-//        // given
-//        final var chain = List.of(childCertificate, parentCertificate, rootCertificate);
-//        mockFamilyName(FAMILY_NAME);
-//        mockSubjectWithFamilyName(FAMILY_NAME, parentCertificate);
-//        mockSubjectWithFamilyName(DIFFERENT_FAMILY_NAME, rootCertificate);
-//        mockTcbInfoExtension(childCertificate, TCBINFO_WITH_ROM_EXT_HASH_LAYER);
-//        mockTcbInfoExtension(parentCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
-//        mockTcbInfoExtension(rootCertificate, TCBINFO_WITH_LAYER_2);
-//        mockAllFieldsVerifiersToPassValidation();
-//
-//        // when
-//        final boolean result = sut.certificates(chain).verify();
-//
-//        // then
-//        Assertions.assertFalse(result);
-//    }
-
-    private void mockFamilyName(String familyName) {
-        mockSubjectWithFamilyName(familyName, childCertificate);
+    private void mockFamilyName() {
+        final String subject = String.format("CN=Intel:%s:L0:DW43eBZHek7h0vG3:0123456789abcdef", FAMILY_NAME);
+        mockSubject(subject, childCertificate);
         when(modelVerifier.withFamilyName(any())).thenReturn(modelVerifier);
     }
 
-    private void mockSubjectWithFamilyName(String familyName, X509Certificate... certificates) {
-        final String subject = String.format("CN=Intel:%s:L0:DW43eBZHek7h0vG3:0123456789abcdef", familyName);
-        for (X509Certificate certificate : certificates) {
-            mockSubject(subject, certificate);
-        }
-    }
-
     private void mockSubject(String subject, X509Certificate certificate) {
-        final Principal subjectDN = mock(Principal.class);
-        when(certificate.getSubjectDN()).thenReturn(subjectDN);
-        when(subjectDN.getName()).thenReturn(subject);
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(subject));
     }
 
-    private void mockRequiredMeasurementsExistanceVerifier(boolean allRequiredMeasurementsExist) {
+    private void mockRequiredMeasurementsExistenceVerifier(boolean allRequiredMeasurementsExist) {
         when(requiredMeasurementsVerifier.withFamilyName(FAMILY_NAME)).thenReturn(requiredMeasurementsVerifier);
         when(requiredMeasurementsVerifier.verify(aggregator.getMap())).thenReturn(allRequiredMeasurementsExist);
     }

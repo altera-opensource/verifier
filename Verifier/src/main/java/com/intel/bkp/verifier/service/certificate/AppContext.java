@@ -33,11 +33,13 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
+import com.intel.bkp.core.properties.TrustedRootHash;
 import com.intel.bkp.core.security.ISecurityProvider;
 import com.intel.bkp.verifier.command.MailboxCommandLayer;
 import com.intel.bkp.verifier.command.messages.subkey.VerifierKeyManager;
 import com.intel.bkp.verifier.config.JceSecurityConfiguration;
 import com.intel.bkp.verifier.database.SQLiteHelper;
+import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
@@ -64,6 +66,7 @@ public class AppContext implements AutoCloseable {
     private SQLiteHelper sqLiteHelper;
     private VerifierKeyParams verifierKeyParams;
     private VerifierKeyManager verifierKeyManager;
+    private DistributionPointConnector dpConnector;
 
     private static AppContext INSTANCE;
 
@@ -83,7 +86,8 @@ public class AppContext implements AutoCloseable {
 
         return new AppContext(libConfig, prepareCommandLayer(), securityProvider,
             prepareSqLiteHelper(libConfig), verifierKeyParams,
-            prepareVerifierKeyManager(securityProvider, verifierKeyParams.getKeyName()));
+            prepareVerifierKeyManager(securityProvider, verifierKeyParams.getKeyName()),
+            prepareDistributionPointConnector(libConfig));
     }
 
     private static void logAppInfo() {
@@ -115,6 +119,10 @@ public class AppContext implements AutoCloseable {
 
     private static SQLiteHelper prepareSqLiteHelper(LibConfig libConfig) {
         return new SQLiteHelper(libConfig.getDatabaseConfiguration());
+    }
+
+    private static DistributionPointConnector prepareDistributionPointConnector(LibConfig libConfig) {
+        return new DistributionPointConnector(libConfig.getDistributionPoint().getProxy());
     }
 
     /**
@@ -161,6 +169,14 @@ public class AppContext implements AutoCloseable {
 
     public TransportLayer getTransportLayer() {
         return libConfig.getTransportLayerType().getTransportLayer();
+    }
+
+    public TrustedRootHash getDpTrustedRootHash() {
+        return libConfig.getDistributionPoint().getTrustedRootHash();
+    }
+
+    public String getDpPathCer() {
+        return libConfig.getDistributionPoint().getPathCer();
     }
 
     @Override

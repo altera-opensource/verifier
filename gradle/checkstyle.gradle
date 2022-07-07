@@ -34,7 +34,7 @@
 apply plugin: 'checkstyle'
 
 checkstyle {
-    toolVersion "8.29"
+    toolVersion "10.3"
     configFile  rootProject.file('checkstyle/google_checks.xml')
     checkstyleTest.enabled = false
 }

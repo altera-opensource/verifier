@@ -47,7 +47,7 @@ public class ValidityVerifier {
             certificate.checkValidity();
             return true;
         } catch (CertificateExpiredException | CertificateNotYetValidException e) {
-            log.error("Certificate is prior or past validity date: {}", certificate.getSubjectDN(), e);
+            log.error("Certificate is prior or past validity date: {}", certificate.getSubjectX500Principal(), e);
             return false;
         }
     }

@@ -35,8 +35,10 @@ package com.intel.bkp.utils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,11 +58,15 @@ public class PathUtils {
 
     public static String checkTrailingSlash(String path) {
         return Optional.ofNullable(path)
-                .map(content -> content.endsWith(SEPARATOR) ? content : content + SEPARATOR)
-                .orElse(BLANK);
+            .map(content -> content.endsWith(SEPARATOR) ? content : content + SEPARATOR)
+            .orElse(BLANK);
     }
 
     public static String removeTrailingSlash(String path) {
         return path.endsWith(SEPARATOR) ? path.substring(0, path.length() - 1) : path;
+    }
+
+    public static String getFileNameWithoutExtension(String path) {
+        return FilenameUtils.removeExtension(Paths.get(path).getFileName().toString());
     }
 }

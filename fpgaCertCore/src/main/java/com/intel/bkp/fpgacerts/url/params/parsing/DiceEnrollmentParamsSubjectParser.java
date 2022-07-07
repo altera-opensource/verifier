@@ -42,7 +42,7 @@ import java.security.cert.X509Certificate;
 public class DiceEnrollmentParamsSubjectParser extends DiceParamsParserBase<DiceEnrollmentParams> {
 
     public DiceEnrollmentParamsSubjectParser() {
-        super(KeyIdentifierUtils::getSubjectKeyIdentifier, X509Certificate::getSubjectDN);
+        super(KeyIdentifierUtils::getSubjectKeyIdentifier, X509Certificate::getSubjectX500Principal);
     }
 
     @Override
