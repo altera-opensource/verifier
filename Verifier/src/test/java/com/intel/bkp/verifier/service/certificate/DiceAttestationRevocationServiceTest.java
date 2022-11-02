@@ -35,6 +35,7 @@ package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.core.properties.TrustedRootHash;
 import com.intel.bkp.verifier.dp.DistributionPointConnector;
+import com.intel.bkp.verifier.model.LibConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +57,7 @@ class DiceAttestationRevocationServiceTest {
     void constructor_configuresProperly() {
         // given
         final var appContext = mock(AppContext.class);
+        final var libConfig = mock(LibConfig.class);
         final var dpConnector = mock(DistributionPointConnector.class);
         final var certPath = "path";
         final var diceRootHash = "dice";
@@ -64,6 +66,8 @@ class DiceAttestationRevocationServiceTest {
         when(appContext.getDpConnector()).thenReturn(dpConnector);
         when(appContext.getDpTrustedRootHash()).thenReturn(trustedRootHash);
         when(appContext.getDpPathCer()).thenReturn(certPath);
+        when(appContext.getLibConfig()).thenReturn(libConfig);
+        when(libConfig.isTestModeSecrets()).thenReturn(true);
 
         // when
         sut = new DiceAttestationRevocationService(appContext);

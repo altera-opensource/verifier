@@ -39,11 +39,12 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum CommandIdentifier {
-    SIGMA_TEARDOWN(213),
-    GET_CHIPID(18),
-    GET_CERTIFICATE(385),
-    CREATE_ATTESTATION_SUBKEY(386),
-    GET_MEASUREMENT(387);
+    SIGMA_TEARDOWN(0xD5),
+    GET_CHIPID(0x12),
+    GET_CERTIFICATE(0x181),
+    CREATE_ATTESTATION_SUBKEY(0x182),
+    GET_MEASUREMENT(0x183),
+    MCTP(0x194);
 
     private final int commandCode;
 }

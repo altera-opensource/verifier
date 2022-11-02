@@ -38,11 +38,9 @@ import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.sender.GetChipIdMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
@@ -51,21 +49,17 @@ import java.util.Optional;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor
 public class InitSessionComponent {
-
-    private TeardownMessageSender teardownMessageSender = new TeardownMessageSender();
     private GetChipIdMessageSender getChipIdMessageSender = new GetChipIdMessageSender();
 
     public byte[] initializeSessionForDeviceId() throws InitSessionFailedException {
         return initializeSessionForDeviceId(AppContext.instance());
     }
 
-    @NonNull
     byte[] initializeSessionForDeviceId(AppContext appContext) throws InitSessionFailedException {
 
         final TransportLayer transportLayer = appContext.getTransportLayer();
         final CommandLayer commandLayer = appContext.getCommandLayer();
 
-        teardownMessageSender.send(transportLayer, commandLayer);
         return Optional.ofNullable(getChipIdMessageSender.send(transportLayer, commandLayer))
             .orElseThrow(() -> new InitSessionFailedException("DeviceId is null."));
     }

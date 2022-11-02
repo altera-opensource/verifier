@@ -34,9 +34,9 @@
 package com.intel.bkp.verifier.utils;
 
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.model.LibConfig;
 import com.intel.bkp.verifier.model.TransportLayerType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +48,18 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_PARAMS_GROUP;
+import static com.intel.bkp.verifier.utils.LibConfigParser.DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID;
+import static com.intel.bkp.verifier.utils.LibConfigParser.DEFAULT_LIB_SPDM_CT_EXPONENT;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,6 +70,7 @@ class LibConfigParserTest {
     private static final String CONFIG_EMPTY_OPTIONALS = "config_with_empty_optional.properties";
     private static final String CONFIG_WITHOUT_OPTIONALS = "config_without_optional.properties";
     private static final String CONFIG_WRONG = "config_wrong.properties";
+    private static final String CONFIG_WRONG_CT_EXPONENT = "config_wrong_ct_exponent.properties";
     private static final String CONFIG_MISSING = "config_wrong_missing.properties";
     private static final String CONFIG_IN_CLASSPATH = "config_in_classpath.properties";
     private static Path configDirectory;
@@ -79,45 +92,51 @@ class LibConfigParserTest {
         LibConfig config = spy.parseConfigFile(CONFIG_WITH_ALL_SET);
 
         // then
-        Assertions.assertNotNull(config);
-        Assertions.assertEquals(TransportLayerType.HPS, config.getTransportLayerType());
-        Assertions.assertFalse(config.getAttestationCertificateFlow().isOnlyEfuseUds());
-        Assertions.assertTrue(config.getDatabaseConfiguration().isInternalDatabase());
+        assertNotNull(config);
+        assertEquals(TransportLayerType.HPS, config.getTransportLayerType());
+        assertTrue(config.getAttestationCertificateFlow().isOnlyEfuseUds());
+        assertTrue(config.isTestModeSecrets());
+        assertFalse(config.isRunGpAttestation());
+        assertEquals("fake_path", config.getLibSpdmParams().getWrapperLibraryPath());
+        assertEquals(0xAA, config.getLibSpdmParams().getCtExponent());
+        assertEquals(0x55, config.getLibSpdmParams().getCertificatesEfuseUdsSlotId());
+        assertFalse(config.getLibSpdmParams().isMeasurementsRequestSignature());
+        assertTrue(config.getDatabaseConfiguration().isInternalDatabase());
 
-        Assertions.assertEquals("path/to/single-rooted-chain",
+        assertEquals("path/to/single-rooted-chain",
             config.getVerifierKeyParams().getVerifierRootQkyChain().getSingleChainPath());
-        Assertions.assertEquals("some-key-name", config.getVerifierKeyParams().getKeyName());
+        assertEquals("some-key-name", config.getVerifierKeyParams().getKeyName());
 
         var distributionPoint = config.getDistributionPoint();
-        Assertions.assertEquals("https://tsci.intel.com/content/IPCS/certs/", distributionPoint.getPathCer());
-        Assertions.assertEquals("99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F",
+        assertEquals("https://tsci.intel.com/content/IPCS/certs/", distributionPoint.getPathCer());
+        assertEquals("99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F",
             distributionPoint.getTrustedRootHash().getS10());
-        Assertions.assertEquals("35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B",
+        assertEquals("35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B",
             distributionPoint.getTrustedRootHash().getDice());
-        Assertions.assertEquals("proxy.intel.com", distributionPoint.getProxy().getHost());
-        Assertions.assertEquals(912, distributionPoint.getProxy().getPort());
+        assertEquals("proxy.intel.com", distributionPoint.getProxy().getHost());
+        assertEquals(912, distributionPoint.getProxy().getPort());
 
         var securityProviderParams = config.getProviderParams();
-        Assertions.assertNotNull(securityProviderParams);
+        assertNotNull(securityProviderParams);
 
         var provider = securityProviderParams.getProvider();
-        Assertions.assertEquals("BC", provider.getName());
-        Assertions.assertTrue(provider.getFileBased());
-        Assertions.assertEquals("org.bouncycastle.jce.provider.BouncyCastleProvider", provider.getClassName());
+        assertEquals("BC", provider.getName());
+        assertTrue(provider.getFileBased());
+        assertEquals("org.bouncycastle.jce.provider.BouncyCastleProvider", provider.getClassName());
 
         var security = securityProviderParams.getSecurity();
-        Assertions.assertEquals("uber", security.getKeyStoreName());
-        Assertions.assertEquals("default-password", security.getPassword());
-        Assertions.assertEquals("/tmp/bc-keystore-verifier.jks", security.getInputStreamParam());
+        assertEquals("uber", security.getKeyStoreName());
+        assertEquals("default-password", security.getPassword());
+        assertEquals("/tmp/bc-keystore-verifier.jks", security.getInputStreamParam());
 
         var keyTypes = securityProviderParams.getKeyTypes();
-        Assertions.assertNotNull(keyTypes);
+        assertNotNull(keyTypes);
 
         var ec = keyTypes.getEc();
-        Assertions.assertEquals("EC", ec.getKeyName());
-        Assertions.assertEquals("secp384r1", ec.getCurveSpec384());
-        Assertions.assertEquals("secp256r1", ec.getCurveSpec256());
-        Assertions.assertEquals("SHA384withECDSA", ec.getSignatureAlgorithm());
+        assertEquals("EC", ec.getKeyName());
+        assertEquals("secp384r1", ec.getCurveSpec384());
+        assertEquals("secp256r1", ec.getCurveSpec256());
+        assertEquals("SHA384withECDSA", ec.getSignatureAlgorithm());
     }
 
     @Test
@@ -131,9 +150,17 @@ class LibConfigParserTest {
 
         // then
         var distributionPoint = config.getDistributionPoint();
-        Assertions.assertEquals("", distributionPoint.getTrustedRootHash().getS10());
-        Assertions.assertEquals("", distributionPoint.getProxy().getHost());
-        Assertions.assertNull(distributionPoint.getProxy().getPort());
+        assertEquals("", distributionPoint.getTrustedRootHash().getS10());
+        assertEquals("", distributionPoint.getProxy().getHost());
+        assertNull(distributionPoint.getProxy().getPort());
+        assertFalse(config.getAttestationCertificateFlow().isOnlyEfuseUds());
+        assertFalse(config.isTestModeSecrets());
+        assertFalse(config.isRunGpAttestation());
+        assertEquals("", config.getLibSpdmParams().getWrapperLibraryPath());
+        assertEquals(DEFAULT_LIB_SPDM_CT_EXPONENT, config.getLibSpdmParams().getCtExponent());
+        assertEquals(DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID,
+            config.getLibSpdmParams().getCertificatesEfuseUdsSlotId());
+        assertTrue(config.getLibSpdmParams().isMeasurementsRequestSignature());
     }
 
     @Test
@@ -147,8 +174,8 @@ class LibConfigParserTest {
 
         // then
         var distributionPoint = config.getDistributionPoint();
-        Assertions.assertNull(distributionPoint.getProxy().getHost());
-        Assertions.assertNull(distributionPoint.getProxy().getPort());
+        assertNull(distributionPoint.getProxy().getHost());
+        assertNull(distributionPoint.getProxy().getPort());
     }
 
     @Test
@@ -158,8 +185,13 @@ class LibConfigParserTest {
         when(spy.getDirectory()).thenReturn(configDirectory);
 
         // when - then
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-            spy.parseConfigFile(CONFIG_WRONG));
+        assertAll(
+            () -> assertThrows(IllegalArgumentException.class, () ->
+                spy.parseConfigFile(CONFIG_WRONG)),
+            () -> assertThrows(VerifierRuntimeException.class, () ->
+                spy.parseConfigFile(CONFIG_WRONG_CT_EXPONENT))
+        );
+
     }
 
     @Test
@@ -168,15 +200,45 @@ class LibConfigParserTest {
         final LibConfig config = sut.parseConfigFile(CONFIG_IN_CLASSPATH);
 
         // then
-        Assertions.assertNotNull(config);
-        Assertions.assertEquals(TransportLayerType.HPS, config.getTransportLayerType());
+        assertNotNull(config);
+        assertEquals(TransportLayerType.HPS, config.getTransportLayerType());
     }
 
     @Test
     void parseFile_MissingExternalFileAndClassPath_Throws() {
         // when - then
-        Assertions.assertThrows(InternalLibraryException.class, () ->
+        assertThrows(InternalLibraryException.class, () ->
             sut.parseConfigFile(CONFIG_MISSING));
+    }
+
+    @Test
+    void parse_getLibSpdmCtExponent_VerifyThatValue0x00ParsesCorrectly() {
+        // given
+        final SchemaParams prop = new SchemaParams();
+        prop.setProperty(String.join(".", LIB_SPDM_PARAMS_GROUP, LIB_SPDM_CT_EXPONENT), "0x00");
+        final int expectedResult = 0;
+
+        // when
+        final int result = sut.getLibSpdmCtExponent(prop);
+
+        // then
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    void parse_getLibSpdmCertificatesEfuseUdsSlotId_VerifyThatValue0x00ParsesCorrectly() {
+        // given
+        final SchemaParams prop = new SchemaParams();
+        prop.setProperty(
+            String.join(".", LIB_SPDM_PARAMS_GROUP, LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID),
+            "0x00");
+        final int expectedResult = 0;
+
+        // when
+        final int result = sut.getLibSpdmCertificatesEfuseUdsSlotId(prop);
+
+        // then
+        assertEquals(expectedResult, result);
     }
 
     private static Path getExternalDirectoryPathForConfig(String configName) throws URISyntaxException {

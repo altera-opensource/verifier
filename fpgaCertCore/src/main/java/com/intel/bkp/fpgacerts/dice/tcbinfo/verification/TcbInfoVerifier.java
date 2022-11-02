@@ -63,7 +63,7 @@ public class TcbInfoVerifier {
 
     private LinkedList<X509Certificate> certificates = new LinkedList<>();
 
-    public TcbInfoVerifier() {
+    public TcbInfoVerifier(boolean testModeSecrets) {
         this(new TcbInfoAggregator(),
             new TcbInfoExtensionParser(),
             new RequiredMeasurementsExistenceVerifier(),
@@ -73,7 +73,7 @@ public class TcbInfoVerifier {
             new LayerVerifier(),
             new HashAlgVerifier(),
             new TypeVerifier(),
-            new FlagsVerifier());
+            new FlagsVerifier(testModeSecrets));
     }
 
     public TcbInfoVerifier(TcbInfoAggregator aggregator, TcbInfoExtensionParser extensionParser,
@@ -174,7 +174,7 @@ public class TcbInfoVerifier {
         try {
             return fieldVerifiers.stream().allMatch(fieldVerifier -> fieldVerifier.verify(tcbInfo));
         } catch (Exception e) {
-            log.error("Failed to verify TcbInfo value, unexpected exception occured.", e);
+            log.error("Failed to verify TcbInfo value, unexpected exception occurred.", e);
             return false;
         }
     }

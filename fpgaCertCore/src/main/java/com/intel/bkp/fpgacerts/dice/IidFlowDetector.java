@@ -37,21 +37,31 @@ import com.intel.bkp.fpgacerts.dice.ueid.UeidExtensionParser;
 import lombok.RequiredArgsConstructor;
 
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 import static com.intel.bkp.fpgacerts.model.AttFamily.AGILEX;
 
 @RequiredArgsConstructor
 public class IidFlowDetector {
 
-    private final boolean onlyEfuseUds;
     private final UeidExtensionParser ueidExtensionParser;
+    private Optional<Boolean> onlyEfuseUds = Optional.empty();
 
-    public IidFlowDetector(boolean onlyEfuseUds) {
-        this(onlyEfuseUds, new UeidExtensionParser());
+    public IidFlowDetector() {
+        this(new UeidExtensionParser());
+    }
+
+    public IidFlowDetector withOnlyEfuseUds(boolean onlyEfuseUds) {
+        this.onlyEfuseUds = Optional.of(onlyEfuseUds);
+        return this;
     }
 
     public boolean isIidFlow(X509Certificate certificate) {
-        return !onlyEfuseUds && isAgilex(certificate);
+        return notOnlyEfuseUds() && isAgilex(certificate);
+    }
+
+    private Boolean notOnlyEfuseUds() {
+        return onlyEfuseUds.map(x -> !x).orElse(true);
     }
 
     private boolean isAgilex(final X509Certificate certificate) {

@@ -33,15 +33,21 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
+import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.FlagsVerifier;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.ITcbInfoFieldVerifier;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoVerifier;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
-import com.intel.bkp.fpgacerts.verification.RootHashVerifier;
 import com.intel.bkp.verifier.exceptions.SigmaException;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_INIT;
 import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
@@ -49,21 +55,33 @@ import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
 @ExtendWith(MockitoExtension.class)
 class DiceAliasChainVerifierTest {
 
+    public static final String TRUSTED_ROOT_HASH = "someTrustedRootHash";
+    public static final boolean TEST_MODE_SECRETS = true;
+
     @Mock
     private ICrlProvider crlProvider;
 
-    @Mock
-    private RootHashVerifier rootHashVerifier;
-
-    @InjectMocks
     private DiceAliasChainVerifier sut;
+
+    @BeforeEach
+    void setup() {
+        sut = new DiceAliasChainVerifier(crlProvider, TRUSTED_ROOT_HASH, TEST_MODE_SECRETS);
+    }
+
+    @Test
+    void constructor_configuresProperly() {
+        // then
+        Assertions.assertEquals(crlProvider, sut.getCrlVerifier().getCrlProvider());
+        Assertions.assertEquals(TRUSTED_ROOT_HASH, sut.getTrustedRootHash());
+        verifyTestModeSecretsInFlagsVerifier(TEST_MODE_SECRETS, sut.getTcbInfoVerifier());
+    }
 
     @Test
     void getExpectedLeafCertKeyPurposes_ReturnsPurposesForAliasCertificate() {
         // given
         final String[] aliasCertificateKeyPurposes = new String[]{
-                KEY_PURPOSE_ATTEST_INIT.getOid(),
-                KEY_PURPOSE_ATTEST_LOC.getOid()
+            KEY_PURPOSE_ATTEST_INIT.getOid(),
+            KEY_PURPOSE_ATTEST_LOC.getOid()
         };
 
         // when
@@ -84,5 +102,26 @@ class DiceAliasChainVerifierTest {
 
         // then
         Assertions.assertEquals(failureDetails, ex.getMessage());
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    private void verifyTestModeSecretsInFlagsVerifier(boolean expectedTestModeSecrets,
+                                                      TcbInfoVerifier tcbInfoVerifier) {
+        final var flagsVerifier =
+            ((List<ITcbInfoFieldVerifier>) getPrivateFieldValue("fieldVerifiers", tcbInfoVerifier)).stream()
+                .filter(v -> v.getClass().equals(FlagsVerifier.class))
+                .findAny()
+                .get();
+
+        final boolean actualTestModeSecrets = (boolean) getPrivateFieldValue("testModeSecrets", flagsVerifier);
+        Assertions.assertEquals(expectedTestModeSecrets, actualTestModeSecrets);
+    }
+
+    @SneakyThrows
+    private Object getPrivateFieldValue(String fieldName, Object obj) {
+        final Field field = obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(obj);
     }
 }

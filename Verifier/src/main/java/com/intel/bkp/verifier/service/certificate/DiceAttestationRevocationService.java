@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.fpgacerts.url.DistributionPointAddressProvider;
 import com.intel.bkp.verifier.dp.DistributionPointChainFetcher;
-import com.intel.bkp.verifier.exceptions.InternalLibraryException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,8 @@ public class DiceAttestationRevocationService {
     public DiceAttestationRevocationService(AppContext appContext) {
         this(new DistributionPointChainFetcher(appContext.getDpConnector()),
             new DiceAliasChainVerifier(new DistributionPointCrlProvider(appContext),
-                appContext.getDpTrustedRootHash().getDice()),
+                appContext.getDpTrustedRootHash().getDice(),
+                appContext.getLibConfig().isTestModeSecrets()),
             new DistributionPointAddressProvider(appContext.getDpPathCer()));
     }
 
@@ -113,7 +114,7 @@ public class DiceAttestationRevocationService {
         final String pathToIssuerIid = getIssuerCertUrl(iidChain.getLast());
 
         if (!pathToIssuer.equals(pathToIssuerIid)) {
-            throw new InternalLibraryException(
+            throw new VerifierRuntimeException(
                 "AuthorityInformationAccess from Alias chain and IID Alias chain do not match.");
         }
     }

@@ -131,6 +131,7 @@ class CreateDeviceAttestationSubKeyComponentTest {
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK, result);
         verify(createSubKeyVerifier).verify(any(), any(), eq(pufPubKey));
+        verify(teardownMessageSender).send(transportLayer, commandLayer);
         verify(teardownMessageSender).send(transportLayer, commandLayer, SDM_SESSION_ID);
         verify(deviceIdVerifier).verify(eq(DEVICE_ID), any());
     }

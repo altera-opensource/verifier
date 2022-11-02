@@ -33,15 +33,17 @@
 
 package com.intel.bkp.verifier.transport.systemconsole;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TclCommandsTest {
 
     private final TclCommands sut = new TclCommands();
 
     @Test
-    void initialize_Success() {
+    void initialize_CallsInternalCommandWithTransportId() {
         // given
         int transportId = 999;
 
@@ -49,9 +51,18 @@ class TclCommandsTest {
         final String result = sut.initialize(transportId);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.contains(String.valueOf(transportId)));
-        Assertions.assertFalse(result.contains(TclCommands.TRANSPORT_ID));
+        assertTrue(result.contains("claim_packet_service_internal 999"));
+        assertFalse(result.contains(TclCommands.CABLE_ID));
+    }
+
+    @Test
+    void initialize_WithCableIdNull_CallsInternalCommandWithEmptyString() {
+        // when
+        final String result = sut.initialize(null);
+
+        // then
+        assertTrue(result.contains("claim_packet_service_internal \"\""));
+        assertFalse(result.contains(TclCommands.CABLE_ID));
     }
 
     @Test
@@ -63,8 +74,7 @@ class TclCommandsTest {
         final String result = sut.sendPacket(command);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.contains(command));
-        Assertions.assertFalse(result.contains(TclCommands.COMMAND));
+        assertTrue(result.contains(command));
+        assertFalse(result.contains(TclCommands.COMMAND));
     }
 }

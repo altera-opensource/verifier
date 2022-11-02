@@ -173,7 +173,7 @@ public class PsgCertificateHelper {
         return parseLeafCertificate(leafCertificate.getContent());
     }
 
-    public PsgCertificateRootEntryBuilder parseRootCertificate(byte[] rootCertificate)
+    protected PsgCertificateRootEntryBuilder parseRootCertificate(byte[] rootCertificate)
         throws PsgInvalidRootCertificateException {
         try {
             return new PsgCertificateRootEntryBuilder().parse(rootCertificate);
@@ -182,7 +182,7 @@ public class PsgCertificateHelper {
         }
     }
 
-    public PsgCertificateEntryBuilder parseLeafCertificate(byte[] certificateContent)
+    private PsgCertificateEntryBuilder parseLeafCertificate(byte[] certificateContent)
         throws PsgInvalidLeafCertificateException {
         try {
             return new PsgCertificateEntryBuilder().parse(certificateContent);
@@ -254,13 +254,13 @@ public class PsgCertificateHelper {
                 return false;
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException | InvalidKeySpecException | SignatureException
-            | IOException | PsgCertificateException e) {
+                 | IOException | PsgCertificateException e) {
             throw new PsgInvalidSignatureException(FAILED_TO_CHECK_SIGNATURE, e);
         }
     }
 
     public static boolean sigVerify(String signatureAlgorithm, PublicKey publicKey, byte[] data,
-        PsgSignatureBuilder signatureBuilder) throws PsgInvalidSignatureException {
+                                    PsgSignatureBuilder signatureBuilder) throws PsgInvalidSignatureException {
         try {
             Signature ecdsaSign = Signature.getInstance(signatureAlgorithm, CryptoUtils.getBouncyCastleProvider());
             ecdsaSign.initVerify(publicKey);
@@ -272,7 +272,7 @@ public class PsgCertificateHelper {
         }
     }
 
-    public static boolean sigVerify(X509Certificate certificate, byte[] data, byte[] signature)
+    static boolean sigVerify(X509Certificate certificate, byte[] data, byte[] signature)
         throws PsgInvalidSignatureException {
         try {
             Signature ecdsaSign = Signature.getInstance(CryptoConstants.SHA384_WITH_ECDSA,
@@ -285,7 +285,7 @@ public class PsgCertificateHelper {
         }
     }
 
-    public String getSignatureAlgorithm(IPsgCertificateWithPubKey entry) throws PsgCertificateException {
+    private String getSignatureAlgorithm(IPsgCertificateWithPubKey entry) throws PsgCertificateException {
         if (getCurveType(entry) == PsgCurveType.SECP384R1) {
             return CryptoConstants.SHA384_WITH_ECDSA;
         } else {

@@ -67,7 +67,7 @@ public class EnrollmentFlowDetector implements IEnrollmentFlowDetector {
     }
 
     private boolean deviceIdCertificateNotFound() {
-        final boolean notFound = certFetcher.fetchDeviceIdCert().isEmpty();
+        final boolean notFound = certFetcher.fetchIpcsDeviceIdCert().isEmpty();
         if (notFound) {
             logEnrollmentFlowDetected("deviceId certificate not found.");
         }

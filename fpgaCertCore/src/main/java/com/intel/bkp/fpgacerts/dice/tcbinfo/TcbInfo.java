@@ -62,6 +62,10 @@ public class TcbInfo {
         addInternal(tcbInfoField, tcbInfoField.getParser().parse(object));
     }
 
+    public boolean isEmpty() {
+        return tcbInfoMap.isEmpty();
+    }
+
     private void addInternal(TcbInfoField tcbInfoFieldType, Object value) {
         if (!tcbInfoMap.containsKey(tcbInfoFieldType)) {
             tcbInfoMap.put(tcbInfoFieldType, value);

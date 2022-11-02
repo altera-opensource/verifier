@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.dp;
 
 import com.intel.bkp.fpgacerts.chain.DistributionPointCertificate;
 import com.intel.bkp.fpgacerts.dice.IpcsCertificateFetcher;
-import com.intel.bkp.verifier.exceptions.InternalLibraryException;
+import com.intel.bkp.verifier.exceptions.ChainFetchingException;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 
 import java.security.cert.X509Certificate;
@@ -56,16 +56,16 @@ public class DistributionPointIpcsCertificateFetcher extends IpcsCertificateFetc
         super(new DistributionPointCertificateFetcher(appContext.getDpConnector()), appContext.getDpPathCer());
     }
 
-    public X509Certificate fetchDeviceIdX509Cert() {
-        return fetchAsX509Certificate(super::fetchDeviceIdCert, DEVICE_ID_CERT_NAME);
+    public X509Certificate fetchIpcsDeviceIdX509Cert() {
+        return fetchAsX509Certificate(super::fetchIpcsDeviceIdCert, DEVICE_ID_CERT_NAME);
     }
 
-    public X509Certificate fetchIidUdsX509Cert() {
-        return fetchAsX509Certificate(super::fetchIidUdsCert, IID_UDS_CERT_NAME);
+    public X509Certificate fetchIpcsIidUdsX509Cert() {
+        return fetchAsX509Certificate(super::fetchIpcsIidUdsCert, IID_UDS_CERT_NAME);
     }
 
-    public X509Certificate fetchEnrollmentX509Cert() {
-        return fetchAsX509Certificate(super::fetchEnrollmentCert, ENROLLMENT_CERT_NAME);
+    public X509Certificate fetchIpcsEnrollmentX509Cert() {
+        return fetchAsX509Certificate(super::fetchIpcsEnrollmentCert, ENROLLMENT_CERT_NAME);
     }
 
     private X509Certificate fetchAsX509Certificate(Supplier<Optional<DistributionPointCertificate>> certSupplier,
@@ -73,7 +73,7 @@ public class DistributionPointIpcsCertificateFetcher extends IpcsCertificateFetc
         return certSupplier
             .get()
             .map(DistributionPointCertificate::getX509Cert)
-            .orElseThrow(() -> new InternalLibraryException(
+            .orElseThrow(() -> new ChainFetchingException(
                 "%s certificate not found on Distribution Point.".formatted(certName)));
     }
 }

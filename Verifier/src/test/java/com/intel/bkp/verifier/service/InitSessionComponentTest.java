@@ -38,7 +38,6 @@ import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.sender.GetChipIdMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +45,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,9 +60,6 @@ class InitSessionComponentTest {
 
     @Mock
     private TransportLayer transportLayer;
-
-    @Mock
-    private TeardownMessageSender teardownMessageSender;
 
     @Mock
     private GetChipIdMessageSender getChipIdMessageSender;
@@ -83,7 +78,6 @@ class InitSessionComponentTest {
 
         // then
         Assertions.assertArrayEquals(DEVICE_ID, result);
-        verify(teardownMessageSender).send(transportLayer, commandLayer);
     }
 
     @Test

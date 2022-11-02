@@ -112,6 +112,9 @@ dependencies {
     implementation project(':fpgaCertCore')
     implementation project(':ServiceCore')
 
+    // https://mvnrepository.com/artifact/net.java.dev.jna/jna
+    implementation 'net.java.dev.jna:jna:5.12.1'
+
     implementation "org.apache.commons:commons-lang3:${commons_lang3_version}"
     implementation "commons-codec:commons-codec:${commons_codec_version}"
     implementation "commons-io:commons-io:${commons_io_version}"
@@ -147,8 +150,8 @@ task createSqliteDatabase {
 }
 
 task deploy(dependsOn: jar, type: Copy) {
-    from layout.buildDirectory.dir("${buildDir}/libs"), layout.buildDirectory.dir("${buildDir}/resources/main")
-    include "*.jar", "config.properties"
+    from layout.buildDirectory.dir("${buildDir}/libs"), layout.buildDirectory.dir("${buildDir}/resources/main"), "${projectDir}/../spdm_wrapper/build/Release"
+    include "*.jar", "config.properties", "libspdm_wrapper.so"
     into "${projectDir}/../out"
 }
 

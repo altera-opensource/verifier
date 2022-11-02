@@ -48,7 +48,7 @@ public class TcbInfoAggregator {
         tcbInfo.forEach(this::add);
     }
 
-    public void add(TcbInfo tcbInfo) {
+    void add(TcbInfo tcbInfo) {
         final TcbInfoKey key = TcbInfoKey.from(tcbInfo);
         final TcbInfoValue value = TcbInfoValue.from(tcbInfo);
 

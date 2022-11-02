@@ -33,8 +33,11 @@
 
 package com.intel.bkp.verifier.transport.systemconsole;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SystemConsoleConfigTest {
 
@@ -50,9 +53,9 @@ public class SystemConsoleConfigTest {
         SystemConsoleConfig config = new SystemConsoleConfig(transportId);
 
         //then
-        Assertions.assertEquals(expectedCableId, config.getCableId());
-        Assertions.assertEquals(80, config.getPort());
-        Assertions.assertEquals("127.0.0.1", config.getHost());
+        assertEquals(expectedCableId, config.getCableId());
+        assertEquals(80, config.getPort());
+        assertEquals("127.0.0.1", config.getHost());
     }
 
     @Test
@@ -64,18 +67,23 @@ public class SystemConsoleConfigTest {
         SystemConsoleConfig config = new SystemConsoleConfig(transportId);
 
         //then
-        Assertions.assertEquals(expectedCableId, config.getCableId());
-        Assertions.assertEquals(80, config.getPort());
-        Assertions.assertEquals("127.0.0.1", config.getHost());
+        assertEquals(expectedCableId, config.getCableId());
+        assertEquals(80, config.getPort());
+        assertEquals("127.0.0.1", config.getHost());
     }
 
     @Test
-    void systemConsoleConfig_incorrectTransportIdWithoutCableId_Fail() {
+    void systemConsoleConfig_incorrectTransportIdWithoutCableId_Success() {
         //given
         final String transportId = " host: 127.0.0.1;\nport: 80";
 
-        //when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new SystemConsoleConfig(transportId));
+        //when
+        SystemConsoleConfig config = new SystemConsoleConfig(transportId);
+
+        //then
+        assertNull(config.getCableId());
+        assertEquals(80, config.getPort());
+        assertEquals("127.0.0.1", config.getHost());
     }
 
     @Test
@@ -84,6 +92,15 @@ public class SystemConsoleConfigTest {
         final String transportId = "host:127.0.0.1; port:80; cableID:0";
 
         //when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new SystemConsoleConfig(transportId));
+        assertThrows(IllegalArgumentException.class, () -> new SystemConsoleConfig(transportId));
+    }
+
+    @Test
+    void systemConsoleConfig_incorrectTransportIdWithInvalidCharsInCableIdValue_Fail() {
+        //given
+        final String transportId = "host:127.0.0.1; port:80; cableID:abcd";
+
+        //when-then
+        assertThrows(IllegalArgumentException.class, () -> new SystemConsoleConfig(transportId));
     }
 }

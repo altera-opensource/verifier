@@ -68,7 +68,7 @@ public class TcbInfoVerifierTestWithRealCertificates {
 
     @BeforeEach
     void init() {
-        sut = new TcbInfoVerifier();
+        sut = new TcbInfoVerifier(false);
     }
 
     @Test

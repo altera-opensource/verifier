@@ -71,38 +71,6 @@ class ECUtilsTest {
      * openssl ecparam -out ec_key_priv_384.pem -name secp384r1 -genkey
      * openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in ec_key_priv_384.pem -out ec_key_priv_384_pkcs8.pem
      */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
     private static final String privateKeyInPem = "-----BEGIN PRIVATE KEY-----\n"
         + "MIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDBA7JKka6qMj2knBj2z\n"
         + "jljOP+RJppidjRf1UsvEBBsyOFukDyXRf+hVmasFQd0VAq2hZANiAAS8Ny9Iihrj\n"
@@ -113,38 +81,6 @@ class ECUtilsTest {
      * Public key matching private key from privateKeyInPem, generated using OpenSSL:
      * openssl ec -in ec_key_priv_384.pem -pubout -out ec_key_pub_384.pem
      */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
     private static final String publicKeyInPem = "-----BEGIN PUBLIC KEY-----\n"
         + "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEvDcvSIoa4wfMnuVC3gPGfviOIj1qUngK\n"
         + "K6JH3c/Hg2BAPaF1kh8wDYvLfwbMSLXGhrVeL8wKR+vqGCy9blqspAwHTNVTVUEr\n"
@@ -153,38 +89,6 @@ class ECUtilsTest {
     /**
      * Data used to generate signature stored in matchingSignature, with private key from privateKeyInPem
      */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
     private static final byte[] signaturePayload = "data to sign\n".getBytes();
     /**
      * Signature over data from signaturePayload, generated using OpenSSL:
@@ -192,38 +96,6 @@ class ECUtilsTest {
      * openssl dgst -SHA384 -sign ec_key_priv_384.pem signaturePayload.txt > signature
      * hexdump -C signature
      */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
     private static final byte[] matchingSignature = fromHex("3066023100ccb819aad3f430b03bf1b84dc6a"
         + "43b14de1b981d6effc675ea9c193182b0d83380c1f55975c57aa72ba0b7fc629a297302310090c2517d4501b6eaf84d139aa126915e"
         + "c88333f7f5409a45d6c79ba93fc9da07aa487ad880cdfbea3ca10793247faff4");
@@ -233,38 +105,6 @@ class ECUtilsTest {
      * openssl dgst -SHA384 -sign ec_key_priv_384.pem differentSignaturePayload.txt > differentSignature
      * hexdump -C differentSignature
      */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
     private static final byte[] notMatchingSignature = fromHex("306402306ce3bd1b7b3884ea9661b55d93"
         + "e23833f07cd8e95bbf40c146f65d5afaf2daaa67d9b53e781180cc1535a5ccff7c1fea02302572beeb3eca2cbfa852824910a02269a"
         + "b89deb268b89e19bf6de52ec5c8642d2b4cf0e5d8c8a1547d3a5738ffb6b6da");
@@ -272,38 +112,6 @@ class ECUtilsTest {
      * Self-signed certificate with public key from publicKeyInPem, generated using OpenSSL:
      * openssl req -new -key ec_key_priv_384.pem -x509 -nodes -days 365 -out cert_384.pem
      */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
     private static final String certInPem = "-----BEGIN CERTIFICATE-----\n"
         + "MIICSDCCAc2gAwIBAgIJAJQiq0yeP3BUMAoGCCqGSM49BAMCMGAxCzAJBgNVBAYT\n"
         + "AkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRn\n"
@@ -614,5 +422,18 @@ class ECUtilsTest {
         Assertions.assertThrows(EcdhKeyPairException.class, () ->
             EcUtils.toPublic(invalidPublicKeyBytes, CryptoConstants.ECDH_KEY,
                 curveType, CryptoUtils.getBouncyCastleProvider()));
+    }
+
+    @Test
+    void generateFingerprint_Success() throws Exception {
+        // given
+        int expectedLen = 2 * CryptoConstants.SHA384_LEN;
+        final KeyPair keyPair = CryptoUtils.genEcdsaBC(CryptoConstants.EC_CURVE_SPEC_384);
+
+        // when
+        final String result = EcUtils.generateFingerprint(keyPair.getPublic());
+
+        // then
+        Assertions.assertEquals(expectedLen, result.length());
     }
 }

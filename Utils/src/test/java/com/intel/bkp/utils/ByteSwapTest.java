@@ -43,7 +43,33 @@ import static com.intel.bkp.utils.ByteSwapOrder.L2B;
 class ByteSwapTest {
 
     @Test
-    void getSwappedArray_WithInteger_BitToLittle_Success() {
+    void getSwappedArray_WithShort_BigToLittle_Success() {
+        // given
+        short data = 1;
+        byte[] expected = new byte[]{1, 0};
+
+        // when
+        byte[] result = ByteSwap.getSwappedArray(data, B2L);
+
+        // then
+        Assertions.assertArrayEquals(expected, result);
+    }
+
+    @Test
+    void getSwappedArray_WithShort_LittleToBig_Success() {
+        // given
+        short data = 1;
+        byte[] expected = new byte[]{0, 1};
+
+        // when
+        byte[] result = ByteSwap.getSwappedArray(data, L2B);
+
+        // then
+        Assertions.assertArrayEquals(expected, result);
+    }
+
+    @Test
+    void getSwappedArray_WithInteger_BigToLittle_Success() {
         // given
         int data = 1;
         byte[] expected = new byte[]{1, 0, 0, 0};
@@ -69,7 +95,7 @@ class ByteSwapTest {
     }
 
     @Test
-    void getSwappedArray_WithLong_BitToLittle_Success() {
+    void getSwappedArray_WithLong_BigToLittle_Success() {
         // given
         long data = 1;
         byte[] expected = new byte[]{1, 0, 0, 0, 0, 0, 0, 0};
@@ -95,7 +121,7 @@ class ByteSwapTest {
     }
 
     @Test
-    void getSwappedShort_BitToLittle_Success() {
+    void getSwappedShort_BigToLittle_Success() {
         // given
         short data = 1;
         short expected = 256;
@@ -121,10 +147,10 @@ class ByteSwapTest {
     }
 
     @Test
-    void getSwappedShort_ConvertByShort_Success() {
+    void getSwappedShort_ConvertArrayByShort_BigToLittle_Success() {
         // given
-        byte[] data = new byte[]{0x00, 0x20};
-        short expected = 8192;
+        byte[] data = new byte[]{0x00, 0x01};
+        short expected = 256;
 
         // when
         short result = ByteSwap.getSwappedShort(data, B2L);
@@ -134,7 +160,20 @@ class ByteSwapTest {
     }
 
     @Test
-    void getSwappedInt_BitToLittle_Success() {
+    void getSwappedShort_ConvertArrayByShort_LittleToBig_Success() {
+        // given
+        byte[] data = new byte[]{0x01, 0x00};
+        short expected = 1;
+
+        // when
+        short result = ByteSwap.getSwappedShort(data, L2B);
+
+        // then
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    void getSwappedInt_BigToLittle_Success() {
         // given
         int data = 1;
         int expected = 16777216;

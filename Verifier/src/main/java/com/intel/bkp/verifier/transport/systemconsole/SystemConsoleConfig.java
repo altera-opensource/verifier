@@ -37,6 +37,8 @@ import com.intel.bkp.verifier.transport.tcp.TcpConfig;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Optional;
+
 @Getter
 @SuperBuilder
 public class SystemConsoleConfig extends TcpConfig {
@@ -44,13 +46,15 @@ public class SystemConsoleConfig extends TcpConfig {
     private static final String ERROR_CABLE = "Error parsing cableID in transportID";
     private static final String PATTERN_CABLE = "cableID:([^;]*)";
 
-    private int cableId;
+    private Integer cableId;
 
     public SystemConsoleConfig(String transportId) {
         super(transportId);
 
         final String transportIdFormatted = removeWhitespaces(transportId);
-        cableId = transformCableId(parseInteger(transportIdFormatted, PATTERN_CABLE, ERROR_CABLE));
+        cableId = Optional.ofNullable(parseInteger(transportIdFormatted, PATTERN_CABLE, ERROR_CABLE))
+            .map(SystemConsoleConfig::transformCableId)
+            .orElse(null);
     }
 
     private static int transformCableId(int cableId) {

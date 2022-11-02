@@ -38,12 +38,15 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Optional;
+
 @Getter
 @SuperBuilder
 public class TcpConfig {
 
     private static final String ERROR_HOST = "Error parsing host in transportId";
     private static final String ERROR_PORT = "Error parsing port number in transportId";
+    private static final String ERROR_PORT_NULL = "\"port\" parameter in transportId must not be null.";
     private static final String PATTERN_HOST = "host:([^;]*)";
     private static final String PATTERN_PORT = "port:([^;]*)";
 
@@ -54,7 +57,8 @@ public class TcpConfig {
         final String transportIdFormatted = removeWhitespaces(transportId);
 
         host = parseString(transportIdFormatted, PATTERN_HOST, ERROR_HOST);
-        port = parseInteger(transportIdFormatted, PATTERN_PORT, ERROR_PORT);
+        port = Optional.ofNullable(parseInteger(transportIdFormatted, PATTERN_PORT, ERROR_PORT))
+            .orElseThrow(() -> new IllegalArgumentException(ERROR_PORT_NULL));
     }
 
     protected static String removeWhitespaces(String str) {
@@ -69,9 +73,12 @@ public class TcpConfig {
         return parsed;
     }
 
-    protected static int parseInteger(String str, String pattern, String errorMessage) {
+    protected static Integer parseInteger(String str, String pattern, String errorMessage) {
         try {
-            return Integer.parseInt(RegexUtils.getByPattern(str, pattern));
+            return Optional.of(RegexUtils.getByPattern(str, pattern))
+                .filter(StringUtils::isNotBlank)
+                .map(Integer::parseInt)
+                .orElse(null);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(errorMessage, e);
         }

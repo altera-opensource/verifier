@@ -39,7 +39,9 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 
 public class UserDesignMeasurementRecord {
 
-    private final byte[] measurementValue = new byte[48];
+    public static final int DEFAULT_MEASUREMENT_SIZE = 48;
+
+    private byte[] measurementValue = new byte[DEFAULT_MEASUREMENT_SIZE];
 
     public UserDesignMeasurementRecord(ByteBufferSafe buffer) {
         buffer.get(measurementValue);

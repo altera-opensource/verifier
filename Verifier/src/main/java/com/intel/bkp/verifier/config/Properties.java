@@ -41,12 +41,14 @@ public class Properties {
 
     public static final String TRANSPORT_LAYER_TYPE = "transport-layer-type";
     public static final String ONLY_EFUSE_UDS = "only-efuse-uds";
+    public static final String TEST_MODE_SECRETS = "test-mode-secrets";
     public static final String DISTRIBUTION_POINT_GROUP = "distribution-point";
     public static final String TRUSTED_ROOT_HASH_GROUP = "trusted-root-hash";
     public static final String PROXY_GROUP = "proxy";
     public static final String PROVIDER_PARAMS_GROUP = "security-provider-params";
     public static final String VERIFIER_KEY_PARAMS_GROUP = "verifier-key-params";
     public static final String VERIFIER_KEY_CHAIN_GROUP = "verifier-root-qky-chain";
+    public static final String LIB_SPDM_PARAMS_GROUP = "lib-spdm-params";
     public static final String DATABASE_CONFIGURATION_GROUP = "database-configuration";
     public static final String PROVIDER_GROUP = "provider";
     public static final String SECURITY_GROUP = "security";
@@ -62,4 +64,11 @@ public class Properties {
     public static final String VERIFIER_KEY_PARAMS_SINGLE_ROOT_QKY_CHAIN_PATH = "single-chain-path";
     public static final String VERIFIER_KEY_PARAMS_MULTI_ROOT_QKY_CHAIN_PATH = "multi-chain-path";
     public static final String VERIFIER_KEY_PARAMS_KEY_NAME = "key-name";
+
+    public static final String LIB_SPDM_WRAPPER_LIBRARY_PATH = "wrapper-library-path";
+    public static final String LIB_SPDM_CT_EXPONENT = "ct-exponent";
+    public static final String LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID = "certificates-efuse-uds-slot-id";
+    public static final String LIB_SPDM_MEASUREMENTS_REQUEST_SIGNATURE = "measurements-request-signature";
+
+    public static final String RUN_GP_ATTESTATION = "run-gp-att";
 }

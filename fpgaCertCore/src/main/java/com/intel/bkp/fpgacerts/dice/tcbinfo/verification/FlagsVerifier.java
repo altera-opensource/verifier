@@ -47,14 +47,16 @@ import static com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType.CMF;
 @Slf4j
 public class FlagsVerifier extends TcbInfoFieldVerifierBase<String> {
 
-    public FlagsVerifier() {
+    final boolean testModeSecrets;
+
+    public FlagsVerifier(boolean testModeSecrets) {
         super(TcbInfoField.FLAGS, false);
+        this.testModeSecrets = testModeSecrets;
     }
 
     @Override
     protected boolean isValueValid(String value, TcbInfo tcbInfo) {
-        // To test FPGA device that has flags set, below line should be modified to always return true
-        return !isCmfHashMeasurement(tcbInfo) || value.isEmpty();
+        return testModeSecrets || !isCmfHashMeasurement(tcbInfo) || value.isEmpty();
     }
 
     @Override

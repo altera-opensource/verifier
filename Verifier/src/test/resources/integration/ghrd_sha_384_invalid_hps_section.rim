@@ -1,0 +1,18 @@
+{
+    "measurement records": {
+        "tcbinfo": [
+            {
+                "//": "Hash of loaded HPS section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.5",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "CB545D514F1A3693CD7FCCBE803DDD6B0BE4A5C30DC890F2788492BDD1059A4854B50F6278605097358951468CBEAD37"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -34,8 +34,8 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import lombok.AccessLevel;
@@ -60,7 +60,7 @@ public class MeasurementExistenceVerifier {
         return getFwId(keyForOlderDevices)
             .or(() -> getFwId(keyForNewerDevices))
             .map(FwIdField::getHashAlg)
-            .filter(TcbInfoConstants.FWIDS_HASH_ALG::equals)
+            .filter(FwidHashAlg::isSupported)
             .isPresent();
     }
 

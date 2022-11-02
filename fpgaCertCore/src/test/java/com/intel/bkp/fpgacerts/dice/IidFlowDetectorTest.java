@@ -43,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 import static com.intel.bkp.fpgacerts.model.AttFamily.AGILEX;
 import static com.intel.bkp.fpgacerts.model.AttFamily.EASIC_N5X;
@@ -62,38 +63,49 @@ class IidFlowDetectorTest {
 
     @Test
     void isIidFlow_OnlyEfuseFalse_Agilex_ReturnsTrue() {
-        isIidFlow_ReturnsExpectedResult(false, AGILEX, true);
+        isIidFlow_ReturnsExpectedResult(Optional.of(false), AGILEX, true);
     }
 
     @Test
     void isIidFlow_OnlyEfuseFalse_NotAgilex_ReturnsFalse() {
-        isIidFlow_ReturnsExpectedResult(false, EASIC_N5X, false);
+        isIidFlow_ReturnsExpectedResult(Optional.of(false), EASIC_N5X, false);
     }
 
     @Test
     void isIidFlow_OnlyEfuseTrue_Agilex_ReturnsFalse() {
-        isIidFlow_ReturnsExpectedResult(true, AGILEX, false);
+        isIidFlow_ReturnsExpectedResult(Optional.of(true), AGILEX, false);
     }
 
     @Test
     void isIidFlow_OnlyEfuseTrue_NotAgilex_ReturnsFalse() {
-        isIidFlow_ReturnsExpectedResult(true, EASIC_N5X, false);
+        isIidFlow_ReturnsExpectedResult(Optional.of(true), EASIC_N5X, false);
+    }
+
+    @Test
+    void isIidFlow_OnlyEfuseNotSet_Agilex_ReturnsTrue() {
+        isIidFlow_ReturnsExpectedResult(Optional.empty(), AGILEX, true);
+    }
+
+    @Test
+    void isIidFlow_OnlyEfuseNotSet_NotAgilex_ReturnsFalse() {
+        isIidFlow_ReturnsExpectedResult(Optional.empty(), EASIC_N5X, false);
     }
 
     @Test
     void isIidFlow_CertWithoutUeidExtension_Throws() {
         // given
-        final IidFlowDetector sut = prepareSut(false);
+        final IidFlowDetector sut = prepareSut(Optional.of(false));
         when(ueidExtensionParser.parse(cert)).thenThrow(new IllegalArgumentException(""));
 
         // when-then
         Assertions.assertThrows(IllegalArgumentException.class, () -> sut.isIidFlow(cert));
     }
 
-    private void isIidFlow_ReturnsExpectedResult(boolean onlyEfuseUds, AttFamily family, boolean expectedResult) {
+    private void isIidFlow_ReturnsExpectedResult(Optional<Boolean> onlyEfuseUds, AttFamily family,
+                                                 boolean expectedResult) {
         // given
         final IidFlowDetector sut = prepareSut(onlyEfuseUds);
-        if (!onlyEfuseUds) {
+        if (onlyEfuseUds.isEmpty() || !onlyEfuseUds.get()) {
             mockUeidExtension(family);
         }
 
@@ -104,8 +116,10 @@ class IidFlowDetectorTest {
         Assertions.assertEquals(expectedResult, result);
     }
 
-    private IidFlowDetector prepareSut(boolean onlyEfuseUds) {
-        return new IidFlowDetector(onlyEfuseUds, ueidExtensionParser);
+    private IidFlowDetector prepareSut(Optional<Boolean> onlyEfuseUds) {
+        final var iidFlowDetector = new IidFlowDetector(ueidExtensionParser);
+        onlyEfuseUds.ifPresent(iidFlowDetector::withOnlyEfuseUds);
+        return iidFlowDetector;
     }
 
     private void mockUeidExtension(AttFamily family) {

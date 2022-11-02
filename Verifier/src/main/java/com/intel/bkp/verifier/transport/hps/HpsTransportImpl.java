@@ -49,9 +49,7 @@ public class HpsTransportImpl implements TransportLayer {
 
     @Override
     public void initialize(String connectionConfig) {
-        TcpConfig tcpConfig = new TcpConfig(connectionConfig);
-
-        client.initialize(tcpConfig);
+        client.initialize(new TcpConfig(connectionConfig));
     }
 
     @Override

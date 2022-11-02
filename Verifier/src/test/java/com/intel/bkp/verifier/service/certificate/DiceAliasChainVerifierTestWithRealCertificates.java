@@ -126,7 +126,7 @@ public class DiceAliasChainVerifierTestWithRealCertificates {
         final X509CRL familyCrl = readCrl(folder, FAMILY_CRL);
         final X509CRL rootCrl = readCrl(folder, ROOT_CRL);
         mockCrls(true, familyL1Crl, familyCrl, rootCrl);
-        return new DiceAliasChainVerifier(crlProvider, DICE_ROOT_HASH);
+        return new DiceAliasChainVerifier(crlProvider, DICE_ROOT_HASH, false);
     }
 
     @SneakyThrows
@@ -136,7 +136,7 @@ public class DiceAliasChainVerifierTestWithRealCertificates {
         final X509CRL familyCrl = readCrl(folder, FAMILY_CRL);
         final X509CRL rootCrl = readCrl(folder, ROOT_CRL);
         mockCrls(false, familyL1Crl, familyCrl, rootCrl);
-        return new DiceAliasChainVerifier(crlProvider, DICE_ROOT_HASH_PRE);
+        return new DiceAliasChainVerifier(crlProvider, DICE_ROOT_HASH_PRE, false);
     }
 
     private void mockCrls(boolean isProduction, X509CRL familyL1Crl, X509CRL familyCrl, X509CRL rootCrl) {

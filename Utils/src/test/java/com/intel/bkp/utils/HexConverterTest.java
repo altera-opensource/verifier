@@ -67,7 +67,31 @@ public class HexConverterTest {
         final String expected = "0A";
 
         // when
-        final String result = toHex(10);
+        final String result = toHex(0x0A);
+
+        // then
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void toHex_IntegerLarge_Success() {
+        // given
+        final String expected = "18C1A213";
+
+        // when
+        final String result = toHex(0x18C1A213);
+
+        // then
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void toHex_Long_Success() {
+        // given
+        final String expected = "0A";
+
+        // when
+        final String result = toHex((long)0x0A);
 
         // then
         Assertions.assertEquals(expected, result);

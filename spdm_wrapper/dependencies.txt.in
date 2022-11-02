@@ -1,0 +1,2 @@
+libspdm_@LIBSPDM_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/libspdm/@LIBSPDM_VERSION@/libspdm-@LIBSPDM_VERSION@-%platform%-%arch%%platform-ext%
+openssl_@OPENSSL_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/openssl/@OPENSSL_VERSION@/openssl-@OPENSSL_VERSION@-%platform%-%arch%%platform-ext%

@@ -34,6 +34,7 @@
 package com.intel.bkp.verifier.command.responses.attestation;
 
 import com.intel.bkp.verifier.command.logger.ILogger;
+import com.intel.bkp.verifier.interfaces.IMeasurementProvider;
 import com.intel.bkp.verifier.interfaces.Response;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +43,7 @@ import java.nio.ByteBuffer;
 
 @Getter
 @Setter
-public class GetMeasurementResponse implements Response, ILogger {
+public class GetMeasurementResponse implements Response, ILogger, IMeasurementProvider {
 
     private byte[] reservedHeader = new byte[0];
     private byte[] magic = new byte[0];
