@@ -33,12 +33,17 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.intel.bkp.verifier.exceptions.SpdmNotSupportedException;
 import com.intel.bkp.verifier.exceptions.UnknownCommandException;
+import com.intel.bkp.verifier.exceptions.UnsupportedSpdmVersionException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.interfaces.CommandLayer;
 import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.sender.GetCertificateMessageSender;
+import com.intel.bkp.verifier.service.sender.GpGetCertificateMessageSender;
+import com.intel.bkp.verifier.service.sender.SpdmGetVersionMessageSender;
+import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,12 +54,21 @@ import static com.intel.bkp.core.command.model.CertificateRequestType.FIRMWARE;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class GetDeviceAttestationComponent {
 
-    private final GetCertificateMessageSender getCertificateMessageSender;
-    private final S10AttestationComponent s10AttestationComponent;
-    private final DiceAttestationComponent diceAttestationComponent;
+    private final GpGetCertificateMessageSender gpGetCertificateMessageSender;
+    private final GpS10AttestationComponent gpS10AttestationComponent;
+    private final GpDiceAttestationComponent gpDiceAttestationComponent;
+    private final SpdmGetVersionMessageSender spdmGetVersionMessageSender;
+    private final TeardownMessageSender teardownMessageSender;
+    private final SpdmDiceAttestationComponent spdmDiceAttestationComponent;
 
     public GetDeviceAttestationComponent() {
-        this(new GetCertificateMessageSender(), new S10AttestationComponent(), new DiceAttestationComponent());
+        this(new GpGetCertificateMessageSender(),
+            new GpS10AttestationComponent(),
+            new GpDiceAttestationComponent(),
+            new SpdmGetVersionMessageSender(),
+            new TeardownMessageSender(),
+            new SpdmDiceAttestationComponent()
+        );
     }
 
     public VerifierExchangeResponse perform(String refMeasurement, byte[] deviceId) {
@@ -62,16 +76,50 @@ public class GetDeviceAttestationComponent {
     }
 
     VerifierExchangeResponse perform(AppContext appContext, String refMeasurement, byte[] deviceId) {
-
         final TransportLayer transportLayer = appContext.getTransportLayer();
         final CommandLayer commandLayer = appContext.getCommandLayer();
+
+        if (appContext.getLibConfig().isRunGpAttestation()) {
+            log.debug("Forced GP ATTESTATION.");
+            return runGpAttestation(refMeasurement, deviceId, transportLayer, commandLayer);
+        } else if (!spdmSupported()) {
+            return runGpAttestation(refMeasurement, deviceId, transportLayer, commandLayer);
+        } else {
+            return runSpdmAttestation(refMeasurement, deviceId);
+        }
+    }
+
+    private boolean spdmSupported() {
         try {
-            final byte[] response = getCertificateMessageSender.send(transportLayer, commandLayer, FIRMWARE);
+            spdmGetVersionMessageSender.send();
+            return true;
+        } catch (UnsupportedSpdmVersionException | SpdmNotSupportedException e) {
+            log.debug("SPDM not supported or insufficient version: ", e);
+            return false;
+        } catch (VerifierRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new VerifierRuntimeException("Failed to verify if SPDM is supported.", e);
+        }
+    }
+
+    private VerifierExchangeResponse runGpAttestation(String refMeasurement, byte[] deviceId,
+                                                      TransportLayer transportLayer, CommandLayer commandLayer) {
+        log.debug("Running GP Attestation.");
+        teardownMessageSender.send(transportLayer, commandLayer);
+
+        try {
+            final byte[] response = gpGetCertificateMessageSender.send(transportLayer, commandLayer, FIRMWARE);
             log.debug("This is FM/DM board.");
-            return diceAttestationComponent.perform(response, refMeasurement, deviceId);
+            return gpDiceAttestationComponent.perform(response, refMeasurement, deviceId);
         } catch (UnknownCommandException e) {
             log.debug("This is S10 board: {}", e.getMessage());
-            return s10AttestationComponent.perform(refMeasurement, deviceId);
+            return gpS10AttestationComponent.perform(refMeasurement, deviceId);
         }
+    }
+
+    private VerifierExchangeResponse runSpdmAttestation(String refMeasurement, byte[] deviceId) {
+        log.debug("Running SPDM Attestation.");
+        return spdmDiceAttestationComponent.perform(refMeasurement, deviceId);
     }
 }

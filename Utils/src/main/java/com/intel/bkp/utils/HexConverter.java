@@ -57,6 +57,10 @@ public class HexConverter {
         return String.format("%02X", number);
     }
 
+    public static String toHex(long number) {
+        return String.format("%02X", number);
+    }
+
     public static String toHex(byte[] data) {
         return Hex.encodeHexString(data).toUpperCase();
     }

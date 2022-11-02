@@ -34,6 +34,7 @@
 package com.intel.bkp.crypto.impl;
 
 import com.intel.bkp.crypto.constants.CryptoConstants;
+import com.intel.bkp.crypto.constants.SecurityKeyType;
 import com.intel.bkp.crypto.ecdh.EcdhVerifier;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.crypto.exceptions.InvalidSignatureException;
@@ -72,6 +73,9 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
+
+import static com.intel.bkp.crypto.CryptoUtils.getBytesFromPubKey;
+import static com.intel.bkp.crypto.CryptoUtils.toPublicEncodedBC;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EcUtils {
@@ -206,7 +210,14 @@ public class EcUtils {
     }
 
     public static int getPubKeyXYLenForPubKey(ECPublicKey publicKey) {
-        return 2 * getPubKeyXYLenFromCurveType(((ECNamedCurveSpec)publicKey.getParams()).getName());
+        return 2 * getPubKeyXYLenFromCurveType(((ECNamedCurveSpec) publicKey.getParams()).getName());
+    }
+
+    public static String generateFingerprint(PublicKey publicKey)
+        throws NoSuchAlgorithmException, InvalidKeySpecException {
+        final ECPublicKey ecPubKey = (ECPublicKey) toPublicEncodedBC(publicKey.getEncoded(), SecurityKeyType.EC.name());
+        final byte[] bytesFromPubKey = getBytesFromPubKey(ecPubKey, getPubKeyXYLenForPubKey(ecPubKey));
+        return HashUtils.generateFingerprint(bytesFromPubKey);
     }
 
     private static ECParameterSpec getEcParameterSpec(String curveType) {

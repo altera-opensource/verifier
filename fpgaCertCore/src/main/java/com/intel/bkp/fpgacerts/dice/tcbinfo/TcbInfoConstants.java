@@ -41,5 +41,4 @@ public class TcbInfoConstants {
 
     public static final String VENDOR = "intel.com";
     public static final int INDEX = 0;
-    public static final String FWIDS_HASH_ALG = "2.16.840.1.101.3.4.2.2";
 }

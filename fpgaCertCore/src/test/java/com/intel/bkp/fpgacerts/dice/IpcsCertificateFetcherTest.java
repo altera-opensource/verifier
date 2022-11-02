@@ -49,9 +49,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.security.auth.x500.X500Principal;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,11 +64,17 @@ class IpcsCertificateFetcherTest {
     private static final String URL = "url";
     private static final DiceParams DICE_PARAMS = new DiceParams("SKI", "UID");
     private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS = new DiceEnrollmentParams("SKIER", "SVN", "UID");
+    public static final String IPCS_SIGNING_CA_COMMON_NAME = "CN=Intel:Agilex:IPCS";
+    public static final String IPCS_ENROLLMENT_CERT_COMMON_NAME = "CN=Intel:Agilex:ER:01:1122334455667788";
 
     @Mock
     private X509Certificate firmwareCert;
     @Mock
     private X509Certificate deviceIdEnrollmentCert;
+    @Mock
+    private X509Certificate ipcsDeviceIdCert;
+    @Mock
+    private X500Principal deviceIdL0Issuer;
     @Mock
     private X509Certificate fetchedCert;
     @Mock
@@ -95,7 +103,7 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchDeviceIdCert_NoCerts_Throws() {
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchDeviceIdCert());
+        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsDeviceIdCert());
     }
 
     @Test
@@ -107,44 +115,44 @@ class IpcsCertificateFetcherTest {
         mockFetchingCertificate();
 
         // when
-        final var result = sut.fetchDeviceIdCert();
+        final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
+        assertEquals(fetchedDpCert, result.get());
     }
 
     @Test
     public void fetchDeviceIdCert_BothCerts_UsesFirmwareCert() {
         // given
         sut.setFirmwareCert(firmwareCert);
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
         mockParsingParamsFromFirmwareCert();
         mockDeviceIdUrl();
         mockFetchingCertificate();
 
         // when
-        final var result = sut.fetchDeviceIdCert();
+        final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
+        assertEquals(fetchedDpCert, result.get());
     }
 
     @Test
     public void fetchDeviceIdCert_OnlyDeviceIdEnrollmentCert_Success() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
         mockParsingParamsFromDeviceIdEnrollmentCertSubject();
         mockDeviceIdUrl();
         mockFetchingCertificate();
 
         // when
-        final var result = sut.fetchDeviceIdCert();
+        final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
+        assertEquals(fetchedDpCert, result.get());
     }
 
     @Test
@@ -156,8 +164,8 @@ class IpcsCertificateFetcherTest {
         mockFetchingCertificate();
 
         // when
-        sut.fetchDeviceIdCert();
-        sut.fetchDeviceIdCert();
+        sut.fetchIpcsDeviceIdCert();
+        sut.fetchIpcsDeviceIdCert();
 
         // then
         verify(diceParamsIssuerParser).parse(any());
@@ -173,7 +181,7 @@ class IpcsCertificateFetcherTest {
         mockFetchingCertificateDoesNotExist();
 
         // when
-        final var result = sut.fetchDeviceIdCert();
+        final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
         Assertions.assertTrue(result.isEmpty());
@@ -182,7 +190,8 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchEnrollmentCert_NoCerts_Throws() {
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchEnrollmentCert());
+        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+            () -> sut.fetchIpcsEnrollmentCert());
     }
 
     @Test
@@ -191,36 +200,54 @@ class IpcsCertificateFetcherTest {
         sut.setFirmwareCert(firmwareCert);
 
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchEnrollmentCert());
+        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+            () -> sut.fetchIpcsEnrollmentCert());
     }
 
     @Test
     public void fetchEnrollmentCert_OnlyDeviceIdEnrollmentCert_Success() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
+        mockDeviceIdL0Issuer(deviceIdEnrollmentCert, IPCS_ENROLLMENT_CERT_COMMON_NAME);
         mockParsingEnrollmentParamsFromDeviceIdEnrollmentCert();
         mockEnrollmentUrl();
         mockFetchingCertificate();
 
         // when
-        final var result = sut.fetchEnrollmentCert();
+        final var result = sut.fetchIpcsEnrollmentCert();
 
         // then
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
+        assertEquals(fetchedDpCert, result.get());
+    }
+
+    @Test
+    public void fetchEnrollmentCert_OnlyDeviceIdL0CertOtherThanEnrollment_Throws() {
+        // given
+        sut.setDeviceIdL0Cert(ipcsDeviceIdCert);
+        mockDeviceIdL0Issuer(ipcsDeviceIdCert, IPCS_SIGNING_CA_COMMON_NAME);
+
+        // when-then
+        final IpcsCertificateFetcherNotInitializedException ex =
+            Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+                () -> sut.fetchIpcsEnrollmentCert());
+
+        assertEquals("DeviceIdEnrollment certificate was not provided - failed to determine URL params.",
+            ex.getMessage());
     }
 
     @Test
     public void fetchEnrollmentCert_SecondInvocation_ReturnsPreviouslyFetchedCert() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
+        mockDeviceIdL0Issuer(deviceIdEnrollmentCert, IPCS_ENROLLMENT_CERT_COMMON_NAME);
         mockParsingEnrollmentParamsFromDeviceIdEnrollmentCert();
         mockEnrollmentUrl();
         mockFetchingCertificate();
 
         // when
-        sut.fetchEnrollmentCert();
-        sut.fetchEnrollmentCert();
+        sut.fetchIpcsEnrollmentCert();
+        sut.fetchIpcsEnrollmentCert();
 
         // then
         verify(diceEnrollmentParamsIssuerParser).parse(any());
@@ -230,13 +257,14 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchEnrollmentCert_NoCertFetched_ReturnsEmptyOptional() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
+        mockDeviceIdL0Issuer(deviceIdEnrollmentCert, IPCS_ENROLLMENT_CERT_COMMON_NAME);
         mockParsingEnrollmentParamsFromDeviceIdEnrollmentCert();
         mockEnrollmentUrl();
         mockFetchingCertificateDoesNotExist();
 
         // when
-        final var result = sut.fetchEnrollmentCert();
+        final var result = sut.fetchIpcsEnrollmentCert();
 
         // then
         Assertions.assertTrue(result.isEmpty());
@@ -245,7 +273,7 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchIidUdsCert_NoCerts_Throws() {
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIidUdsCert());
+        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsIidUdsCert());
     }
 
     @Test
@@ -254,36 +282,53 @@ class IpcsCertificateFetcherTest {
         sut.setFirmwareCert(firmwareCert);
 
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIidUdsCert());
+        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsIidUdsCert());
     }
 
     @Test
     public void fetchIidUdsCert_OnlyDeviceIdEnrollmentCert_Success() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
+        mockDeviceIdL0Issuer(deviceIdEnrollmentCert, IPCS_ENROLLMENT_CERT_COMMON_NAME);
         mockParsingParamsFromDeviceIdEnrollmentCertIssuer();
         mockIidUdsUrl();
         mockFetchingCertificate();
 
         // when
-        final var result = sut.fetchIidUdsCert();
+        final var result = sut.fetchIpcsIidUdsCert();
 
         // then
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(fetchedDpCert, result.get());
+        assertEquals(fetchedDpCert, result.get());
+    }
+
+    @Test
+    public void fetchIidUdsCert_OnlyDeviceIdL0CertOtherThanEnrollment_Throws() {
+        // given
+        sut.setDeviceIdL0Cert(ipcsDeviceIdCert);
+        mockDeviceIdL0Issuer(ipcsDeviceIdCert, IPCS_SIGNING_CA_COMMON_NAME);
+
+        // when-then
+        final IpcsCertificateFetcherNotInitializedException ex =
+            Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+                () -> sut.fetchIpcsIidUdsCert());
+
+        assertEquals("DeviceIdEnrollment certificate was not provided - failed to determine URL params.",
+            ex.getMessage());
     }
 
     @Test
     public void fetchIidUdsCert_SecondInvocation_ReturnsPreviouslyFetchedCert() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
+        mockDeviceIdL0Issuer(deviceIdEnrollmentCert, IPCS_ENROLLMENT_CERT_COMMON_NAME);
         mockParsingParamsFromDeviceIdEnrollmentCertIssuer();
         mockIidUdsUrl();
         mockFetchingCertificate();
 
         // when
-        sut.fetchIidUdsCert();
-        sut.fetchIidUdsCert();
+        sut.fetchIpcsIidUdsCert();
+        sut.fetchIpcsIidUdsCert();
 
         // then
         verify(diceParamsIssuerParser).parse(any());
@@ -293,13 +338,14 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchIidUdsCert_NoCertFetched_ReturnsEmptyOptional() {
         // given
-        sut.setDeviceIdEnrollmentCert(deviceIdEnrollmentCert);
+        sut.setDeviceIdL0Cert(deviceIdEnrollmentCert);
+        mockDeviceIdL0Issuer(deviceIdEnrollmentCert, IPCS_ENROLLMENT_CERT_COMMON_NAME);
         mockParsingParamsFromDeviceIdEnrollmentCertIssuer();
         mockIidUdsUrl();
         mockFetchingCertificateDoesNotExist();
 
         // when
-        final var result = sut.fetchIidUdsCert();
+        final var result = sut.fetchIpcsIidUdsCert();
 
         // then
         Assertions.assertTrue(result.isEmpty());
@@ -339,5 +385,10 @@ class IpcsCertificateFetcherTest {
 
     private void mockFetchingCertificateDoesNotExist() {
         when(certificateFetcher.fetchCertificate(URL)).thenReturn(Optional.empty());
+    }
+
+    private void mockDeviceIdL0Issuer(X509Certificate deviceIdL0Cert, String value) {
+        when(deviceIdL0Cert.getIssuerX500Principal()).thenReturn(deviceIdL0Issuer);
+        when(deviceIdL0Issuer.getName()).thenReturn(value);
     }
 }

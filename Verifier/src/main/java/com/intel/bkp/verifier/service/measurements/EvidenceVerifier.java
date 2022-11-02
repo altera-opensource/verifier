@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.joining;
+
 @Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
@@ -70,7 +72,7 @@ public class EvidenceVerifier {
     }
 
     private VerifierExchangeResponse verifyInternal(List<TcbInfo> expectedTcbInfos,
-        TcbInfoAggregator tcbInfoAggregator) {
+                                                    TcbInfoAggregator tcbInfoAggregator) {
 
         final Map<TcbInfoKey, TcbInfoValue> tcbInfoResponseMap = tcbInfoAggregator.getMap();
 
@@ -82,7 +84,8 @@ public class EvidenceVerifier {
             log.debug("Expected value: {}", value);
 
             if (!tcbInfoResponseMap.containsKey(key)) {
-                log.error("Evidence verification failed. Response does not contain expected key.");
+                log.error("Evidence verification failed. Response does not contain expected key. "
+                    + "Received TcbInfos from device: {}", mapToString(tcbInfoResponseMap));
                 return VerifierExchangeResponse.FAIL;
             }
 
@@ -103,5 +106,11 @@ public class EvidenceVerifier {
     private VerifierExchangeResponse getResponseForEmptyRim() {
         log.warn("List of expected measurements in RIM is empty.");
         return VerifierExchangeResponse.OK;
+    }
+
+    public String mapToString(Map<TcbInfoKey, TcbInfoValue> map) {
+        return map.keySet().stream()
+            .map(key -> key + "  =  " + map.get(key))
+            .collect(joining(",\n\t", "\n{\n\t", "\n}\n"));
     }
 }

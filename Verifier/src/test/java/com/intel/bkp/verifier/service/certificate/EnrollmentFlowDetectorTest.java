@@ -117,7 +117,7 @@ class EnrollmentFlowDetectorTest {
     void isEnrollmentFlow_NotRevokedDevice_DeviceIdCertDoesNotExist_ReturnsTrue() {
         // given
         when(diceRevocationCacheService.isRevoked(DEVICE_ID)).thenReturn(false);
-        when(certFetcher.fetchDeviceIdCert()).thenReturn(Optional.empty());
+        when(certFetcher.fetchIpcsDeviceIdCert()).thenReturn(Optional.empty());
 
         // when
         final boolean result = sut.isEnrollmentFlow();
@@ -130,7 +130,7 @@ class EnrollmentFlowDetectorTest {
     void isEnrollmentFlow_NotRevokedDevice_DeviceIdCertExists_ReturnsFalse() {
         // given
         when(diceRevocationCacheService.isRevoked(DEVICE_ID)).thenReturn(false);
-        when(certFetcher.fetchDeviceIdCert()).thenReturn(Optional.of(deviceIdCert));
+        when(certFetcher.fetchIpcsDeviceIdCert()).thenReturn(Optional.of(deviceIdCert));
 
         // when
         final boolean result = sut.isEnrollmentFlow();
@@ -143,7 +143,7 @@ class EnrollmentFlowDetectorTest {
     void isEnrollmentFlow_NotRevokedDevice_CertFetcherNotInitialized_Throws() {
         // given
         when(diceRevocationCacheService.isRevoked(DEVICE_ID)).thenReturn(false);
-        when(certFetcher.fetchDeviceIdCert()).thenThrow(IpcsCertificateFetcherNotInitializedException.class);
+        when(certFetcher.fetchIpcsDeviceIdCert()).thenThrow(IpcsCertificateFetcherNotInitializedException.class);
 
         // when - then
         Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.isEnrollmentFlow());

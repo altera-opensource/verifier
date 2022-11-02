@@ -37,14 +37,20 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509Certificate;
+import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509CertificateChain;
 import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.toX509Crl;
 
 public class Utils {
 
     public static X509Certificate readCertificate(String folder, String filename) throws Exception {
         return toX509Certificate(readFromResources(folder, filename));
+    }
+
+    public static List<X509Certificate> readCertificateChain(String folder, String filename) throws Exception {
+        return toX509CertificateChain(readFromResources(folder, filename));
     }
 
     public static X509CRL readCrl(String folder, String filename) throws Exception {

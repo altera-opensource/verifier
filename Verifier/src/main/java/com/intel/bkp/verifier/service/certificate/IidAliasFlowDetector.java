@@ -42,6 +42,7 @@ public class IidAliasFlowDetector extends IidFlowDetector {
     }
 
     IidAliasFlowDetector(AppContext appContext) {
-        super(appContext.getLibConfig().getAttestationCertificateFlow().isOnlyEfuseUds());
+        super();
+        withOnlyEfuseUds(appContext.getLibConfig().getAttestationCertificateFlow().isOnlyEfuseUds());
     }
 }

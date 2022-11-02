@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
 import static com.intel.bkp.fpgacerts.model.Oid.MEASUREMENT_TYPES;
 
@@ -57,7 +57,7 @@ class TcbInfoExtensionParserTest {
 
     private static final String EXPECTED_VENDOR = VENDOR;
     private static final String EXPECTED_MODEL = "Agilex";
-    private static final String EXPECTED_HASH_ALG = FWIDS_HASH_ALG;
+    private static final String EXPECTED_HASH_ALG = FWIDS_HASH_ALG_SHA384.getOid();
 
     private static final int ALIAS_EXPECTED_LAYER = 2;
     private static final String ALIAS_EXPECTED_DIGEST_1 = "066331A2C0CD05F2F48D5BDD4EA60C5CFFAE61C286B1ADDE040E1"

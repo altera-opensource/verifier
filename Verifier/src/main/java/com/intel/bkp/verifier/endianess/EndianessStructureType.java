@@ -35,5 +35,6 @@ package com.intel.bkp.verifier.endianess;
 
 public enum EndianessStructureType {
     CREATE_ATTESTATION_SUBKEY_RSP,
-    GET_MEASUREMENT_RSP
+    GET_MEASUREMENT_RSP,
+    SPDM_DMTF_MEASUREMENT_HEADER
 }

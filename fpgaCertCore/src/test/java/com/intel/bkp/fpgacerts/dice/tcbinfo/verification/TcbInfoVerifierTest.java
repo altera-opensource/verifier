@@ -50,7 +50,6 @@ import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.utils.HexConverter.fromHex;
@@ -122,7 +121,7 @@ class TcbInfoVerifierTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void defaultConstructor_containsAllFieldVerifiers() throws NoSuchFieldException, IllegalAccessException {
+    void defaultConstructor_containsAllFieldVerifiers() {
         // given
         final var expectedFieldVerifierClasses = List.of(
             ModelVerifier.class,
@@ -134,19 +133,27 @@ class TcbInfoVerifierTest {
             FlagsVerifier.class);
 
         // when
-        final var tcbInfoVerifier = new TcbInfoVerifier();
+        final var tcbInfoVerifier = new TcbInfoVerifier(false);
 
         // then
-        final Field fieldVerifiersField = tcbInfoVerifier.getClass().getDeclaredField("fieldVerifiers");
-        fieldVerifiersField.setAccessible(true);
-
-        final var actualFieldVerifiers = (List<ITcbInfoFieldVerifier>) fieldVerifiersField.get(tcbInfoVerifier);
-        final var actualFieldVerifierClasses = actualFieldVerifiers.stream()
-            .map(ITcbInfoFieldVerifier::getClass)
-            .collect(Collectors.toList());
+        final var actualFieldVerifierClasses =
+            ((List<ITcbInfoFieldVerifier>) getPrivateFieldValue("fieldVerifiers", tcbInfoVerifier)).stream()
+                .map(ITcbInfoFieldVerifier::getClass)
+                .toList();
 
         Assertions.assertEquals(expectedFieldVerifierClasses.size(), actualFieldVerifierClasses.size());
         Assertions.assertTrue(expectedFieldVerifierClasses.containsAll(actualFieldVerifierClasses));
+    }
+
+    @Test
+    void defaultConstructor_passesTestModeSecretsToFlagsVerifier() {
+        // when
+        final var tcbInfoVerifierWithTestModeSecretsTrue = new TcbInfoVerifier(true);
+        final var tcbInfoVerifierWithTestModeSecretsFalse = new TcbInfoVerifier(false);
+
+        // then
+        verifyTestModeSecretsInFlagsVerifier(true, tcbInfoVerifierWithTestModeSecretsTrue);
+        verifyTestModeSecretsInFlagsVerifier(false, tcbInfoVerifierWithTestModeSecretsFalse);
     }
 
     @Test
@@ -331,5 +338,26 @@ class TcbInfoVerifierTest {
         final var extensionValue = new DEROctetString(fromHex(tcbInfoSequenceInHex)).getEncoded();
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_TCB_INFO.getOid()));
         when(certificate.getExtensionValue(TCG_DICE_TCB_INFO.getOid())).thenReturn(extensionValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    private void verifyTestModeSecretsInFlagsVerifier(boolean expectedTestModeSecrets,
+                                                      TcbInfoVerifier tcbInfoVerifier) {
+        final var flagsVerifier =
+            ((List<ITcbInfoFieldVerifier>) getPrivateFieldValue("fieldVerifiers", tcbInfoVerifier)).stream()
+                .filter(v -> v.getClass().equals(FlagsVerifier.class))
+                .findAny()
+                .get();
+
+        final boolean actualTestModeSecrets = (boolean) getPrivateFieldValue("testModeSecrets", flagsVerifier);
+        Assertions.assertEquals(expectedTestModeSecrets, actualTestModeSecrets);
+    }
+
+    @SneakyThrows
+    private Object getPrivateFieldValue(String fieldName, Object obj) {
+        final Field field = obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(obj);
     }
 }

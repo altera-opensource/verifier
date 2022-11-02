@@ -59,5 +59,6 @@ public class CryptoConstants {
 
     public static final int SHA384_LEN = 48;
     public static final int SHA256_LEN = 32;
+    public static final int SHA384_SIG_LEN = 2 * SHA384_LEN;
 
 }

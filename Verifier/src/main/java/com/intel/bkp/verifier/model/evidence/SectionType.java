@@ -36,88 +36,72 @@ package com.intel.bkp.verifier.model.evidence;
 import com.intel.bkp.verifier.exceptions.SectionTypeException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.stream.Stream;
+
+import static com.intel.bkp.utils.HexConverter.toHex;
 
 @Getter
 @AllArgsConstructor
 public enum SectionType {
-    RESERVED(0),
-    DEVICE_STATE(1),
-    IO(2),
-    CORE(3),
-    HPIO(4),
-    HPS(5),
-    PR(6),
-    LAYER_0_FW_ROM_EXT(10), // FM/DM, untyped
-    LAYER_1_FW_CMF(11), // untyped
-    LAYER_2_BASE_DESIGN(12); // FM/DM, untyped
+    RESERVED(0, 0),
+    DEVICE_STATE(1, 0x82),
+    IO(2, 0x01),
+    CORE(3, 0x01),
+    HPIO(4, 0x01),
+    HPS(5, 0x01),
+    PR(6, 0x01),
+    LAYER_0_FW_ROM_EXT(10, 0), // FM/DM, untyped
+    LAYER_1_FW_CMF(11, 0), // untyped
+    LAYER_2_BASE_DESIGN(12, 0); // FM/DM, untyped
+
+    public static final int MIN_PR_INDEX = 0x40;
+    public static final int MAX_PR_INDEX = 0x5F;
 
     private final int value;
+    private final int type;
 
-    static final String UNSUPPORTED_SECTION_TYPE = "Unsupported SectionType value (%d).";
+    static final String UNSUPPORTED_SECTION_TYPE = "Unsupported SectionType. Value: %d (0x%s).";
     static final String FAILED_TO_DETERMINE_SECTION_TYPE = "Failed to determine section type from RIM file.";
     static final String TYPE_IDENTIFIER_MUST_BE_BYTE_VALUE = "Type identifier must be byte value.";
     static final String LAYER_MUST_BE_INTEGER_VALUE = "Layer must be integer value.";
     static final String LAYER_CAN_ONLY_HAVE_VALUES = "Layer can only have values 0, 1 or 2.";
+    static final String UNSUPPORTED_SPDM_SECTION =
+        "Unsupported SectionType. SPDM Index: %d (0x%s), SPDM Type: %d (0x%s)";
 
-    public static SectionType from(byte b) {
+    public static SectionType from(byte value) {
         return Arrays.stream(values())
-            .filter(type -> type.getValue() == b)
+            .filter(type -> type.getValue() == toInt(value))
             .findFirst()
             .orElseThrow(
-                () -> new SectionTypeException(String.format(UNSUPPORTED_SECTION_TYPE, b))
+                () -> new SectionTypeException(String.format(UNSUPPORTED_SECTION_TYPE, value, toHex(value)))
             );
     }
 
-    public static SectionType from(BaseEvidenceBlock block) {
-        return Optional.ofNullable(block.getType())
-            .map(SectionType::determineSectionTypeFromType)
-            .orElseGet(() -> fromLayer(block));
-    }
-
-    public static SectionType fromTypeLayer(String type, Integer layer) {
-        return Optional.ofNullable(type)
-            .map(SectionType::determineSectionTypeFromType)
-            .orElseGet(() -> determineSectionTypeFromLayer(layer));
-    }
-
-    private static SectionType fromLayer(BaseEvidenceBlock block) {
-        return Optional.ofNullable(block.getLayer())
-            .map(SectionType::determineSectionTypeFromLayer)
-            .orElseThrow(() -> new SectionTypeException(FAILED_TO_DETERMINE_SECTION_TYPE));
-    }
-
-    private static SectionType determineSectionTypeFromType(@NonNull String type) {
-        final String[] typeIntegers = type.split("[.]");
-
-        try {
-            final byte typeByte = Byte.parseByte(typeIntegers[typeIntegers.length - 1]);
-            return SectionType.from(typeByte);
-        } catch (NumberFormatException e) {
-            throw new SectionTypeException(TYPE_IDENTIFIER_MUST_BE_BYTE_VALUE, e);
+    public static SectionType fromSpdmParameters(byte spdmIndex, byte spdmType) {
+        if (isSpdmSection(spdmIndex, spdmType)) {
+            return from(spdmIndex);
+        } else if (isSpdmPrSection(spdmIndex, spdmType)) {
+            return PR;
+        } else {
+            throw new SectionTypeException(
+                UNSUPPORTED_SPDM_SECTION.formatted(spdmIndex, toHex(spdmIndex), spdmType, toHex(spdmType)));
         }
     }
 
-    private static SectionType determineSectionTypeFromLayer(@NonNull String layer) {
-        try {
-            return SectionType.determineSectionTypeFromLayer(Integer.parseInt(layer));
-        } catch (NumberFormatException e) {
-            throw new SectionTypeException(LAYER_MUST_BE_INTEGER_VALUE, e);
-        }
+    private static boolean isSpdmSection(byte spdmIndex, byte spdmType) {
+        return Stream.of(DEVICE_STATE, IO, CORE, HPIO, HPS)
+            .anyMatch(v -> v.getValue() == toInt(spdmIndex) && v.getType() == toInt(spdmType));
     }
 
-    private static SectionType determineSectionTypeFromLayer(int layer) {
-        if (layer == 0) {
-            return LAYER_0_FW_ROM_EXT;
-        } else if (layer == 1) {
-            return LAYER_1_FW_CMF;
-        } else if (layer == 2) {
-            return LAYER_2_BASE_DESIGN;
-        }
+    private static boolean isSpdmPrSection(byte spdmIndex, byte spdmType) {
+        return toInt(spdmIndex) >= MIN_PR_INDEX
+            && toInt(spdmIndex) <= MAX_PR_INDEX
+            && toInt(spdmType) == PR.getType();
+    }
 
-        throw new SectionTypeException(LAYER_CAN_ONLY_HAVE_VALUES);
+    private static int toInt(byte byteVal) {
+        return byteVal & 0xFF;
     }
 }

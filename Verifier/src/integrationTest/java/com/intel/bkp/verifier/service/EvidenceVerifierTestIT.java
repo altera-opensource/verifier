@@ -40,7 +40,7 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
 import com.intel.bkp.verifier.Utils;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseToTcbInfoMapper;
+import com.intel.bkp.verifier.command.responses.attestation.GpMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
 import org.junit.jupiter.api.Assertions;
@@ -60,7 +60,9 @@ public class EvidenceVerifierTestIT {
     private static final String TEST_FOLDER_INTEGRATION = "integration/";
 
     private static final String FILENAME_STRATIX_RIM = "signed_spl_hps.rim";
+    private static final String FILENAME_STRATIX_RIM_INVALID_IO_SECTION = "signed_spl_hps_invalid_io_section.rim";
     private static final String FILENAME_AGILEX_RIM = "ghrd_sha_384.rim";
+    private static final String FILENAME_AGILEX_RIM_INVALID_HPS_SECTION = "ghrd_sha_384_invalid_hps_section.rim";
 
     private static final String FILENAME_STRATIX_RESPONSE = "measurements_response_stratix10.bin";
     private static final String FILENAME_AGILEX_RESPONSE = "measurements_response_agilex.bin";
@@ -69,7 +71,9 @@ public class EvidenceVerifierTestIT {
     private static final String DEVICE_ID_ENROLLMENT_CERT = "device_id_enrollment_certificate.der";
 
     private static String refMeasurementsStratix;
+    private static String refMeasurementsStratixInvalidIoSection;
     private static String refMeasurementsAgilex;
+    private static String refMeasurementsAgilexInvalidHpsSection;
 
     private static GetMeasurementResponse responseS10;
     private static GetMeasurementResponse responseAgilex;
@@ -78,7 +82,7 @@ public class EvidenceVerifierTestIT {
     private static X509Certificate firmwareCert;
     private static X509Certificate deviceIdEnrollmentCert;
 
-    private final GetMeasurementResponseToTcbInfoMapper measurementMapper = new GetMeasurementResponseToTcbInfoMapper();
+    private final GpMeasurementResponseToTcbInfoMapper measurementMapper = new GpMeasurementResponseToTcbInfoMapper();
     private TcbInfoExtensionParser tcbInfoExtensionParser = new TcbInfoExtensionParser();
     private TcbInfoAggregator tcbInfoAggregator = new TcbInfoAggregator();
 
@@ -87,7 +91,9 @@ public class EvidenceVerifierTestIT {
     @BeforeAll
     static void init() throws Exception {
         refMeasurementsStratix = readEvidence(FILENAME_STRATIX_RIM);
+        refMeasurementsStratixInvalidIoSection = readEvidence(FILENAME_STRATIX_RIM_INVALID_IO_SECTION);
         refMeasurementsAgilex = readEvidence(FILENAME_AGILEX_RIM);
+        refMeasurementsAgilexInvalidHpsSection = readEvidence(FILENAME_AGILEX_RIM_INVALID_HPS_SECTION);
 
         responseS10 = readResponse(FILENAME_STRATIX_RESPONSE);
         responseAgilex = readResponse(FILENAME_AGILEX_RESPONSE);
@@ -127,6 +133,18 @@ public class EvidenceVerifierTestIT {
     }
 
     @Test
+    public void verify_S10_InvalidIoMeasurements_ReturnsFail() {
+        // given
+        tcbInfoAggregator.add(measurementMapper.map(responseS10));
+
+        // when
+        final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsStratixInvalidIoSection);
+
+        // then
+        Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
+    }
+
+    @Test
     public void verify_Agilex() {
         // given
         final List<TcbInfo> tcbInfosFromGetMeasurementResponse = measurementMapper.map(responseAgilex);
@@ -142,5 +160,23 @@ public class EvidenceVerifierTestIT {
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK, result);
+    }
+
+    @Test
+    public void verify_Agilex_InvalidHpsMeasurements_ReturnsFail() {
+        // given
+        final List<TcbInfo> tcbInfosFromGetMeasurementResponse = measurementMapper.map(responseAgilex);
+
+        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(aliasCert));
+        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(firmwareCert));
+        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(deviceIdEnrollmentCert));
+
+        tcbInfoAggregator.add(tcbInfosFromGetMeasurementResponse);
+
+        // when
+        final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilexInvalidHpsSection);
+
+        // then
+        Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
     }
 }

@@ -43,8 +43,6 @@ import static com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoTestUtil.
 @ExtendWith(MockitoExtension.class)
 class FlagsVerifierTest {
 
-    private final FlagsVerifier sut = new FlagsVerifier();
-
     @Test
     void verify_NoFlagsField_Success() {
         // given
@@ -54,7 +52,7 @@ class FlagsVerifierTest {
         final var tcbInfo = parseTcbInfo(tcbInfoWithoutFlagField);
 
         // when
-        final boolean result = sut.verify(tcbInfo);
+        final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
         Assertions.assertTrue(result);
@@ -69,7 +67,7 @@ class FlagsVerifierTest {
         final var tcbInfo = parseTcbInfo(tcbInfoWithAllFlagsNotSet);
 
         // when
-        final boolean result = sut.verify(tcbInfo);
+        final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
         Assertions.assertTrue(result);
@@ -84,7 +82,7 @@ class FlagsVerifierTest {
         final var tcbInfo = parseTcbInfo(tcbInfoWithAFlagSet);
 
         // when
-        final boolean result = sut.verify(tcbInfo);
+        final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
         Assertions.assertTrue(result);
@@ -99,9 +97,24 @@ class FlagsVerifierTest {
         final var tcbInfo = parseTcbInfo(tcbInfoWithAFlagSet);
 
         // when
-        final boolean result = sut.verify(tcbInfo);
+        final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
         Assertions.assertFalse(result);
+    }
+
+    @Test
+    void verify_FlagsNotAllZeros_CmfHash_TestModeSecrets_Success() {
+        // given
+        final String tcbInfoWithAFlagSet =
+            "30618009696E74656C2E636F6D81064167696C6578830100840101850100A63F303D06096086480165030402020430309326BB3193"
+                + "26BB329326BB339326BB349326BB359326BB369326BB379326BB389326BB399326BB3A9326BB3B9326BB87020640";
+        final var tcbInfo = parseTcbInfo(tcbInfoWithAFlagSet);
+
+        // when
+        final boolean result = new FlagsVerifier(true).verify(tcbInfo);
+
+        // then
+        Assertions.assertTrue(result);
     }
 }

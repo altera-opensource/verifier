@@ -34,7 +34,7 @@
 package com.intel.bkp.fpgacerts.exceptions;
 
 public class InvalidDiceCertificateSubjectException extends RuntimeException {
-    public InvalidDiceCertificateSubjectException(String message) {
-        super(message);
+    public InvalidDiceCertificateSubjectException(String subject) {
+        super(String.format("Subject is invalid: %s", subject));
     }
 }

@@ -34,10 +34,9 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
-
-import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.FWIDS_HASH_ALG;
 
 public class HashAlgVerifier extends TcbInfoFieldVerifierBase<FwIdField> {
 
@@ -47,11 +46,11 @@ public class HashAlgVerifier extends TcbInfoFieldVerifierBase<FwIdField> {
 
     @Override
     protected boolean isValueValid(FwIdField value, TcbInfo tcbInfo) {
-        return FWIDS_HASH_ALG.equals(value.getHashAlg());
+        return FwidHashAlg.isSupported(value.getHashAlg());
     }
 
     @Override
     protected String getExpected() {
-        return String.format("FwIdField with hashAlg=%s", FWIDS_HASH_ALG);
+        return String.format("FwIdField with one of supported hashAlg OIDs: %s", FwidHashAlg.getSupported());
     }
 }

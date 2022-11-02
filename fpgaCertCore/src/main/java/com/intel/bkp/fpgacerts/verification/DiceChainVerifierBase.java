@@ -63,7 +63,7 @@ public abstract class DiceChainVerifierBase {
 
     private static final int ROOT_BASIC_CONSTRAINTS = CA_TRUE_PATHLENGTH_NONE;
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
-            TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
+        TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
 
     private final ExtendedKeyUsageVerifier extendedKeyUsageVerifier;
     private final ChainVerifier certificateChainVerifier;
@@ -78,10 +78,10 @@ public abstract class DiceChainVerifierBase {
     @Setter
     private byte[] deviceId;
 
-    protected DiceChainVerifierBase(ICrlProvider crlProvider, String trustedRootHash) {
+    protected DiceChainVerifierBase(ICrlProvider crlProvider, String trustedRootHash, boolean testModeSecrets) {
         this(new ExtendedKeyUsageVerifier(), new ChainVerifier(), new CrlVerifier(crlProvider), new RootHashVerifier(),
-            new UeidVerifier(), new SubjectKeyIdentifierVerifier(), trustedRootHash, new TcbInfoVerifier(),
-            new DiceSubjectVerifier());
+            new UeidVerifier(), new SubjectKeyIdentifierVerifier(), trustedRootHash,
+            new TcbInfoVerifier(testModeSecrets), new DiceSubjectVerifier());
     }
 
     protected abstract String[] getExpectedLeafCertKeyPurposes();
@@ -102,7 +102,7 @@ public abstract class DiceChainVerifierBase {
 
         if (!ueidVerifier.certificates(certificates).verify(deviceId)) {
             handleVerificationFailure(
-                    "One of certificates in X509 attestation chain has invalid UEID extension value.");
+                "One of certificates in X509 attestation chain has invalid UEID extension value.");
         }
 
         if (!subjectKeyIdentifierVerifier.certificates(certificates).verify()) {

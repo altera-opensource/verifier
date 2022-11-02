@@ -1,0 +1,64 @@
+{
+    "measurement records": {
+        "tcbinfo": [
+            
+            {
+                "//": "Hash of loaded IO section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.2",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "AA4A2C3AF7A776C78F9DCC57F5B5206C9C829235D9456FEBFB8E5DD56243FD37BD05B01C6C033F80DC171F4A06AE8DE6"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded HPS section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.5",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "33D93D6272E95712BD1051F08E4ADFE00C2D54A5E5C2A6D7B56CEE737E2C0557167830720D9F4A2802AF919F947320EF"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded CORE section",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.3",
+                "layer": "2",
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "521A064B3B2B9F7D95AFB75B0E5A2CD1EC74AC806C641E6ECD13173153B05777B51E3CDD497694D12285A118155217AC"
+                    }
+                ]
+            },
+            {
+                "//": "Hash of loaded PR section 0x01000000",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.6",
+                "layer": "2",
+                "index": 16777216,
+                "fwids": [
+                    {
+                        "hashAlg": "2.16.840.1.101.3.4.2.2",
+                        "digest": "DFAC63B3B52E91F013C18ACC5ADC4FDB3938A56FF3A5ACB47E99DB57EA46937D6BC533DBA0DB4EA5D9175B9EE024D991"
+                    }
+                ]
+            },
+            {
+                "//": "Device state flags",
+                "vendor": "intel.com",
+                "type": "2.16.840.1.113741.1.15.4.1",
+                "layer": "2",
+                "vendorInfo": "0000000003010100",
+                "vendorInfoMask": "FFFFFFFF000000FF"
+            }
+        ]
+    }
+}

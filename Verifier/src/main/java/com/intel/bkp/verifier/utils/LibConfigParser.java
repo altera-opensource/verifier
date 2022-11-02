@@ -39,9 +39,11 @@ import com.intel.bkp.core.properties.TrustedRootHash;
 import com.intel.bkp.core.security.SecurityProviderParams;
 import com.intel.bkp.core.security.SecurityProviderParamsSetter;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.model.AttestationCertificateFlow;
 import com.intel.bkp.verifier.model.DatabaseConfiguration;
 import com.intel.bkp.verifier.model.LibConfig;
+import com.intel.bkp.verifier.model.LibSpdmParams;
 import com.intel.bkp.verifier.model.TransportLayerType;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
 import com.intel.bkp.verifier.model.VerifierRootQkyChain;
@@ -70,11 +72,18 @@ import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PROXY_
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_S10_TRUSTED_ROOT;
 import static com.intel.bkp.verifier.config.Properties.EC_GROUP;
 import static com.intel.bkp.verifier.config.Properties.KEY_TYPES_GROUP;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_MEASUREMENTS_REQUEST_SIGNATURE;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_PARAMS_GROUP;
+import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_WRAPPER_LIBRARY_PATH;
 import static com.intel.bkp.verifier.config.Properties.ONLY_EFUSE_UDS;
 import static com.intel.bkp.verifier.config.Properties.PROVIDER_GROUP;
 import static com.intel.bkp.verifier.config.Properties.PROVIDER_PARAMS_GROUP;
 import static com.intel.bkp.verifier.config.Properties.PROXY_GROUP;
+import static com.intel.bkp.verifier.config.Properties.RUN_GP_ATTESTATION;
 import static com.intel.bkp.verifier.config.Properties.SECURITY_GROUP;
+import static com.intel.bkp.verifier.config.Properties.TEST_MODE_SECRETS;
 import static com.intel.bkp.verifier.config.Properties.TRANSPORT_LAYER_TYPE;
 import static com.intel.bkp.verifier.config.Properties.TRUSTED_ROOT_HASH_GROUP;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_CHAIN_GROUP;
@@ -88,6 +97,8 @@ import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_SINGL
 public class LibConfigParser {
 
     private static final String VERIFIER_SECURITY_PROVIDER_PASSWORD = "VERIFIER_SECURITY_PROVIDER_PASSWORD";
+    static final int DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID = 0x00;
+    static final int DEFAULT_LIB_SPDM_CT_EXPONENT = 0x0E;
 
     public LibConfig parseConfigFile(String configFileName) {
         final SchemaParams prop = new SchemaParams();
@@ -116,8 +127,7 @@ public class LibConfigParser {
     }
 
     Path getDirectory() throws URISyntaxException {
-        return Path.of(
-            getClass().getProtectionDomain().getCodeSource().getLocation().toURI())
+        return Path.of(getClass().getProtectionDomain().getCodeSource().getLocation().toURI())
             .getParent();
     }
 
@@ -127,8 +137,11 @@ public class LibConfigParser {
         appConfig.setAttestationCertificateFlow(getAttestationCertificateFlow(prop));
         appConfig.setDistributionPoint(getDistributionPoint(prop));
         appConfig.setVerifierKeyParams(getVerifierKeyParams(prop));
+        appConfig.setLibSpdmParams(getLibSpdmParams(prop));
         appConfig.setDatabaseConfiguration(getDatabaseConfiguration(prop));
         appConfig.setProviderParams(getProviderParams(prop));
+        appConfig.setRunGpAttestation(getRunGpAttestation(prop));
+        appConfig.setTestModeSecrets(getTestModeSecrets(prop));
         return appConfig;
     }
 
@@ -154,10 +167,10 @@ public class LibConfigParser {
     private DistributionPoint getDistributionPoint(SchemaParams prop) {
         final TrustedRootHash trustedRootHash = new TrustedRootHash(
             Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_S10_TRUSTED_ROOT,
-                DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
+                    DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
                 .orElse(""),
             Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_DICE_TRUSTED_ROOT,
-                DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
+                    DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
                 .orElse("")
         );
 
@@ -165,7 +178,7 @@ public class LibConfigParser {
             prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_HOST,
                 DISTRIBUTION_POINT_GROUP, PROXY_GROUP),
             Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_PORT,
-                DISTRIBUTION_POINT_GROUP, PROXY_GROUP))
+                    DISTRIBUTION_POINT_GROUP, PROXY_GROUP))
                 .filter(Predicate.not(StringUtils::isBlank))
                 .map(Integer::valueOf)
                 .orElse(null));
@@ -192,6 +205,47 @@ public class LibConfigParser {
                 prop.getPropertyGroup(VERIFIER_KEY_PARAMS_KEY_NAME, VERIFIER_KEY_PARAMS_GROUP)
             ).orElse("")
         );
+    }
+
+    private LibSpdmParams getLibSpdmParams(SchemaParams prop) {
+        return new LibSpdmParams(
+            getLibSpdmWrapperLibraryPath(prop),
+            getLibSpdmCtExponent(prop),
+            getLibSpdmCertificatesEfuseUdsSlotId(prop),
+            getLibSpdmMeasurementsRequestSignature(prop)
+        );
+    }
+
+    private String getLibSpdmWrapperLibraryPath(SchemaParams prop) {
+        return Optional.ofNullable(
+                prop.getPropertyGroup(LIB_SPDM_WRAPPER_LIBRARY_PATH, LIB_SPDM_PARAMS_GROUP))
+            .orElse("");
+    }
+
+    int getLibSpdmCtExponent(SchemaParams prop) {
+        return Optional.ofNullable(
+                prop.getPropertyGroup(LIB_SPDM_CT_EXPONENT, LIB_SPDM_PARAMS_GROUP))
+            .filter(StringUtils::isNotBlank)
+            .map(this::remove0x)
+            .map(s -> toInt(s, LIB_SPDM_CT_EXPONENT))
+            .orElse(DEFAULT_LIB_SPDM_CT_EXPONENT);
+    }
+
+    int getLibSpdmCertificatesEfuseUdsSlotId(SchemaParams prop) {
+        return Optional.ofNullable(
+                prop.getPropertyGroup(LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID, LIB_SPDM_PARAMS_GROUP))
+            .filter(StringUtils::isNotBlank)
+            .map(this::remove0x)
+            .map(s -> toInt(s, LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID))
+            .orElse(DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID);
+    }
+
+    private boolean getLibSpdmMeasurementsRequestSignature(SchemaParams prop) {
+        return Optional.ofNullable(
+                prop.getPropertyGroup(LIB_SPDM_MEASUREMENTS_REQUEST_SIGNATURE, LIB_SPDM_PARAMS_GROUP))
+            .filter(StringUtils::isNotBlank)
+            .map(Boolean::valueOf)
+            .orElse(true);
     }
 
     private DatabaseConfiguration getDatabaseConfiguration(SchemaParams prop) {
@@ -229,6 +283,32 @@ public class LibConfigParser {
             PROVIDER_PARAMS_GROUP, KEY_TYPES_GROUP, EC_GROUP));
 
         return providerParams;
+    }
+
+    private boolean getRunGpAttestation(SchemaParams prop) {
+        return Optional.ofNullable(prop.getProperty(RUN_GP_ATTESTATION))
+            .map(Boolean::valueOf)
+            .orElse(false);
+    }
+
+    private boolean getTestModeSecrets(SchemaParams prop) {
+        return Optional.ofNullable(prop.getProperty(TEST_MODE_SECRETS))
+            .map(Boolean::valueOf)
+            .orElse(false);
+    }
+
+    private int toInt(String value, String param) {
+        try {
+            return Integer.parseInt(value, 16);
+        } catch (NumberFormatException e) {
+            throw new VerifierRuntimeException(
+                "Provide %s parameter in hexadecimal form or as integer. Example: 0x1A2B or 1A2B or 81."
+                    .formatted(param), e);
+        }
+    }
+
+    private String remove0x(String value) {
+        return StringUtils.substringAfter(value, "0x");
     }
 
     private String getPass(SchemaParams prop) {

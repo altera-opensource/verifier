@@ -46,13 +46,28 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoggerLevelUtil {
 
+    private static final String VERIFIER_LOGGER_NAME = "com.intel.bkp.verifier";
+    private static final String FPGACERTS_LOGGER_NAME = "com.intel.bkp.fpgacerts";
+    private static final String CRYPTO_LOGGER_NAME = "com.intel.bkp.crypto";
+
     public static void setLogLevel(String logLevel) {
         final Level level = Optional.ofNullable(logLevel)
             .map(Level::valueOf)
             .orElse(Level.INFO);
-        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(level);
+
+        setLevel(level, getLogger(Logger.ROOT_LOGGER_NAME));
+        setLevel(level, getLogger(VERIFIER_LOGGER_NAME));
+        setLevel(level, getLogger(FPGACERTS_LOGGER_NAME));
+        setLevel(level, getLogger(CRYPTO_LOGGER_NAME));
 
         log.info("[WORKLOAD] LogLevel set to {}.", level);
+    }
+
+    private static Logger getLogger(String rootLoggerName) {
+        return (Logger) LoggerFactory.getLogger(rootLoggerName);
+    }
+
+    private static void setLevel(Level level, Logger logger) {
+        logger.setLevel(level);
     }
 }

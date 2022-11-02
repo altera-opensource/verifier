@@ -35,20 +35,26 @@ package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureMagic;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
 
+import static com.intel.bkp.utils.HexConverter.toHex;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PsgSignatureHelper {
 
     private static final int SIGNATURE_METADATA_SIZE = 4 * Integer.BYTES; // 4 Integer fields
-    static final int SIGNATURE_MAGIC = 0x74881520;
+    static final int SIGNATURE_MAGIC = PsgSignatureMagic.STANDARD.getValue();
 
     public static void verifySignatureMagic(int signatureMagic) throws PsgInvalidSignatureException {
-        if (SIGNATURE_MAGIC != signatureMagic) {
-            throw new PsgInvalidSignatureException("Invalid signature magic");
+        if (!PsgSignatureMagic.isValid(signatureMagic)) {
+            throw new PsgInvalidSignatureException(
+                String.format("Invalid signature magic. Expected any of: %s, Actual: %s.",
+                    PsgSignatureMagic.getAllowedMagics(),
+                    toHex(signatureMagic)));
         }
     }
 

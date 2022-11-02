@@ -36,12 +36,15 @@ package com.intel.bkp.fpgacerts.dice.subject;
 import com.intel.bkp.fpgacerts.exceptions.InvalidDiceCertificateSubjectException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+@Slf4j
 @Getter
 @RequiredArgsConstructor
 public class DiceCertificateSubject {
@@ -68,30 +71,43 @@ public class DiceCertificateSubject {
     }
 
     public static DiceCertificateSubject parse(String subject) {
-        final String[] components = StringUtils.split(getCommonNameValue(subject), DICE_SUBJECT_DELIMITER);
-
-        if (components.length != COMPONENTS_COUNT) {
-            throw new InvalidDiceCertificateSubjectException(String.format(
-                "Incorrect subject format - it doesn't consist of exactly %d parts delimited with %s.",
-                COMPONENTS_COUNT, DICE_SUBJECT_DELIMITER));
-        }
-
-        String companyName = components[0];
-        String familyName = components[1];
-        String level = components[2];
-        String additionalData = components[3];
-        String deviceId = components[4];
-
-        return new DiceCertificateSubject(companyName, familyName, level, additionalData, deviceId);
+        return tryParse(subject)
+            .orElseThrow(() -> new InvalidDiceCertificateSubjectException(subject));
     }
 
-    private static String getCommonNameValue(String subject) {
+    public static Optional<DiceCertificateSubject> tryParse(String subject) {
+        try {
+            final String[] components = StringUtils.split(getCommonNameValue(subject), DICE_SUBJECT_DELIMITER);
+
+            if (!hasValidComponentsCount(components)) {
+                log.debug("Incorrect subject format - it doesn't consist of exactly {} parts delimited with {}.",
+                    COMPONENTS_COUNT, DICE_SUBJECT_DELIMITER);
+                return Optional.empty();
+            }
+
+            String companyName = components[0];
+            String familyName = components[1];
+            String level = components[2];
+            String additionalData = components[3];
+            String deviceId = components[4];
+
+            return Optional.of(new DiceCertificateSubject(companyName, familyName, level, additionalData, deviceId));
+        } catch (Exception e) {
+            log.debug("Parsing subject failed: {}. {}", subject, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private static String getCommonNameValue(String subject) throws Exception {
         return Rdn.parseDomainName(subject)
             .filter(rdn -> Rdn.COMMON_NAME_TYPE.equals(rdn.getType()))
             .map(Rdn::getValue)
             .findFirst()
-            .orElseThrow(() ->
-                new InvalidDiceCertificateSubjectException("Subject doesn't contain valid CommonName."));
+            .orElseThrow(() -> new Exception("Subject doesn't contain valid CommonName."));
+    }
+
+    private static boolean hasValidComponentsCount(String[] components) {
+        return components.length == COMPONENTS_COUNT;
     }
 
     @Override
@@ -106,110 +122,14 @@ public class DiceCertificateSubject {
         /**
          * Attribute type for CommonName RDN.
          */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
         public static final String COMMON_NAME_TYPE = "CN";
         /**
          * Delimiter of RDNs (Relative Distinguished Names) in DN (domain name).
          */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
         private static final Character RDNS_SEPARATOR = ',';
         /**
          * Separator between type and value in RDN.
          */
-/*
- * This project is licensed as below.
- *
- * **************************************************************************
- *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * **************************************************************************
- *
- */
         private static final Character TYPE_AND_VALUE_SEPARATOR = '=';
 
         private final String type;
@@ -230,7 +150,7 @@ public class DiceCertificateSubject {
         private static Rdn fromString(String rdnString) {
             final var rdnParts = StringUtils.split(rdnString, TYPE_AND_VALUE_SEPARATOR);
             if (rdnParts.length != 2) {
-                throw new InvalidDiceCertificateSubjectException(
+                throw new RuntimeException(
                     String.format("Subject contains invalid RDN: '%s' that does not match format 'type%svalue'",
                         rdnString, TYPE_AND_VALUE_SEPARATOR)
                 );

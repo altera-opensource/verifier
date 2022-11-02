@@ -46,7 +46,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.FWIDS_HASH_ALG;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
 
 @ExtendWith(MockitoExtension.class)
@@ -127,7 +127,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals(expectedHash, fwIds.getDigest());
     }
 
@@ -139,7 +139,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals("664AAD52B52B717A2597CBFE0D1BF43FD5860DB48EFEDA21C9C2"
             + "D892828BA70BE61162A273A8A7156337CD8343CA24FE", fwIds.getDigest());
     }
@@ -152,7 +152,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals("5D04018373C58AB309644118599094F7A5CF759F9C2F14759B24"
             + "35F3387F4DAF9B05DBF6BC25D215F16BC81FB93F9F2B", fwIds.getDigest());
     }
@@ -166,7 +166,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals("CBF9E12CDF8ED22F9752574E440A5964458AAEFFDE7533EF1636"
             + "8DE4551F90282AC2A890BE1C42796B3385686AC3CB81", fwIds.getDigest());
     }
@@ -198,7 +198,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals("EDCB0F4721E6578D900E4C24AD4B19E194AB6C87F8243BFC6B11"
             + "754DD8B0BBDE4F30B1D18197932B6376DA004DCD97C4", fwIds.getDigest());
     }
@@ -211,7 +211,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals("CB00753F45A35E8BB5A03D699AC65007272C32AB0EDED1631A8B"
             + "605A43FF5BED8086072BA1E7CC2358BAECA134C825A7", fwIds.getDigest());
     }
@@ -224,7 +224,7 @@ class RimParserTest {
         Assertions.assertEquals(1, block.getFwids().size());
 
         final FwIdField fwIds = block.getFwids().get(0);
-        Assertions.assertEquals(FWIDS_HASH_ALG, fwIds.getHashAlg());
+        Assertions.assertEquals(FWIDS_HASH_ALG_SHA384.getOid(), fwIds.getHashAlg());
         Assertions.assertEquals("180C325CCCB299E76EC6C03A5B5A7755AF8EF499906DBF531F18"
             + "D0CA509E4871B0805CAC0F122B962D54BADC6119F3CF", fwIds.getDigest());
     }

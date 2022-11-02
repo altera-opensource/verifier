@@ -39,17 +39,23 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class TclCommands {
 
     private static final String SYSTEM_CONSOLE_RESOURCE_PATH = "system-console/";
+    private static final String EMPTY_CABLE_ID = "\"\"";
 
-    static final String TRANSPORT_ID = "!!TRANSPORT_ID!!";
+    static final String CABLE_ID = "!!CABLE_ID!!";
     static final String COMMAND = "!!COMMAND!!";
 
-    public String initialize(int transportId) {
+    public String initialize(Integer cableId) {
         final String scriptRaw = loadScriptFile("initialize-script.txt");
-        return scriptRaw.replaceAll(TRANSPORT_ID, String.valueOf(transportId));
+        return scriptRaw.replaceAll(CABLE_ID,
+            Optional.ofNullable(cableId)
+                .map(String::valueOf)
+                .orElse(EMPTY_CABLE_ID)
+        );
     }
 
     public String sendPacket(String command) {

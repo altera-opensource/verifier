@@ -114,13 +114,11 @@ public class VerifierExchangeImpl implements VerifierExchange {
         try {
             transportLayer.initialize(transportId);
             final byte[] deviceId = initSessionComponent.initializeSessionForDeviceId();
-            log.info("CREATE_ATTESTATION_SUBKEY will be performed for device of id: {}",
-                toHex(deviceId));
+            log.info("Creating attestation subkey will be performed for device of id: {}", toHex(deviceId));
 
-            return createSubKeyComponent.perform(context, pufType, deviceId)
-                .getCode();
+            return createSubKeyComponent.perform(context, pufType, deviceId).getCode();
         } catch (Exception e) {
-            log.error("Failed to perform CREATE_ATTESTATION_SUBKEY.", e);
+            log.error("Failed to perform creating of attestation subkey.", e);
             return VerifierExchangeResponse.ERROR.getCode();
         } finally {
             transportLayer.disconnect();
@@ -136,13 +134,11 @@ public class VerifierExchangeImpl implements VerifierExchange {
             transportLayer.initialize(transportId);
             final byte[] deviceId = initSessionComponent.initializeSessionForDeviceId();
             response.setDeviceId(toHex(deviceId));
-            log.info("GET_MEASUREMENT will be performed for device of id: {}",
-                toHex(deviceId));
+            log.info("Platform attestation will be performed for device of id: {}", toHex(deviceId));
 
-            response.setStatus(getAttestationComponent.perform(refMeasurement, deviceId)
-                .getCode());
+            response.setStatus(getAttestationComponent.perform(refMeasurement, deviceId).getCode());
         } catch (Exception e) {
-            log.error("Failed to perform GET_MEASUREMENT.", e);
+            log.error("Failed to perform platform attestation.", e);
             response.setStatus(VerifierExchangeResponse.ERROR.getCode());
         } finally {
             transportLayer.disconnect();

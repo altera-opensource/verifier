@@ -35,6 +35,7 @@ package com.intel.bkp.core.endianess;
 
 public enum EndianessStructureType {
     PSG_BLOCK_0_ENTRY,
+    PSG_CANCELLABLE_BLOCK0_ENTRY,
     PSG_SIGNATURE,
     PSG_PUBLIC_KEY,
     PUF_MANIFEST,
@@ -48,5 +49,6 @@ public enum EndianessStructureType {
     SIGMA_M3_RESP,
     CERTIFICATE_RESP,
     SIGMA_TEARDOWN_RESP,
-    ATT_MANIFEST
+    ATT_MANIFEST,
+    ROM_EXT
 }

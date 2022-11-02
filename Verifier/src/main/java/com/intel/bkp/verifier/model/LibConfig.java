@@ -39,16 +39,22 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class LibConfig {
+
     private TransportLayerType transportLayerType;
     private AttestationCertificateFlow attestationCertificateFlow;
     private DistributionPoint distributionPoint;
     private SecurityProviderParams providerParams;
     private VerifierKeyParams verifierKeyParams;
     private DatabaseConfiguration databaseConfiguration;
+    private LibSpdmParams libSpdmParams;
+    private boolean runGpAttestation;
+    private boolean testModeSecrets;
 }

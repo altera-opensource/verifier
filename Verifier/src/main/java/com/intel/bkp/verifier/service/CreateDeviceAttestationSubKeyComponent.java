@@ -43,6 +43,8 @@ import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyRe
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.exceptions.UnknownCommandException;
+import com.intel.bkp.verifier.interfaces.CommandLayer;
+import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
@@ -80,19 +82,22 @@ public class CreateDeviceAttestationSubKeyComponent {
     }
 
     public VerifierExchangeResponse perform(String context, PufType pufType, byte[] deviceId) {
-
         return perform(AppContext.instance(), context, pufType, deviceId);
     }
 
     VerifierExchangeResponse perform(AppContext appContext, String context, PufType pufType, byte[] deviceId) {
+        final TransportLayer transportLayer = appContext.getTransportLayer();
+        final CommandLayer commandLayer = appContext.getCommandLayer();
+
+        teardownMessageSender.send(transportLayer, commandLayer);
 
         final EcdhKeyPair serviceDhKeyPair = generateEcdhKeyPair();
         final int counter = new SecureRandom().nextInt();
         final CreateAttestationSubKeyResponseBuilder subKeyResponseBuilder;
 
         try {
-            subKeyResponseBuilder = createSubKeyMessageSender.send(appContext.getTransportLayer(),
-                appContext.getCommandLayer(), context, counter, pufType, serviceDhKeyPair);
+            subKeyResponseBuilder = createSubKeyMessageSender.send(transportLayer,
+                commandLayer, context, counter, pufType, serviceDhKeyPair);
         } catch (UnknownCommandException e) {
             log.error("This is FM/DM board - CreateAttestationSubKey command is not supported.");
             return VerifierExchangeResponse.ERROR;

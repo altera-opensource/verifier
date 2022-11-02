@@ -43,6 +43,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
+
 class MeasurementExistenceVerifierTest {
 
     private static final MeasurementType MEASUREMENT_TYPE = MeasurementType.CMF;
@@ -52,7 +54,7 @@ class MeasurementExistenceVerifierTest {
     private static final String DIFFERENT_MODEL = "different model";
     private static final Integer DIFFERENT_INDEX = 3;
     private static final String DIFFERENT_HASH_ALG = "1.2.3";
-    private static final TcbInfoValue VALUE_WITH_CORRECT_HASH_ALG = getValue(TcbInfoConstants.FWIDS_HASH_ALG);
+    private static final TcbInfoValue VALUE_WITH_CORRECT_HASH_ALG = getValue(FWIDS_HASH_ALG_SHA384.getOid());
     private static final TcbInfoValue VALUE_WITH_DIFFERENT_HASH_ALG = getValue(DIFFERENT_HASH_ALG);
 
     private MeasurementExistenceVerifier sut;
