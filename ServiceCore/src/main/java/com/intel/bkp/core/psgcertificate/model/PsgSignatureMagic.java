@@ -33,13 +33,14 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.EnumSet;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.intel.bkp.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
 @AllArgsConstructor
 public enum PsgSignatureMagic {
@@ -49,16 +50,18 @@ public enum PsgSignatureMagic {
     @Getter
     private final int value;
 
-    public static boolean isValid(int magic) {
-        return EnumSet.allOf(PsgSignatureMagic.class)
-            .stream()
-            .anyMatch(item -> item.getValue() == magic);
+    public static String getAllowedMagics() {
+        return Arrays.stream(values())
+            .map(item -> toFormattedHex(item.getValue()))
+            .collect(Collectors.joining(", "));
     }
 
-    public static String getAllowedMagics() {
-        return EnumSet.allOf(PsgSignatureMagic.class)
-            .stream()
-            .map(item -> toHex(item.getValue()))
-            .collect(Collectors.joining(", "));
+    public static PsgSignatureMagic from(int magic) throws PsgInvalidSignatureException {
+        return Arrays.stream(values())
+            .filter(item -> item.getValue() == magic)
+            .findAny()
+            .orElseThrow(() -> new PsgInvalidSignatureException(
+                "Invalid signature magic. Expected any of: %s, Actual: %s."
+                    .formatted(PsgPublicKeyMagic.getAllowedMagics(), toFormattedHex(magic))));
     }
 }

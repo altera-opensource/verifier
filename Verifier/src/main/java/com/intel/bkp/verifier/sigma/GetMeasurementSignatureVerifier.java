@@ -33,25 +33,24 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
-import com.intel.bkp.verifier.interfaces.ISignatureVerifier;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.PublicKey;
 
 @Slf4j
-public class GetMeasurementSignatureVerifier implements ISignatureVerifier {
+public class GetMeasurementSignatureVerifier {
 
     public void verify(PublicKey pakPublicKey, GetMeasurementResponse response) throws PsgInvalidSignatureException {
         log.debug("Verifying signature over GET_MEASUREMENT_RSP.");
         GetMeasurementResponseBuilder builder = new GetMeasurementResponseBuilder()
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .parse(response.array())
-            .withActor(EndianessActor.FIRMWARE);
+            .withActor(EndiannessActor.FIRMWARE);
 
-        verifySignature(pakPublicKey, builder.getDataForSignature(), builder.getSignatureBuilder());
+        SignatureVerifier.verifySignature(pakPublicKey, builder.getDataForSignature(), builder.getSignatureBuilder());
     }
 }

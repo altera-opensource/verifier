@@ -87,7 +87,7 @@ public class TcpClient {
             Thread.sleep(SLEEP_BEFORE_READ_RESPONSE);
             ByteBuffer responseBuffer = ByteBuffer.allocate(RESPONSE_ALLOCATED_SIZE);
             final int readBytesCnt = socketChannel.read(responseBuffer);
-            log.debug("Read {} bytes from socket.", readBytesCnt);
+            log.trace("Read {} bytes from socket.", readBytesCnt);
             if (readBytesCnt <= 0) {
                 throw new TransportLayerException("No response bytes received.");
             }

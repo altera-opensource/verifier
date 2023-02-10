@@ -34,8 +34,8 @@
 package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.core.manufacturing.model.PufType;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.database.repository.S10CacheEntityService;
@@ -97,10 +97,10 @@ class GpS10AttestationComponentTest {
     private GpDeviceMeasurementsProvider gpDeviceMeasurementsProvider;
 
     @Mock
-    private List<TcbInfo> measurements;
+    private List<TcbInfoMeasurement> measurements;
 
     @Mock
-    private TcbInfoAggregator tcbInfoAggregator;
+    private TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator;
 
     @InjectMocks
     private GpS10AttestationComponent sut;
@@ -123,7 +123,7 @@ class GpS10AttestationComponentTest {
         when(GpDeviceMeasurementsRequest.forS10(DEVICE_ID, cacheEntity)).thenReturn(gpDeviceMeasurementsRequest);
         when(gpDeviceMeasurementsProvider.getMeasurementsFromDevice(gpDeviceMeasurementsRequest))
             .thenReturn(measurements);
-        when(evidenceVerifier.verify(eq(tcbInfoAggregator), eq(REF_MEASUREMENT)))
+        when(evidenceVerifier.verify(eq(tcbInfoMeasurementsAggregator), eq(REF_MEASUREMENT)))
             .thenReturn(VerifierExchangeResponse.OK);
 
         // when
@@ -132,7 +132,7 @@ class GpS10AttestationComponentTest {
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK, result);
         verify(s10AttestationRevocationService).checkAndRetrieve(DEVICE_ID, PufType.getPufTypeHex(pufType));
-        verify(tcbInfoAggregator).add(measurements);
+        verify(tcbInfoMeasurementsAggregator).add(measurements);
     }
 
     @Test

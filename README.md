@@ -1,17 +1,26 @@
 # Verifier
 
 Verifier is a Java library responsible for performing FPGA attestation.
-It is able to retrieve measurements (evidence) from the FPGA device and compare it with reference integrity manifest (
-RIM).
+It is able to retrieve measurements (evidence) from the FPGA device and compare it with reference integrity manifest 
+(RIM).
 It also retrieves and validates signature and chain of certificates to confirm authenticity and integrity of the
 measurements.
 
 Workload is a sample application that triggers Verifier's interface.
 
-During attestation, communication is done via Hard Processor System (HPS), thus a listening TCP server (FCS Server) must
-be enabled on HPS, which can be found [here](https://github.com/altera-opensource/fcs_server).
+During attestation, communication is done via Hard Processor System (HPS), thus a listening TCP server called 
+[FCS Server](https://github.com/altera-opensource/fcs_server) must be enabled on HPS.
 
 After FCS Server is up and running, note down the #HOST# (hostname or ip address of HPS) and #PORT# (of FCS Server).
+
+# Supported platforms and protocols
+
+Verifier supports Intel® Stratix10®, Intel® Agilex™ and Intel® eASIC™ N5X devices.
+
+Verifier support PSG-SIGMA protocol for Intel® Stratix10® devices and 
+[TCG DICE](https://trustedcomputinggroup.org/work-groups/dice-architectures/) 
+with [DMTF SPDM](https://www.dmtf.org/standards/SPDM) protocol for Intel® Agilex™ and Intel® eASIC™ N5X devices 
+using [libspdm](https://github.com/DMTF/libspdm) library.
 
 # Related documentation reference
 
@@ -59,15 +68,15 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
 
 ### Building SPDM wrapper and its dependencies
 #### Linux build
-1. Download and build OpenSSL as described in OpenSSL docs:
-    - Download and unpack OpenSSL 1.1.1q
+1. Download and build latest version of [OpenSSL](https://www.openssl.org/) as described in OpenSSL docs, e.g.:
+    - Download and unpack OpenSSL 1.1.1t
     - Run OpenSSL build
     ```shell script
     ./config shared -L-fPIC -L-g -L-O0 -fPIC -g -O0
     make -j $(nproc) --silent
     ```
-1. Download and build libspdm (https://github.com/DMTF/libspdm)
-    - Clone the sources (version 2.2.0 should be used)
+1. Download and build [libspdm](https://github.com/DMTF/libspdm)
+    - Clone the sources (version 2.3.1 should be used)
     - Update cmocka submodule
     - Create build dir and enter it
     - Run cmake. openssl_root_dir variable should be a path to openssl dir from previous step. e.g. /home/user/build/openssl
@@ -76,7 +85,7 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
     git clone https://github.com/DMTF/libspdm.git
     cd libspdm/
     git fetch --all --tags
-    git checkout tags/2.2.0 -b 2.2.0
+    git checkout tags/2.3.1 -b 2.3.1
     git submodule update --init -- unit_test/cmockalib/cmocka
     mkdir build
     cd build
@@ -84,8 +93,11 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
     make copy_sample_key
     make
     ```
-1. Build SPDM Wrapper.
-    - Copy openssl and libspdm directories to "dependencies" dir inside spdm_wrapper dir. You can provide custom dependencies directory by calling Cmake in the next step with -DDEPENDENCIES_PATH=/absolute/path/to/dependencies
+1. Build SPDM Wrapper
+    - Copy openssl and libspdm directories to "dependencies" dir inside spdm_wrapper dir. You can provide custom dependencies directory by calling Cmake in the next step with 
+   
+   `-DDEPENDENCIES_PATH=/absolute/path/to/dependencies`
+   
     ```
     spdm_wrapper/
     ├─ dependencies/
@@ -99,6 +111,10 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
     │  │  ├─ libcrypto.a
     │  │  ├─ libssl.a
     ```
+   You can also use a different folder structure with custom paths to `lib/` and `include/` directories for libspdm and openssl. In such case use cmake variables:
+    ```
+   -DLIBSPDM_LIB_DIR=<path_to_libspdm_lib> -DOPENSSL_LIB_DIR=<path_to_openssl_lib> -DLIBSPDM_INCLUDE_DIR=<path_to_libspdm_include> -DOPENSSL_INCLUDE_DIR=<path_to_openssl_include>
+   ```
     - Run build
     ```shell script
     mkdir -p build/Release
@@ -107,19 +123,19 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
     make
     ```
 #### Windows build
-1. Download and build OpenSSL as described in openssl/NOTES.WIN:
-    - Download and unpack OpenSSL 1.1.1q
+1. Download and build latest version of [OpenSSL](https://www.openssl.org/) as described in openssl/NOTES.WIN, e.g.:
+    - Download and unpack OpenSSL 1.1.1t
     - Run OpenSSL build
     ```shell script
     perl.exe configure VC-WIN64A no-asm
     nmake
     ```
-1. Download and build libspdm (https://github.com/DMTF/libspdm)
+1. Download and build [libspdm] (https://github.com/DMTF/libspdm)
     - Build process is similar as in Linux. Only the cmake command is different:
     ```shell script
     cmake -DARCH=x64 -DTOOLCHAIN=VS2019 -DTARGET=Release -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="-I${openssl_root_dir}/include" -DCOMPILED_LIBCRYPTO_PATH=${openssl_root_dir}/libcrypto_static.lib -DCOMPILED_LIBSSL_PATH=${openssl_root_dir}/libssl_static.lib ..
     ```
-1. Build SPDM Wrapper.
+1. Build SPDM Wrapper
     - Copy openssl and libspdm directories to "dependencies" dir inside spdm_wrapper dir
     ```
     spdm_wrapper/
@@ -134,6 +150,10 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
     │  │  ├─ libcrypto_static.lib
     │  │  ├─ libssl_static.lib
     ```
+   You can also use a different folder structure with custom paths to `lib/` and `include/` directories for libspdm and openssl. In such case use cmake variables:
+    ```
+   -DLIBSPDM_LIB_DIR=<path_to_libspdm_lib> -DOPENSSL_LIB_DIR=<path_to_openssl_lib> -DLIBSPDM_INCLUDE_DIR=<path_to_libspdm_include> -DOPENSSL_INCLUDE_DIR=<path_to_openssl_include>
+   ```
     - Run build
     ```shell script
     mkdir build
@@ -315,12 +335,11 @@ Configuration file `config.properties` contains parameters that will be parsed b
 |:--------------------------------------------------------------| :---: |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| :---: | :--- |
 | **GENERAL**                                                   |
 | transport-layer-type                                          | YES | Identifier of transport layer                                                                                                                                                                                                                                                                                                 | HPS | |
-| only-efuse-uds                                                | NO | Option during Agilex attestation if the Verifier will try to retrieve both eFuse UDS chain and IID UDS chain from device. When set to true, the IID UDS chain will NOT be retrieved.                                                                                                                                          | true, false (default) |
+| require-iid-uds                                               | NO (Agilex only) | If set to true the Verifier shall retrieve and validate IID UDS chain additionally to regular chain. Otherwise, only regular chain.                                                                                                                                          | true (default), false |
 | test-mode-secrets                                             | NO | Option for DICE chain validation for non secure (non real-OWNED) devices. When set to true, TCBInfo verification will pass even if flags field contains a flag set (by default it is not allowed).                                                                                                                            | true, false (default) |
 | **LIB SPDM parameters**                                       |
 | lib-spdm-params.wrapper-library-path                          | NO | Full path to libspdm_wrapper.so or spdm_wrapper.dll                                                                                                                                                                                                                                                                           | - | /path/to/libspdm_wrapper.so or C:\\\\path\\\\to\\\\spdm_wrapper.dll
-| lib-spdm-params.ct-exponent                                   | NO | Shall be exponent of base 2, which is used to calculate SPDM parameter CT. This timing parameter shall be the maximum amount of time the endpoint has to provide any response requiring cryptographic processing, such as the GET_MEASUREMENTS or CHALLENGE request messages. Units: microseconds. Value type: integer or hex | 0x0E | 0x12, 18
-| lib-spdm-params.certificates-efuse-uds-slot-id                | NO | Slot id indicating in which SPDM slot the efuse UDS certificate chain is present. Value type: integer or hex.                                                                                                                                                                                                                 | 0x00 | 0x04, 4
+| lib-spdm-params.ct-exponent                                   | NO | Shall be exponent of base 2, which is used to calculate SPDM parameter CT. This timing parameter shall be the maximum amount of time the endpoint has to provide any response requiring cryptographic processing, such as the GET_MEASUREMENTS or CHALLENGE request messages. Units: microseconds. Value type: hex integer | 0x0E | 0x12, 0x0E, etc.
 | lib-spdm-params.measurements-request-signature                | NO | Flag indicating if during GET_MEASUREMENTS request the signature shall be requested and verified with Alias public key.                                                                                                                                                                                                       | true (default), false |
 | **SQLite database**                                           |
 | database-configuration.internal-database                      | NO | If set to true, in-memory sqlite cache database will be created. If false, sqlite database will be stored in file <strong>verifier_core.sqlite</strong> in current folder.                                                                                                                                                    | true (default), false |
@@ -342,9 +361,7 @@ provider.__                                                                     
 | security-provider-params.provider.file-based                  | YES | Set true if Security Provider is file based (eg.BouncyCastle), set false if HSM based (Luna, nCipher etc.)                                                                                                                                                                                                                    | - | true, false |
 | security-provider-params.provider.class-name                  | YES | Security Provider canonical class name.                                                                                                                                                                                                                                                                                       | - | org.bouncycastle.jce.provider.BouncyCastleProvider |
 | security-provider-params.security.key-store-name              | YES | Name for keystore used to store data.                                                                                                                                                                                                                                                                                         | - | uber |
-| security-provider-params.security.password                    | NO | Password for keystore. **For security, it is
-advised to set password with environment variable: __
-VERIFIER_SECURITY_PROVIDER_PASSWORD__**                                                                                                                                                                                     | - |  |
+| security-provider-params.security.password                    | NO | Password for keystore. **For security, it is advised to set password with environment variable: VERIFIER_SECURITY_PROVIDER_PASSWORD**                                                                                                                                                                                     | - |  |
 | security-provider-params.security.input-stream-param          | YES | Keystore location. E.g., for BouncyCastle it is path to keystore file. For Gemalto Luna it would be slot number or partition name.                                                                                                                                                                                            | - | /path/to/bc-keystore-verifier.jks or C:\\\\path\\\\to\\\\bc-keystore-verifier.jks |
 | security-provider-params.key-types.ec.key-name                | YES | Class name for EC key.                                                                                                                                                                                                                                                                                                        | - | EC |
 | security-provider-params.key-types.ec.curve-spec-384          | YES | P-384 elliptic curve identifier.                                                                                                                                                                                                                                                                                              | - | secp256r1 |

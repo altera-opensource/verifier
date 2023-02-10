@@ -96,8 +96,15 @@ bool verify_spdm_cert_chain_func(
 }
 
 void libspdm_get_version_w(void *spdm_context, uint8_t *version_p) {
-    libspdm_context_t *spdm_context_p = (libspdm_context_t *) spdm_context;
-    *version_p = libspdm_get_connection_version(spdm_context_p);
+    spdm_version_number_t spdm_version_number_entry;
+    libspdm_data_parameter_t parameter;
+    parameter.location = LIBSPDM_DATA_LOCATION_CONNECTION;
+    size_t data_size = sizeof(spdm_version_number_entry);
+    libspdm_get_data(spdm_context, LIBSPDM_DATA_SPDM_VERSION, &parameter,
+                     &spdm_version_number_entry, &data_size);
+
+    // We are only interested in [15:12] MajorVersion [11:8] MinorVersion part of VersionNumberEntry
+    *version_p = spdm_version_number_entry >> SPDM_VERSION_NUMBER_SHIFT_BIT;
 }
 
 libspdm_return_t libspdm_set_data_w8(void *spdm_context,

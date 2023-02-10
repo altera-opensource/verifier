@@ -37,14 +37,14 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 
 import java.math.BigInteger;
 
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseOctetString;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseImplicitlyTaggedOctetString;
 
 public class IntegerFieldParser implements ITcbInfoFieldParser<Integer> {
 
     @Override
     public Integer parse(ASN1TaggedObject object) {
         try {
-            return new BigInteger(parseOctetString(object)).intValueExact();
+            return new BigInteger(parseImplicitlyTaggedOctetString(object)).intValueExact();
         } catch (ArithmeticException e) {
             throw new IllegalArgumentException("Integer field has value that is larger than MAX INT: ", e);
         }

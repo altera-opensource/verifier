@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.ByteConverter.toBytes;
+import static com.intel.bkp.utils.ByteConverter.toInt;
 import static com.intel.bkp.utils.HexConverter.toHex;
 
 class ByteConverterTest {
@@ -65,5 +66,31 @@ class ByteConverterTest {
 
         // then
         Assertions.assertEquals(expected, toHex(result));
+    }
+
+    @Test
+    void toIntegerBytes_WithSingleBytePackedToInteger_Success() {
+        // given
+        byte data = (byte) 0x01;
+        String expected = "01000000";
+
+        // when
+        byte[] result = ByteConverter.toIntegerBytes(data);
+
+        // then
+        Assertions.assertEquals(expected, toHex(result));
+    }
+
+    @Test
+    void toInt_BinaryIntToInt_Success() {
+        // given
+        byte[] data = new byte[]{0x08, 0x64, 0x03, 0x44};
+        int expected = 140772164;
+
+        // when
+        int result = toInt(data);
+
+        // then
+        Assertions.assertEquals(expected, result);
     }
 }

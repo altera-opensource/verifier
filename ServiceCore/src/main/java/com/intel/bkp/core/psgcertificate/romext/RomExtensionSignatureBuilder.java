@@ -33,26 +33,23 @@
 
 package com.intel.bkp.core.psgcertificate.romext;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.core.endianess.EndianessStructureType;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.EndiannessBuilder;
+import com.intel.bkp.core.endianness.EndiannessStructureType;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateRootEntryBuilder;
-import com.intel.bkp.core.psgcertificate.PsgDataBuilder;
 import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class RomExtensionSignatureBuilder extends PsgDataBuilder<RomExtensionSignatureBuilder> {
+public class RomExtensionSignatureBuilder extends EndiannessBuilder<RomExtensionSignatureBuilder> {
 
     @Getter
     @Setter
@@ -63,19 +60,17 @@ public class RomExtensionSignatureBuilder extends PsgDataBuilder<RomExtensionSig
     @Setter
     private PsgCancellableBlock0EntryBuilder psgCancellableBlock0EntryBuilder = null;
 
-    @Override
-    public EndianessStructureType currentStructureMap() {
-        return null;
+    private RomExtensionSignatureBuilder() {
+        super(null);
     }
 
     @Override
-    public RomExtensionSignatureBuilder withActor(EndianessActor actor) {
-        changeActor(actor);
+    protected RomExtensionSignatureBuilder self() {
         return this;
     }
 
     @Override
-    protected void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
+    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
         // NOTHING TO DO
     }
 

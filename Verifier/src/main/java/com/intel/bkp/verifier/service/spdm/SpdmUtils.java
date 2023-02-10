@@ -67,6 +67,10 @@ public class SpdmUtils {
 
     static byte[] getBytes(Pointer data, Pointer dataLenP) {
         final int dataLen = dataLenP.getInt(0);
+        return getBytes(data, dataLen);
+    }
+
+    static byte[] getBytes(Pointer data, int dataLen) {
         final ByteBuffer buffer = data.getByteBuffer(0, dataLen);
 
         final byte[] dataBytes = new byte[dataLen];
@@ -74,7 +78,7 @@ public class SpdmUtils {
         return dataBytes;
     }
 
-    static void throwOnError(Long status) {
+    static void throwOnError(Long status) throws SpdmCommandFailedException {
         if (LIBSPDM_STATUS_SPDM_NOT_SUPPORTED == status) {
             throw new SpdmNotSupportedException();
         }

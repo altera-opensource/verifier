@@ -107,7 +107,8 @@ public class SQLiteHelper implements AutoCloseable {
         try {
             return runner.query(connection, SQL_SCHEMA_VERSION, new ScalarHandler<>());
         } catch (SQLException e) {
-            log.error("Database error: ", e);
+            log.error("Database error: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return 0;
         }
     }
@@ -116,7 +117,8 @@ public class SQLiteHelper implements AutoCloseable {
         try {
             runner.update(connection, String.format("%s = %d", SQL_SCHEMA_VERSION, CURRENT_SCHEMA_VERSION));
         } catch (SQLException e) {
-            log.error("Database error: ", e);
+            log.error("Database error: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
         }
     }
 }

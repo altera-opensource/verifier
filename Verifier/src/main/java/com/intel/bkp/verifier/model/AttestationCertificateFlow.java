@@ -46,5 +46,5 @@ import lombok.ToString;
 @ToString
 public class AttestationCertificateFlow {
 
-    boolean onlyEfuseUds;
+    boolean requireIidUds;
 }

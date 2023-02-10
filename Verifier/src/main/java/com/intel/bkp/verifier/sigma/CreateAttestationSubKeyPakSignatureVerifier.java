@@ -33,26 +33,25 @@
 
 package com.intel.bkp.verifier.sigma;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponse;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
-import com.intel.bkp.verifier.interfaces.ISignatureVerifier;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.PublicKey;
 
 @Slf4j
-public class CreateAttestationSubKeyPakSignatureVerifier implements ISignatureVerifier {
+public class CreateAttestationSubKeyPakSignatureVerifier {
 
     public void verify(PublicKey pakPublicKey,
-        CreateAttestationSubKeyResponse response) throws PsgInvalidSignatureException {
+                       CreateAttestationSubKeyResponse response) throws PsgInvalidSignatureException {
         log.debug("Verifying PUF Attestation Key signature over CREATE_ATTESTATION_SUBKEY_RSP.");
         CreateAttestationSubKeyResponseBuilder builder = new CreateAttestationSubKeyResponseBuilder()
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .parse(response.array())
-            .withActor(EndianessActor.FIRMWARE);
+            .withActor(EndiannessActor.FIRMWARE);
 
-        verifySignature(pakPublicKey, builder.getDataForSignature(), builder.getSignatureBuilder());
+        SignatureVerifier.verifySignature(pakPublicKey, builder.getDataForSignature(), builder.getSignatureBuilder());
     }
 }

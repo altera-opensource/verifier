@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.x509.Extension;
 
 import java.security.cert.X509Certificate;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.containsExtension;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.containsExtension;
 
 
 @Slf4j
@@ -67,7 +67,7 @@ public class BasicConstraintsVerifier {
     }
 
     private void logUnexpectedBasicConstraintsValue(X509Certificate certificate, int expected, int actual) {
-        log.error("Certificate has incorrect BasicConstraints value: {}%nExpected: {}%nActual: {}",
+        log.error("Certificate has incorrect BasicConstraints value: {}\nExpected: {}\nActual: {}",
             certificate.getSubjectX500Principal(), basicConstraintsValueToString(expected),
             basicConstraintsValueToString(actual));
     }

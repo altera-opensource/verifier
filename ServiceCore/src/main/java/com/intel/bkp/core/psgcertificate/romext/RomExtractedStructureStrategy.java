@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate.romext;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateRootEntryBuilder;
@@ -44,7 +44,7 @@ import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionStrategyExceptio
 enum RomExtractedStructureStrategy {
     ROOT {
         @Override
-        public void parse(RomExtensionSignatureBuilder sigBuilder, EndianessActor actor, byte[] data)
+        public void parse(RomExtensionSignatureBuilder sigBuilder, EndiannessActor actor, byte[] data)
             throws RomExtensionSignatureException {
             try {
                 sigBuilder.setPsgCertRootBuilder(new PsgCertificateRootEntryBuilder()
@@ -57,7 +57,7 @@ enum RomExtractedStructureStrategy {
     },
     LEAF {
         @Override
-        public void parse(RomExtensionSignatureBuilder sigBuilder, EndianessActor actor, byte[] data)
+        public void parse(RomExtensionSignatureBuilder sigBuilder, EndiannessActor actor, byte[] data)
             throws RomExtensionSignatureException {
             try {
                 sigBuilder.getPsgCertEntryBuilders()
@@ -71,7 +71,7 @@ enum RomExtractedStructureStrategy {
     },
     BLOCK0 {
         @Override
-        public void parse(RomExtensionSignatureBuilder sigBuilder, EndianessActor actor, byte[] data)
+        public void parse(RomExtensionSignatureBuilder sigBuilder, EndiannessActor actor, byte[] data)
             throws RomExtensionSignatureException {
             try {
                 sigBuilder.setPsgCancellableBlock0EntryBuilder(new PsgCancellableBlock0EntryBuilder()
@@ -83,6 +83,6 @@ enum RomExtractedStructureStrategy {
         }
     };
 
-    public abstract void parse(RomExtensionSignatureBuilder sigBuilder, EndianessActor actor, byte[] data)
+    public abstract void parse(RomExtensionSignatureBuilder sigBuilder, EndiannessActor actor, byte[] data)
         throws RomExtensionSignatureException;
 }

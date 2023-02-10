@@ -33,23 +33,30 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
-import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.interfaces.IDeviceMeasurementsProvider;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.service.certificate.SpdmDiceChainService;
+import com.intel.bkp.verifier.service.certificate.AppContext;
+import com.intel.bkp.verifier.service.certificate.DiceChainMeasurementsCollector;
+import com.intel.bkp.verifier.service.certificate.SpdmCertificateChainHolder;
+import com.intel.bkp.verifier.service.certificate.SpdmChainSearcher;
+import com.intel.bkp.verifier.service.certificate.SpdmValidChains;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
 import com.intel.bkp.verifier.service.measurements.SpdmDeviceMeasurementsProvider;
 import com.intel.bkp.verifier.service.measurements.SpdmDeviceMeasurementsRequest;
-import com.intel.bkp.verifier.service.sender.SpdmGetCertificateMessageSender;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.PublicKey;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import static com.intel.bkp.verifier.jna.model.SpdmConstants.DEFAULT_SLOT_ID;
+import static com.intel.bkp.verifier.service.certificate.DiceChainType.ATTESTATION;
+import static com.intel.bkp.verifier.service.certificate.DiceChainType.IID;
 
 @Slf4j
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -57,46 +64,67 @@ public class SpdmDiceAttestationComponent {
 
     private final IDeviceMeasurementsProvider<SpdmDeviceMeasurementsRequest> deviceMeasurementsProvider;
     private final EvidenceVerifier evidenceVerifier;
-    private final TcbInfoAggregator tcbInfoAggregator;
-    private final SpdmDiceChainService spdmDiceChainService;
-    private final SpdmGetCertificateMessageSender spdmGetCertificateMessageSender;
+    private final Supplier<TcbInfoMeasurementsAggregator> tcbInfoMeasurementsAggregator;
+    private final DiceChainMeasurementsCollector measurementsCollector;
+    private final SpdmChainSearcher spdmChainSearcher;
 
     SpdmDiceAttestationComponent() {
         this.deviceMeasurementsProvider = new SpdmDeviceMeasurementsProvider();
         this.evidenceVerifier = new EvidenceVerifier();
-        this.tcbInfoAggregator = new TcbInfoAggregator();
-        this.spdmDiceChainService = new SpdmDiceChainService();
-        this.spdmGetCertificateMessageSender = new SpdmGetCertificateMessageSender();
+        this.tcbInfoMeasurementsAggregator = TcbInfoMeasurementsAggregator::new;
+        this.measurementsCollector = new DiceChainMeasurementsCollector();
+        this.spdmChainSearcher = new SpdmChainSearcher();
     }
 
     public VerifierExchangeResponse perform(String refMeasurement, byte[] deviceId) {
-        getCertificateChain(deviceId);
+        final TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator = this.tcbInfoMeasurementsAggregator.get();
 
-        final List<TcbInfo> measurements = getMeasurementsFromDevice(spdmDiceChainService.getAliasPublicKey());
+        if (withMeasurementsSignatureVerification()) {
+            final SpdmValidChains validChains = spdmChainSearcher.searchValidChains(deviceId);
 
-        tcbInfoAggregator.add(spdmDiceChainService.getTcbInfos());
-        tcbInfoAggregator.add(measurements);
+            final var measurementsFromCertChain = getMeasurementsFromChain(validChains.get(ATTESTATION));
+            final var iidUdsChainMeasurements = getMeasurementsFromChain(validChains.get(IID));
+            final var measurementsFromDevice = getMeasurementsFromDevice(getSlotId(validChains));
 
-        return evidenceVerifier.verify(tcbInfoAggregator, refMeasurement);
-    }
+            log.info("*** COLLECTING EVIDENCE FROM CERTIFICATES AND DEVICE ***");
+            tcbInfoMeasurementsAggregator.add(measurementsFromCertChain);
+            tcbInfoMeasurementsAggregator.add(iidUdsChainMeasurements);
+            tcbInfoMeasurementsAggregator.add(measurementsFromDevice);
+        } else {
+            log.warn("Chain verification and measurements signature verification turned off!");
 
-    private void getCertificateChain(byte[] deviceId) {
-        try {
-            final byte[] certificateChainFromDevice = spdmGetCertificateMessageSender.send();
-            spdmDiceChainService.fetchAndVerifyDiceChains(deviceId, certificateChainFromDevice);
-        } catch (SpdmCommandFailedException e) {
-            log.error("GET_CERTIFICATE or GET_DIGEST failed - ignoring for now: ", e);
-        } catch (Exception e) {
-            throw new VerifierRuntimeException("Failed to verify DICE certificate chain.", e);
+            log.info("*** COLLECTING EVIDENCE FROM DEVICE ***");
+            tcbInfoMeasurementsAggregator.add(getMeasurementsFromDevice());
         }
+
+        return evidenceVerifier.verify(tcbInfoMeasurementsAggregator, refMeasurement);
     }
 
-    private List<TcbInfo> getMeasurementsFromDevice(PublicKey aliasKey) {
-        final var measurementsRequest = new SpdmDeviceMeasurementsRequest(aliasKey);
+    private boolean withMeasurementsSignatureVerification() {
+        return AppContext.instance().getLibConfig().getLibSpdmParams().isMeasurementsRequestSignature();
+    }
+
+    private Integer getSlotId(SpdmValidChains validChains) {
+        return Optional.ofNullable(validChains.get(ATTESTATION))
+            .map(SpdmCertificateChainHolder::slotId)
+            .orElseThrow(() -> new VerifierRuntimeException("Valid attestation chain not found."));
+    }
+
+    private List<TcbInfoMeasurement> getMeasurementsFromChain(SpdmCertificateChainHolder chainHolder) {
+        return Optional.ofNullable(chainHolder)
+            .map(SpdmCertificateChainHolder::chain)
+            .map(measurementsCollector::getMeasurementsFromCertChain)
+            .orElse(List.of());
+    }
+
+    private List<TcbInfoMeasurement> getMeasurementsFromDevice() {
+        return getMeasurementsFromDevice(DEFAULT_SLOT_ID);
+    }
+
+    private List<TcbInfoMeasurement> getMeasurementsFromDevice(int slotId) {
+        final var measurementsRequest = new SpdmDeviceMeasurementsRequest(slotId);
         try {
             return deviceMeasurementsProvider.getMeasurementsFromDevice(measurementsRequest);
-        } catch (SpdmCommandFailedException e) {
-            throw e;
         } catch (Exception e) {
             throw new VerifierRuntimeException("Failed to retrieve measurements from device.", e);
         }

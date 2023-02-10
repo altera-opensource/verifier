@@ -36,7 +36,7 @@ package com.intel.bkp.verifier.service.measurements;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GpMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
@@ -110,7 +110,7 @@ class GpDeviceMeasurementsProviderTest {
     private EcdhKeyPair ecdhKeyPair;
 
     @Mock
-    private List<TcbInfo> measurements;
+    private List<TcbInfoMeasurement> measurements;
 
     @InjectMocks
     private GpDeviceMeasurementsProvider sut;

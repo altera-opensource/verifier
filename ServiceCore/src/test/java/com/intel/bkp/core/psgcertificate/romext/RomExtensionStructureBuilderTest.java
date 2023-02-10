@@ -35,7 +35,7 @@ package com.intel.bkp.core.psgcertificate.romext;
 
 import com.intel.bkp.core.RomExtensionAuthGeneratorUtil;
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.exceptions.RomExtensionStructureException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -75,7 +75,7 @@ class RomExtensionStructureBuilderTest {
     void parse_WithDMStructure_Success() throws Exception {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE);
+            .withActor(EndiannessActor.FIRMWARE);
 
         // when
         builder.parse(DM_ROM_EXT_STRUCTURE_WITHOUT_SIG);
@@ -91,7 +91,7 @@ class RomExtensionStructureBuilderTest {
     void parse_WithFMStructure_Success() throws Exception {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE);
+            .withActor(EndiannessActor.FIRMWARE);
 
         // when
         builder.parse(FM_F7_ROM_EXT_WITHOUT_SIG);
@@ -107,7 +107,7 @@ class RomExtensionStructureBuilderTest {
     void build_WithDMStructureWithoutSig_BuildsSameHexData() throws Exception {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(DM_ROM_EXT_STRUCTURE_WITHOUT_SIG);
 
         // when
@@ -121,7 +121,7 @@ class RomExtensionStructureBuilderTest {
     void build_WithFMStructureWithoutSig_BuildsSameHexData() throws Exception {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(FM_F7_ROM_EXT_WITHOUT_SIG);
 
         // when
@@ -135,7 +135,7 @@ class RomExtensionStructureBuilderTest {
     void build_WithDMStructure_WithSig_BuildsSameHexData() throws Exception {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(DM_ROM_EXT_STRUCTURE_WITH_SIG);
 
         // when
@@ -149,7 +149,7 @@ class RomExtensionStructureBuilderTest {
     void build_WithFMStructure_WithSig_BuildsSameHexData() throws Exception {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(FM_F7_ROM_EXT_WITH_SIG);
 
         // when
@@ -163,11 +163,22 @@ class RomExtensionStructureBuilderTest {
     void parse_withWrongMagic_ThrowsException() {
         // given
         var builder = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE);
+            .withActor(EndiannessActor.FIRMWARE);
 
         // when-then
         Assertions.assertThrows(RomExtensionStructureException.class,
             () -> builder.parse(new byte[]{1, 2, 3, 4, 5}));
+    }
+
+    @Test
+    void parse_withLessBytesThanMagic_ThrowsException() {
+        // given
+        var builder = new RomExtensionStructureBuilder()
+            .withActor(EndiannessActor.FIRMWARE);
+
+        // when-then
+        Assertions.assertThrows(RomExtensionStructureException.class,
+            () -> builder.parse(new byte[]{1, 2, 3}));
     }
 
     @Test
@@ -180,12 +191,12 @@ class RomExtensionStructureBuilderTest {
             .withUnusedVarySize(TestUtil.generateRandomData(31264))
             .withBuildIdentifier(FM_BUILD_IDENTIFIER_STRING)
             .sign(dataToSign -> new RomExtensionAuthGeneratorUtil().signRomExtension(dataToSign))
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .build();
 
         // when
         final RomExtensionStructureBuilder parsedData = new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(initDataStructure.array());
 
         // then

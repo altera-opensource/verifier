@@ -33,9 +33,10 @@
 
 package com.intel.bkp.verifier.service.measurements;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponseToTcbInfoMapper;
+import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
 import com.intel.bkp.verifier.interfaces.IDeviceMeasurementsProvider;
 import com.intel.bkp.verifier.interfaces.IMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.service.sender.SpdmGetMeasurementMessageSender;
@@ -54,11 +55,13 @@ public class SpdmDeviceMeasurementsProvider implements IDeviceMeasurementsProvid
     }
 
     @Override
-    public List<TcbInfo> getMeasurementsFromDevice(SpdmDeviceMeasurementsRequest request) {
+    public List<TcbInfoMeasurement> getMeasurementsFromDevice(
+        SpdmDeviceMeasurementsRequest request) throws SpdmCommandFailedException {
         return measurementResponseMapper.map(getMeasurementResponseFromDevice(request));
     }
 
-    private SpdmMeasurementResponse getMeasurementResponseFromDevice(SpdmDeviceMeasurementsRequest request) {
-        return spdmGetMeasurementMessageSender.send();
+    private SpdmMeasurementResponse getMeasurementResponseFromDevice(
+        SpdmDeviceMeasurementsRequest request) throws SpdmCommandFailedException {
+        return spdmGetMeasurementMessageSender.send(request.slotId());
     }
 }

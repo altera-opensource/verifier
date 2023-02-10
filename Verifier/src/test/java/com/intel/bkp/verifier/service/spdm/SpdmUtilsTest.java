@@ -127,7 +127,7 @@ class SpdmUtilsTest {
     @Test
     void throwOnError_StatusError_Throws() {
         // when-then
-        final VerifierRuntimeException ex = assertThrows(SpdmCommandFailedException.class,
+        final SpdmCommandFailedException ex = assertThrows(SpdmCommandFailedException.class,
             () -> SpdmUtils.throwOnError(1L));
 
         // then

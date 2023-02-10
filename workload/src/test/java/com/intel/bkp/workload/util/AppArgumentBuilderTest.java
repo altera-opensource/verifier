@@ -48,7 +48,7 @@ class AppArgumentBuilderTest {
         String pufType = "EFUSE";
 
         // when
-        final AppArgument result = AppArgumentBuilder.instance()
+        final AppArgument result = AppArgument.instance()
             .transportId(transportId)
             .command(command.name())
             .context("999")
@@ -62,7 +62,6 @@ class AppArgumentBuilderTest {
 
         // Transport id is counted from 0 not 1
         Assertions.assertEquals(transportId, result.getTransportId());
-
         Assertions.assertEquals(command, result.getCommand());
         Assertions.assertEquals(pufType, result.getPufType());
     }
@@ -73,13 +72,12 @@ class AppArgumentBuilderTest {
         String command = "testCommandNotKnown";
 
         // when
-        final AppArgument result = AppArgumentBuilder.instance()
+        final AppArgument result = AppArgument.instance()
             .command(command)
             .build();
 
         // then
         Assertions.assertNotNull(result);
-
         Assertions.assertNull(result.getCommand());
     }
 

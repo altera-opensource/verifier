@@ -33,14 +33,25 @@
 
 package com.intel.bkp.verifier.model.evidence;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import static com.intel.bkp.utils.HexConverter.toHex;
+
 @Data
 @NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class SpdmMeasurementRecordHeader {
 
     private byte index = 0;
     private byte measurementSpec = 0;
     private short measurementSize = 0;
+
+    @Override
+    public String toString() {
+        return "%s(index=%d (0x%s), measurementSpec=%d, measurementSize=%d)".formatted(
+            getClass().getSimpleName(), index, toHex(index), measurementSpec, measurementSize);
+    }
 }

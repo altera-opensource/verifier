@@ -33,10 +33,12 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo;
 
-import com.intel.bkp.fpgacerts.utils.MaskHelper;
+import com.intel.bkp.utils.MaskHelper;
 import lombok.AllArgsConstructor;
 
 import java.util.Objects;
+
+import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
 public class MaskedVendorInfoComparator {
@@ -53,13 +55,11 @@ public class MaskedVendorInfoComparator {
     }
 
     private boolean isBothVendorInfoSet() {
-        return Objects.nonNull(left.getVendorInfo()) && Objects.nonNull(right.getVendorInfo());
+        return nonNull(left.getVendorInfo()) && nonNull(right.getVendorInfo());
     }
 
     private boolean isOneMaskSetWhenOtherIsNull() {
-        boolean isLeftMaskNull = Objects.isNull(left.getVendorInfoMask());
-        boolean isRightMaskNull = Objects.isNull(right.getVendorInfoMask());
-        return (isLeftMaskNull && !isRightMaskNull) || (!isLeftMaskNull && isRightMaskNull);
+        return (left.hasMask() && !right.hasMask()) || (!left.hasMask() && right.hasMask());
     }
 
     private boolean equalsInternal() {
@@ -68,15 +68,11 @@ public class MaskedVendorInfoComparator {
     }
 
     private boolean equalsFromResponse() {
-        final String mask = Objects.nonNull(left.getVendorInfoMask()) ? getMask(left) : getMask(right);
+        final String mask = left.hasMask() ? left.getVendorInfoMask() : right.getVendorInfoMask();
 
         final String expected = applyMask(left, mask);
         final String actual = applyMask(right, mask);
         return expected.equals(actual);
-    }
-
-    private static String getMask(MaskedVendorInfo maskedVendorInfo) {
-        return MaskHelper.getMask(maskedVendorInfo.getVendorInfo(), maskedVendorInfo.getVendorInfoMask());
     }
 
     private static String applyMask(MaskedVendorInfo maskedVendorInfo, String mask) {

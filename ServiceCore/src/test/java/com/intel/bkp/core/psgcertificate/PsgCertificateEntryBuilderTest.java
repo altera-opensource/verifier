@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
@@ -43,10 +43,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
-import java.security.interfaces.ECPublicKey;
 
 import static com.intel.bkp.core.TestUtil.genEcKeys;
 import static com.intel.bkp.core.TestUtil.signEcData;
+import static com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType.SECP384R1;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 
 class PsgCertificateEntryBuilderTest {
@@ -64,7 +64,8 @@ class PsgCertificateEntryBuilderTest {
         byte[] result = new PsgCertificateEntryBuilder()
             .publicKey(psgPublicKeyBuilder)
             .withSignature(psgSignatureBuilder)
-            .signData(dataToSign -> signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA))
+            .signData(dataToSign -> signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA),
+                SECP384R1)
             .build()
             .array();
 
@@ -96,9 +97,8 @@ class PsgCertificateEntryBuilderTest {
             .withBkpPermissions()
             .withNoCancellationId()
             .signData(dataToSign -> signEcData(
-                    dataToSign, keyPair.getPrivate(), CryptoConstants.SHA256_WITH_ECDSA
-                )
-            )
+                dataToSign, keyPair.getPrivate(), CryptoConstants.SHA256_WITH_ECDSA
+            ), SECP384R1)
             .build()
             .array();
 
@@ -239,8 +239,7 @@ class PsgCertificateEntryBuilderTest {
 
         PsgPublicKeyBuilder psgPublicKeyBuilder = new PsgPublicKeyBuilder()
             .magic(PsgPublicKeyMagic.M1_MAGIC)
-            .curveType(PsgCurveType.SECP384R1)
-            .publicKey((ECPublicKey) keyPair.getPublic());
+            .publicKey(keyPair.getPublic(), PsgCurveType.SECP384R1);
 
         // when
         PsgCertificateEntryBuilder instance = new PsgCertificateEntryBuilder()
@@ -254,14 +253,12 @@ class PsgCertificateEntryBuilderTest {
 
     private PsgPublicKeyBuilder getPsgPublicKeyBuilder(KeyPair keyPair, PsgCurveType psgCurveType) {
         return new PsgPublicKeyBuilder()
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .magic(PsgPublicKeyMagic.M1_MAGIC)
-            .curveType(psgCurveType)
-            .publicKey((ECPublicKey) keyPair.getPublic());
+            .publicKey(keyPair.getPublic(), psgCurveType);
     }
 
     private PsgSignatureBuilder getPsgSignatureBuilder(PsgSignatureCurveType psgSignatureCurveType) {
-        return new PsgSignatureBuilder()
-            .signatureType(psgSignatureCurveType);
+        return PsgSignatureBuilder.empty(psgSignatureCurveType);
     }
 }

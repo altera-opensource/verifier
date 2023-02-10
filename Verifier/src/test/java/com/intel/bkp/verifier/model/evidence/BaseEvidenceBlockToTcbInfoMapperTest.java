@@ -35,6 +35,7 @@ package com.intel.bkp.verifier.model.evidence;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import org.junit.jupiter.api.Assertions;
@@ -65,17 +66,16 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
     private final BaseEvidenceBlockToTcbInfoMapper sut = new BaseEvidenceBlockToTcbInfoMapper();
 
     @Test
-    void map_AllEmpty_OnlyIndexIsSetToZero() {
+    void map_AllEmpty() {
         // given
         final BaseEvidenceBlock block = prepareEmptyBlock();
-        final var expectedFields = List.of(TcbInfoField.INDEX);
+        final List<TcbInfoField> expectedFields = List.of();
 
         // when
         final TcbInfo result = sut.map(block);
 
         // then
         verifyFields(result, expectedFields);
-        Assertions.assertEquals(0, result.get(TcbInfoField.INDEX).get());
     }
 
     @Test
@@ -101,6 +101,40 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
         final MaskedVendorInfo maskedVendorInfo = (MaskedVendorInfo) result.get(TcbInfoField.VENDOR_INFO).get();
         Assertions.assertEquals(VENDOR_INFO, maskedVendorInfo.getVendorInfo());
         Assertions.assertEquals(VENDOR_INFO_MASK, maskedVendorInfo.getVendorInfoMask());
+    }
+
+    @Test
+    void map_VendorInfoButNoMask_SetsDefaultVendorInfoMask() {
+        // given
+        final BaseEvidenceBlock block = prepareBlockWithVendorInfoButNoMask();
+        final var expectedFields = List.of(TcbInfoField.VENDOR_INFO);
+
+        // when
+        final TcbInfo result = sut.map(block);
+
+        // then
+        verifyFields(result, expectedFields);
+
+        final MaskedVendorInfo maskedVendorInfo = (MaskedVendorInfo) result.get(TcbInfoField.VENDOR_INFO).get();
+        Assertions.assertEquals(VENDOR_INFO, maskedVendorInfo.getVendorInfo());
+        final String vendorInfoMask = maskedVendorInfo.getVendorInfoMask();
+        Assertions.assertEquals(VENDOR_INFO.length(), vendorInfoMask.length());
+        Assertions.assertTrue(vendorInfoMask.matches("^F+$"));
+    }
+
+    @Test
+    void map_UntypedMeasurementWithModelAndIntelVendor_SetsIndexWithZero() {
+        // given
+        final BaseEvidenceBlock block = prepareBlockWithIntelVendorAndModel();
+        final var expectedFields = List.of(TcbInfoField.VENDOR, TcbInfoField.MODEL, TcbInfoField.INDEX);
+
+        // when
+        final TcbInfo result = sut.map(block);
+
+        // then
+        verifyFields(result, expectedFields);
+
+        Assertions.assertEquals(TcbInfoConstants.INDEX, result.get(TcbInfoField.INDEX).get());
     }
 
     @Test
@@ -156,6 +190,19 @@ class BaseEvidenceBlockToTcbInfoMapperTest {
         final BaseEvidenceBlock block = new BaseEvidenceBlock();
         block.setVendor(VENDOR_MIXED_LETTER_SIZE);
         block.setModel(MODEL_MIXED_LETTER_SIZE);
+        return block;
+    }
+
+    private BaseEvidenceBlock prepareBlockWithIntelVendorAndModel() {
+        final BaseEvidenceBlock block = new BaseEvidenceBlock();
+        block.setVendor(TcbInfoConstants.VENDOR);
+        block.setModel(MODEL);
+        return block;
+    }
+
+    private BaseEvidenceBlock prepareBlockWithVendorInfoButNoMask() {
+        final BaseEvidenceBlock block = new BaseEvidenceBlock();
+        block.setVendorInfo(VENDOR_INFO);
         return block;
     }
 

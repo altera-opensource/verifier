@@ -33,11 +33,11 @@
 
 package com.intel.bkp.verifier.interfaces;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 
 import java.util.List;
 
 public interface IMeasurementResponseToTcbInfoMapper<T> {
 
-    List<TcbInfo> map(T response);
+    List<TcbInfoMeasurement> map(T response);
 }

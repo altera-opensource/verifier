@@ -33,10 +33,8 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.utils.ByteSwapOrder;
@@ -72,10 +70,10 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final SpdmMeasurementRecordHeader header = new SpdmMeasurementRecordHeaderBuilder().parse(buffer).build();
 
         // when
-        final TcbInfo result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertIgnoreCase(expectedVendorInfo, result.get(TcbInfoField.VENDOR_INFO).get().toString());
+        assertIgnoreCase(expectedVendorInfo, result.getValue().getMaskedVendorInfo().get().getVendorInfo());
         assertEquals(0, buffer.remaining());
     }
 
@@ -92,7 +90,7 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
             new SpdmMeasurementRecordHeaderBuilder().parse(buffer).build();
 
         // when
-        final TcbInfo result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
         assertFwId(expectedHash, result);
@@ -134,7 +132,7 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final ByteBufferSafe buffer = getBufferWithHeader(dmtfHeader, measurementArray);
 
         // when
-        final TcbInfo result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
         assertFwId(expectedMeasurement, result);
@@ -149,10 +147,11 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final ByteBufferSafe buffer = getBuffer(measurement);
 
         // when
-        final TcbInfo result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertTrue(result.isEmpty());
+        assertTrue(result.getKey().isEmpty());
+        assertTrue(result.getValue().isEmpty());
         assertEquals(0, buffer.remaining());
     }
 
@@ -168,10 +167,11 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
             new SpdmMeasurementRecordHeaderBuilder().parse(buffer).build();
 
         // when
-        final TcbInfo result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertTrue(result.isEmpty());
+        assertTrue(result.getKey().isEmpty());
+        assertTrue(result.getValue().isEmpty());
         assertEquals(0, buffer.remaining());
     }
 
@@ -240,7 +240,7 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final SpdmDmtfMeasurementRecordHeaderBuilder builder = new SpdmDmtfMeasurementRecordHeaderBuilder();
         builder.setType((byte) sectionType);
         builder.setSize(size);
-        return builder.withActor(EndianessActor.FIRMWARE).build();
+        return builder.withActor(EndiannessActor.FIRMWARE).build();
     }
 
     private static SpdmMeasurementRecordHeader prepareHeaderNotDmtf(short measurementSize) {
@@ -269,8 +269,8 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         );
     }
 
-    private static void assertFwId(String expectedMeasurement, TcbInfo result) {
-        assertIgnoreCase(expectedMeasurement, ((FwIdField) result.get(TcbInfoField.FWIDS).get()).getDigest());
+    private static void assertFwId(String expectedMeasurement, TcbInfoMeasurement result) {
+        assertIgnoreCase(expectedMeasurement, result.getValue().getFwid().get().getDigest());
     }
 
     private static void assertIgnoreCase(String expectedValue, String actualValue) {

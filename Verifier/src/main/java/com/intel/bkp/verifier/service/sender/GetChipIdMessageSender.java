@@ -51,7 +51,7 @@ public class GetChipIdMessageSender {
     private BaseMessageSender messageSender = new BaseMessageSender();
 
     public byte[] send(TransportLayer transportLayer, CommandLayer commandLayer) {
-        log.info("Preparing GET_CHIPID ...");
+        log.debug("Preparing GET_CHIPID ...");
         GetChipIdMessage getChipIdMessage = getChipIdMessageBuilder.build();
         SigmaLogger.log(getChipIdMessage, GET_CHIPID_MESSAGE, this.getClass());
         return new GetChipIdResponseBuilder()

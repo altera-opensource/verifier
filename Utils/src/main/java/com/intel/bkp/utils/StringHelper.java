@@ -39,13 +39,26 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Locale;
 
+import static java.util.Objects.isNull;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StringHelper {
 
     public static String toFirstLetterCapitalized(String str) {
-        return StringUtils.isAllBlank(str)
-            ? str
-            : str.substring(0, 1).toUpperCase(Locale.ROOT) + str.substring(1).toLowerCase(Locale.ROOT);
+        return StringUtils.isBlank(str)
+               ? str
+               : str.substring(0, 1).toUpperCase(Locale.ROOT) + str.substring(1).toLowerCase(Locale.ROOT);
+    }
 
+    public static String zeroExtendEndingToEvenLength(String str) {
+        return isNull(str) || str.length() % 2 == 0 ? str : str + "0";
+    }
+
+    public static String zeroExtendEnding(String str, int desiredLength) {
+        return StringUtils.rightPad(str, desiredLength, "0");
+    }
+
+    public static String truncateEnding(String str, int desiredLength) {
+        return StringUtils.truncate(str, desiredLength);
     }
 }

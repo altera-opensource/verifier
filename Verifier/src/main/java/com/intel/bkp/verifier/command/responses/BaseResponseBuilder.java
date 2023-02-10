@@ -33,11 +33,11 @@
 
 package com.intel.bkp.verifier.command.responses;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.utils.ByteSwap;
-import com.intel.bkp.verifier.endianess.EndianessStructureFields;
-import com.intel.bkp.verifier.endianess.EndianessStructureType;
-import com.intel.bkp.verifier.interfaces.IEndianessMap;
+import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.verifier.endianness.EndiannessStructureType;
+import com.intel.bkp.verifier.interfaces.IEndiannessMap;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,29 +46,29 @@ import java.util.EnumMap;
 public abstract class BaseResponseBuilder<T> {
 
     @Setter
-    protected EnumMap<EndianessStructureType, IEndianessMap> maps = new EnumMap<>(EndianessStructureType.class);
+    protected EnumMap<EndiannessStructureType, IEndiannessMap> maps = new EnumMap<>(EndiannessStructureType.class);
 
     @Getter
-    private EndianessActor actor;
+    private EndiannessActor actor;
 
     public BaseResponseBuilder() {
-        changeActor(EndianessActor.SERVICE);
+        changeActor(EndiannessActor.SERVICE);
     }
 
-    public abstract EndianessStructureType currentStructureMap();
+    public abstract EndiannessStructureType currentStructureMap();
 
-    public abstract T withActor(EndianessActor actor);
+    public abstract T withActor(EndiannessActor actor);
 
-    public abstract void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor);
+    public abstract void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor);
 
-    protected void changeActor(EndianessActor actor) {
+    protected void changeActor(EndiannessActor actor) {
         if (getActor() != actor) {
             this.actor = actor;
             initStructureMap(currentStructureMap(), getActor());
         }
     }
 
-    private IEndianessMap getCurrentMap() {
+    private IEndiannessMap getCurrentMap() {
         if (currentStructureMap() != null && maps.containsKey(currentStructureMap())) {
             return maps.get(currentStructureMap());
         } else {
@@ -76,11 +76,11 @@ public abstract class BaseResponseBuilder<T> {
         }
     }
 
-    protected final byte[] convert(byte[] value, EndianessStructureFields structureName) {
+    protected final byte[] convert(byte[] value, EndiannessStructureFields structureName) {
         return ByteSwap.getSwappedArrayByInt(value, getCurrentMap().get(structureName));
     }
 
-    protected final short convertShort(short value, EndianessStructureFields structureName) {
+    protected final short convertShort(short value, EndiannessStructureFields structureName) {
         return ByteSwap.getSwappedShort(value, getCurrentMap().get(structureName));
     }
 }

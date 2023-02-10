@@ -36,10 +36,18 @@ package com.intel.bkp.utils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.Arrays;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PaddingUtils {
 
-    public static byte[] addPadding(byte[] arr, int expectedLen) {
+    public static byte[] padRight(byte[] arr, int expectedLen) {
+        return arr.length >= expectedLen
+               ? arr
+               : Arrays.copyOf(arr, expectedLen);
+    }
+
+    public static byte[] padLeft(byte[] arr, int expectedLen) {
         if (arr.length < expectedLen) {
             byte[] newArr = new byte[expectedLen];
             System.arraycopy(arr, 0, newArr, expectedLen - arr.length, arr.length);
@@ -48,17 +56,20 @@ public class PaddingUtils {
         return arr;
     }
 
-    public static byte[] removePadding(byte[] arr, int expectedLen) {
-        if (arr.length > expectedLen) {
-            byte[] newArr = new byte[expectedLen];
-            System.arraycopy(arr, arr.length - expectedLen, newArr, 0, newArr.length);
-            return newArr;
-        }
-        return arr;
+    public static byte[] trimLeft(byte[] arr, int expectedLen) {
+        return arr.length <= expectedLen
+               ? arr
+               : Arrays.copyOfRange(arr, arr.length - expectedLen, arr.length);
     }
 
-    public static byte[] alignTo(byte[] arr, int expectedLen) {
-        return addPadding(removePadding(arr, expectedLen), expectedLen);
+    public static byte[] trimRight(byte[] arr, int expectedLen) {
+        return arr.length <= expectedLen
+               ? arr
+               : Arrays.copyOf(arr, expectedLen);
+    }
+
+    public static byte[] alignLeft(byte[] arr, int expectedLen) {
+        return padLeft(trimLeft(arr, expectedLen), expectedLen);
     }
 
     public static byte[] getPaddingPacked(byte[] arr, int packSize) {

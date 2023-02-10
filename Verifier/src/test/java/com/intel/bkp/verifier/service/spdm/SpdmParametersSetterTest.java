@@ -53,11 +53,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static com.intel.bkp.verifier.jna.model.LibSpdmDataType.LIBSPDM_DATA_BASE_ASYM_ALGO;
 import static com.intel.bkp.verifier.jna.model.LibSpdmDataType.LIBSPDM_DATA_BASE_HASH_ALGO;
 import static com.intel.bkp.verifier.jna.model.LibSpdmDataType.LIBSPDM_DATA_CAPABILITY_CT_EXPONENT;
-import static com.intel.bkp.verifier.jna.model.LibSpdmDataType.LIBSPDM_DATA_CAPABILITY_FLAGS;
 import static com.intel.bkp.verifier.jna.model.LibSpdmDataType.LIBSPDM_DATA_MEASUREMENT_SPEC;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.SPDM_ALGORITHMS_BASE_ASYM_ALGO_TPM_ALG_ECDSA_ECC_NIST_P384;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.SPDM_ALGORITHMS_BASE_HASH_ALGO_TPM_ALG_SHA_384;
-import static com.intel.bkp.verifier.jna.model.SpdmConstants.SPDM_GET_CAPABILITIES_REQUEST_FLAGS_CERT_CAP;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.SPDM_MEASUREMENT_BLOCK_HEADER_SPECIFICATION_DMTF;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -119,8 +117,6 @@ class SpdmParametersSetterTest {
             () -> verifyWrapperCallSetDataW8(LIBSPDM_DATA_MEASUREMENT_SPEC,
                 SPDM_MEASUREMENT_BLOCK_HEADER_SPECIFICATION_DMTF),
 
-            () -> verifyWrapperCallSetDataW32(LIBSPDM_DATA_CAPABILITY_FLAGS,
-                SPDM_GET_CAPABILITIES_REQUEST_FLAGS_CERT_CAP),
             () -> verifyWrapperCallSetDataW32(LIBSPDM_DATA_BASE_ASYM_ALGO,
                 SPDM_ALGORITHMS_BASE_ASYM_ALGO_TPM_ALG_ECDSA_ECC_NIST_P384),
             () -> verifyWrapperCallSetDataW32(LIBSPDM_DATA_BASE_HASH_ALGO,

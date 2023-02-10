@@ -36,7 +36,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -50,7 +50,7 @@
         </rollingPolicy>
 
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -60,7 +60,7 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="com.intel.bkp.verifier" level="DEBUG"/>
-    <logger name="com.intel.bkp.fpgacerts" level="DEBUG"/>
-    <logger name="com.intel.bkp.crypto" level="DEBUG"/>
+    <logger name="com.intel.bkp.verifier" level="TRACE"/>
+    <logger name="com.intel.bkp.fpgacerts" level="TRACE"/>
+    <logger name="com.intel.bkp.crypto" level="TRACE"/>
 </configuration>

@@ -48,7 +48,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.containsExtension;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.containsExtension;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 
 @Slf4j

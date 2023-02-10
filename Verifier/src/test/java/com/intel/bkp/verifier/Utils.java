@@ -33,24 +33,29 @@
 
 package com.intel.bkp.verifier;
 
+import lombok.SneakyThrows;
+
 import java.io.FileInputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509Certificate;
-import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509CertificateChain;
 import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.toX509Crl;
 
 public class Utils {
 
-    public static X509Certificate readCertificate(String folder, String filename) throws Exception {
-        return toX509Certificate(readFromResources(folder, filename));
-    }
+    public static final String EFUSE_CHAIN_FOLDER = "certs/dice/aliasEfuseSpdmChain/";
+    public static final String IIDUDS_CHAIN_FOLDER = "certs/dice/iidudsSpdmChain/";
+    public static final String COMMON_PRE_FOLDER = "certs/dice/common/pre/";
+    public static final String FAMILY_CERT = "IPCS_agilex.cer";
+    public static final String ROOT_CERT = "DICE_RootCA.cer";
 
-    public static List<X509Certificate> readCertificateChain(String folder, String filename) throws Exception {
-        return toX509CertificateChain(readFromResources(folder, filename));
+    @SneakyThrows
+    public static X509Certificate readCertificate(String folder, String filename) {
+        return toX509Certificate(readFromResources(folder, filename));
     }
 
     public static X509CRL readCrl(String folder, String filename) throws Exception {
@@ -73,5 +78,34 @@ public class Utils {
                 throw new RuntimeException("No test data available.");
             }
         }
+    }
+
+    @SneakyThrows
+    public static byte[] prepareEfuseChain() {
+        final String folder = EFUSE_CHAIN_FOLDER;
+        final byte[] aliasCert = readFromResources(folder, "alias_01458210996be470_spdm.cer");
+        final byte[] firmwareCert = readFromResources(folder, "firmware_01458210996be470_spdm.cer");
+        final byte[] deviceIdCert = readFromResources(folder, "deviceId_01458210996be470_spdm.cer");
+        final byte[] productFamilyCert = readFromResources(COMMON_PRE_FOLDER, FAMILY_CERT);
+        final byte[] rootCert = readFromResources(COMMON_PRE_FOLDER, ROOT_CERT);
+        return addAll(List.of(aliasCert, firmwareCert, deviceIdCert, productFamilyCert, rootCert));
+    }
+
+    @SneakyThrows
+    public static byte[] prepareIidChain() {
+        final String folder = IIDUDS_CHAIN_FOLDER;
+        final byte[] aliasCert = readFromResources(folder, "iiduds_alias_simulator.der");
+        final byte[] ipcsIidudsCert = readFromResources(folder, "ipcs_iiduds_simulator.der");
+        final byte[] productFamilyCert = readFromResources(COMMON_PRE_FOLDER, FAMILY_CERT);
+        final byte[] rootCert = readFromResources(COMMON_PRE_FOLDER, ROOT_CERT);
+        return addAll(List.of(aliasCert, ipcsIidudsCert, productFamilyCert, rootCert));
+    }
+
+    private static byte[] addAll(List<byte[]> arrays) {
+        final ByteBuffer buffer = ByteBuffer.allocate(arrays.stream().mapToInt(a -> a.length).sum());
+        for (byte[] array : arrays) {
+            buffer.put(array);
+        }
+        return buffer.array();
     }
 }

@@ -51,8 +51,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
-import static com.intel.bkp.crypto.constants.CryptoConstants.ECDSA_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
+import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -129,11 +129,11 @@ class GpDeviceMeasurementsRequestTest {
 
     @SneakyThrows
     private void mockConversionToEcPublicKey(byte[] keyBytes, PublicKey resultKey) {
-        when(CryptoUtils.toEcPublicBC(keyBytes, ECDSA_KEY, EC_CURVE_SPEC_384)).thenReturn(resultKey);
+        when(CryptoUtils.toEcPublicBC(keyBytes, EC_KEY, EC_CURVE_SPEC_384)).thenReturn(resultKey);
     }
 
     @SneakyThrows
     private void mockConversionToEcPublicKeyThrows(byte[] keyBytes) {
-        when(CryptoUtils.toEcPublicBC(keyBytes, ECDSA_KEY, EC_CURVE_SPEC_384)).thenThrow(new InvalidKeySpecException());
+        when(CryptoUtils.toEcPublicBC(keyBytes, EC_KEY, EC_CURVE_SPEC_384)).thenThrow(new InvalidKeySpecException());
     }
 }

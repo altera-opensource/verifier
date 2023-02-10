@@ -54,9 +54,9 @@ public class HpsTransportImpl implements TransportLayer {
 
     @Override
     public byte[] sendCommand(byte[] command) {
-        log.debug("Sending command: {}", toHex(command));
+        log.trace("Sending command: {}", toHex(command));
         byte[] result = client.sendPacket(command);
-        log.debug("Command result: {}", toHex(result));
+        log.trace("Command result: {}", toHex(result));
         return result;
     }
 

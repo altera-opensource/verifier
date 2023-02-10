@@ -36,12 +36,11 @@ package com.intel.bkp.core.security.params;
 import com.intel.bkp.core.security.params.crypto.AesProperties;
 import com.intel.bkp.core.security.params.crypto.EcProperties;
 import com.intel.bkp.core.security.params.crypto.RsaProperties;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter

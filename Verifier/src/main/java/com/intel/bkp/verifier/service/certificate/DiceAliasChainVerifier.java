@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import com.intel.bkp.fpgacerts.verification.DiceChainVerifierBase;
-import com.intel.bkp.verifier.exceptions.SigmaException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 
 import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_INIT;
 import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
@@ -53,6 +53,6 @@ public class DiceAliasChainVerifier extends DiceChainVerifierBase {
 
     @Override
     protected void handleVerificationFailure(String failureDetails) {
-        throw new SigmaException(failureDetails);
+        throw new VerifierRuntimeException(failureDetails);
     }
 }

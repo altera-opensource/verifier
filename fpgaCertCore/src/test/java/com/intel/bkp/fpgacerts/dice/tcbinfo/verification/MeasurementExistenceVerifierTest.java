@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
 
@@ -198,7 +199,6 @@ class MeasurementExistenceVerifierTest {
         key.setVendor(TcbInfoConstants.VENDOR);
         key.setType(MEASUREMENT_TYPE.getOid());
         key.setLayer(MEASUREMENT_TYPE.getLayer());
-        key.setIndex(TcbInfoConstants.INDEX);
         return key;
     }
 
@@ -207,7 +207,7 @@ class MeasurementExistenceVerifierTest {
         fwId.setHashAlg(hashAlg);
 
         final var value = new TcbInfoValue();
-        value.setFwid(fwId);
+        value.setFwid(Optional.of(fwId));
         return value;
     }
 }

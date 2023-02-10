@@ -33,11 +33,10 @@
 
 package com.intel.bkp.verifier.jna.model;
 
-public interface LibSpdmDataType {
+public class LibSpdmDataType {
 
-    int LIBSPDM_DATA_CAPABILITY_FLAGS = 0x02;
-    int LIBSPDM_DATA_CAPABILITY_CT_EXPONENT = 0x03;
-    int LIBSPDM_DATA_MEASUREMENT_SPEC = 0x07;
-    int LIBSPDM_DATA_BASE_ASYM_ALGO = 0x09;
-    int LIBSPDM_DATA_BASE_HASH_ALGO = 0x0A;
+    public static final int LIBSPDM_DATA_CAPABILITY_CT_EXPONENT = 0x03;
+    public static final int LIBSPDM_DATA_MEASUREMENT_SPEC = 0x07;
+    public static final int LIBSPDM_DATA_BASE_ASYM_ALGO = 0x09;
+    public static final int LIBSPDM_DATA_BASE_HASH_ALGO = 0x0A;
 }

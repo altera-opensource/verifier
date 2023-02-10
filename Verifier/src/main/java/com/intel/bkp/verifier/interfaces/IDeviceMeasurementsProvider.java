@@ -33,11 +33,11 @@
 
 package com.intel.bkp.verifier.interfaces;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 
 import java.util.List;
 
 public interface IDeviceMeasurementsProvider<T> {
 
-    List<TcbInfo> getMeasurementsFromDevice(T request);
+    List<TcbInfoMeasurement> getMeasurementsFromDevice(T request) throws Exception;
 }

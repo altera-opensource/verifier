@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.verifier.Utils;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponseBuilder;
@@ -66,7 +66,7 @@ public class EvidenceVerifierSpdmTestIT {
 
     private final SpdmMeasurementResponseToTcbInfoMapper measurementMapper =
         new SpdmMeasurementResponseToTcbInfoMapper();
-    private TcbInfoAggregator tcbInfoAggregator = new TcbInfoAggregator();
+    private TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
 
     private EvidenceVerifier sut = new EvidenceVerifier();
 
@@ -92,10 +92,10 @@ public class EvidenceVerifierSpdmTestIT {
     @Test
     public void verify_Spdm_Agilex() {
         // given
-        tcbInfoAggregator.add(measurementMapper.map(responseAgilex));
+        tcbInfoMeasurementsAggregator.add(measurementMapper.map(responseAgilex));
 
         // when
-        final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilex);
+        final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilex);
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK, result);
@@ -104,10 +104,11 @@ public class EvidenceVerifierSpdmTestIT {
     @Test
     public void verify_Spdm_AgilexWithPrRegion() {
         // given
-        tcbInfoAggregator.add(measurementMapper.map(responseAgilexWithPrRegion));
+        tcbInfoMeasurementsAggregator.add(measurementMapper.map(responseAgilexWithPrRegion));
 
         // when
-        final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilexWithPrRegion);
+        final VerifierExchangeResponse result =
+            sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilexWithPrRegion);
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.OK, result);

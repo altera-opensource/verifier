@@ -73,6 +73,10 @@ public class HexConverter {
         return String.format("0x%s", toHex(singleByte));
     }
 
+    public static String toFormattedHex(int number) {
+        return String.format("0x%s", toHex(number));
+    }
+
     public static String toFormattedHex(byte[] data) {
         List<String> bytesList = new ArrayList<>();
         ByteBuffer wrap = ByteBuffer.wrap(data);

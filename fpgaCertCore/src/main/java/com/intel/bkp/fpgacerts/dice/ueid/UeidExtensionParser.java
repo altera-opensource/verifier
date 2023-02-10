@@ -33,8 +33,8 @@
 
 package com.intel.bkp.fpgacerts.dice.ueid;
 
+import com.intel.bkp.crypto.asn1.Asn1ParsingUtils;
 import com.intel.bkp.fpgacerts.model.AttFamily;
-import com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils;
 import com.intel.bkp.fpgacerts.utils.BaseExtensionParser;
 import com.intel.bkp.utils.ByteBufferSafe;
 import lombok.Getter;
@@ -42,6 +42,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
+import java.security.cert.X509Extension;
 
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static com.intel.bkp.utils.HexConverter.toHex;
@@ -57,33 +58,37 @@ public class UeidExtensionParser extends BaseExtensionParser<UeidExtension> {
         super(EXTENSION_NAME);
     }
 
-    @Override
     public UeidExtension parse(@NonNull final X509Certificate certificate) {
-        logExtensionParsingStart(certificate, "UEID");
+        return parse((X509Extension) certificate);
+    }
+
+    @Override
+    protected UeidExtension parse(@NonNull final X509Extension x509Obj) {
+        logExtensionParsingStart(x509Obj, "UEID");
 
         final var familyId = new byte[1];
         final var uid = new byte[8];
-        ByteBufferSafe.wrap(getUeidExtensionValue(certificate))
-                .skip(1) // typeCode
-                .skip(3) // intelOui
-                .skip(2) // reserved
-                .get(familyId)
-                .skip(1) // testMode
-                .get(uid);
+        ByteBufferSafe.wrap(getUeidExtensionValue(x509Obj))
+            .skip(1) // typeCode
+            .skip(3) // intelOui
+            .skip(2) // reserved
+            .get(familyId)
+            .skip(1) // testMode
+            .get(uid);
 
         final var attFamily = AttFamily.from(familyId[0]);
 
-        log.debug("Parsed UEID Extension from certificate. FAMILY_NAME = {}, UID = {}",
-                attFamily.getFamilyName(), toHex(uid));
+        log.trace("Parsed UEID Extension. FAMILY_NAME = {}, UID = {}",
+            attFamily.getFamilyName(), toHex(uid));
 
         return new UeidExtension(attFamily.getFamilyId(), attFamily.getFamilyName(), uid);
     }
 
-    private byte[] getUeidExtensionValue(final X509Certificate certificate) {
-        return getExtension(certificate, TCG_DICE_UEID.getOid())
-                .map(Asn1ParsingUtils::parseSingleElementSequence)
-                .map(Asn1ParsingUtils::parseOctetString)
-                .filter(v -> UEID_EXTENSION_SIZE == v.length)
-                .orElseThrow(() -> new IllegalArgumentException(getExtensionParsingError(certificate)));
+    private byte[] getUeidExtensionValue(final X509Extension x509Obj) {
+        return getExtension(x509Obj, TCG_DICE_UEID.getOid())
+            .map(Asn1ParsingUtils::parseSingleElementSequence)
+            .map(Asn1ParsingUtils::parseOctetString)
+            .filter(v -> UEID_EXTENSION_SIZE == v.length)
+            .orElseThrow(() -> new IllegalArgumentException(getExtensionParsingError(x509Obj)));
     }
 }

@@ -34,8 +34,8 @@
 package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.core.manufacturing.model.PufType;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.CacheEntityDoesNotExistException;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
@@ -57,11 +57,11 @@ public class GpS10AttestationComponent {
 
     private final EvidenceVerifier evidenceVerifier;
     private final S10AttestationRevocationService s10AttestationRevocationService;
-    private final TcbInfoAggregator tcbInfoAggregator;
+    private final TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator;
     private final GpDeviceMeasurementsProvider gpDeviceMeasurementsProvider;
 
     public GpS10AttestationComponent() {
-        this(new EvidenceVerifier(), new S10AttestationRevocationService(), new TcbInfoAggregator(),
+        this(new EvidenceVerifier(), new S10AttestationRevocationService(), new TcbInfoMeasurementsAggregator(),
             new GpDeviceMeasurementsProvider());
     }
 
@@ -74,12 +74,12 @@ public class GpS10AttestationComponent {
 
         s10AttestationRevocationService.checkAndRetrieve(deviceId, PufType.getPufTypeHex(entity.getPufType()));
 
-        tcbInfoAggregator.add(getMeasurementsFromDevice(entity, deviceId));
+        tcbInfoMeasurementsAggregator.add(getMeasurementsFromDevice(entity, deviceId));
 
-        return evidenceVerifier.verify(tcbInfoAggregator, refMeasurement);
+        return evidenceVerifier.verify(tcbInfoMeasurementsAggregator, refMeasurement);
     }
 
-    private List<TcbInfo> getMeasurementsFromDevice(S10CacheEntity entity, byte[] deviceId) {
+    private List<TcbInfoMeasurement> getMeasurementsFromDevice(S10CacheEntity entity, byte[] deviceId) {
         final var measurementsRequest = GpDeviceMeasurementsRequest.forS10(deviceId, entity);
         return gpDeviceMeasurementsProvider.getMeasurementsFromDevice(measurementsRequest);
     }

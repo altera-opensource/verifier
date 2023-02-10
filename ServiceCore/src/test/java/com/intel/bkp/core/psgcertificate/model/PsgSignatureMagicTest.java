@@ -33,31 +33,19 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
-import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.intel.bkp.utils.HexConverter.toHex;
+
 class PsgSignatureMagicTest {
 
-    private static final String ALLOWED_MAGICS = "74881520, 71050792";
-
-    @Test
-    void isValid_Success() {
-        // when
-        final boolean actual = PsgSignatureMagic.isValid(PsgSignatureMagic.CANCELLABLE_BLOCK0_ENTRY.getValue());
-
-        // then
-        Assertions.assertTrue(actual);
-    }
-
-    @Test
-    void isValid_WithInvalidMagic_ReturnsFalse() {
-        // when
-        final boolean actual = PsgSignatureMagic.isValid(PsgCancellableBlock0EntryBuilder.MAGIC);
-
-        // then
-        Assertions.assertFalse(actual);
-    }
+    private static final String ALLOWED_MAGICS = "0x%s, 0x%s".formatted(
+        toHex(PsgSignatureMagic.STANDARD.getValue()),
+        toHex(PsgSignatureMagic.CANCELLABLE_BLOCK0_ENTRY.getValue())
+    );
+    ;
 
     @Test
     void getAllowedMagics_ReturnsListOfMagics() {
@@ -66,5 +54,16 @@ class PsgSignatureMagicTest {
 
         // then
         Assertions.assertEquals(ALLOWED_MAGICS, actualList);
+    }
+
+    @Test
+    void from_Success() {
+        // when-then
+        Assertions.assertDoesNotThrow(() -> PsgSignatureMagic.from(PsgSignatureMagic.STANDARD.getValue()));
+    }
+
+    @Test
+    void from_WithInvalidMagic_Throws() {
+        Assertions.assertThrows(PsgInvalidSignatureException.class, () -> PsgSignatureMagic.from(0));
     }
 }

@@ -34,6 +34,11 @@
 package com.intel.bkp.verifier.exceptions;
 
 public class VerifierRuntimeException extends RuntimeException {
+
+    public VerifierRuntimeException() {
+        super();
+    }
+
     public VerifierRuntimeException(String message) {
         super(message);
     }

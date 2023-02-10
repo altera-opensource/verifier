@@ -47,8 +47,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
-import static com.intel.bkp.crypto.constants.CryptoConstants.ECDSA_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
+import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 
 @Getter
@@ -76,7 +76,7 @@ public class GpDeviceMeasurementsRequest {
     private static PublicKey getPublicKey(S10CacheEntity entity) {
         try {
             final String pubKeyXY = entity.getAlias();
-            return CryptoUtils.toEcPublicBC(fromHex(pubKeyXY), ECDSA_KEY, EC_CURVE_SPEC_384);
+            return CryptoUtils.toEcPublicBC(fromHex(pubKeyXY), EC_KEY, EC_CURVE_SPEC_384);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | EcdhKeyPairException e) {
             throw new SigmaException("Failed to recover PublicKey from alias.", e);
         }

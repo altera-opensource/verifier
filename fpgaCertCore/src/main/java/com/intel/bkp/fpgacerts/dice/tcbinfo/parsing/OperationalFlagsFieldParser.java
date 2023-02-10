@@ -35,7 +35,7 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseBitString;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseBitString;
 import static com.intel.bkp.utils.HexConverter.toHex;
 
 public class OperationalFlagsFieldParser implements ITcbInfoFieldParser<String> {

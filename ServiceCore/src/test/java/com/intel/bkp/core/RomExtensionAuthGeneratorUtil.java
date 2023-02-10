@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateRootEntryBuilder;
@@ -50,11 +50,12 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
-import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType.SECP384R1;
 
 public class RomExtensionAuthGeneratorUtil {
 
@@ -86,7 +87,8 @@ public class RomExtensionAuthGeneratorUtil {
             .withSignature(getPsgSignatureBuilder())
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair))
             .signData(dataToSign -> TestUtil.signEcData(
-                dataToSign, rootKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA)
+                    dataToSign, rootKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA),
+                SECP384R1
             )
             .build()
             .array();
@@ -101,8 +103,8 @@ public class RomExtensionAuthGeneratorUtil {
             customDataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
         );
         return builder
-            .withActor(EndianessActor.FIRMWARE)
-            .signature(signedData)
+            .withActor(EndiannessActor.FIRMWARE)
+            .signature(signedData, PsgSignatureCurveType.SECP384R1)
             .build()
             .array();
     }
@@ -137,24 +139,22 @@ public class RomExtensionAuthGeneratorUtil {
     @SneakyThrows
     private byte[] getRootContentSwapped(byte[] content) {
         return new PsgCertificateRootEntryBuilder().parse(content)
-            .withActor(EndianessActor.FIRMWARE).build().array();
+            .withActor(EndiannessActor.FIRMWARE).build().array();
     }
 
     @SneakyThrows
     private byte[] getLeafContentSwapped(byte[] content) {
         return new PsgCertificateEntryBuilder().parse(content)
-            .withActor(EndianessActor.FIRMWARE).build().array();
+            .withActor(EndiannessActor.FIRMWARE).build().array();
     }
 
     private PsgPublicKeyBuilder getPsgPublicKeyBuilder(KeyPair keyPair) {
         return new PsgPublicKeyBuilder()
             .magic(PsgPublicKeyMagic.M1_MAGIC)
-            .curveType(PsgCurveType.SECP384R1)
-            .publicKey((ECPublicKey) keyPair.getPublic());
+            .publicKey(keyPair.getPublic(), PsgCurveType.SECP384R1);
     }
 
     private PsgSignatureBuilder getPsgSignatureBuilder() {
-        return new PsgSignatureBuilder()
-            .signatureType(PsgSignatureCurveType.SECP384R1);
+        return PsgSignatureBuilder.empty(PsgSignatureCurveType.SECP384R1);
     }
 }

@@ -33,6 +33,7 @@
 
 package com.intel.bkp.verifier.service.spdm;
 
+import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.jna.LibSpdmLibraryWrapperImpl;
 import com.intel.bkp.verifier.jna.LibSpdmLibraryWrapperImpl.LibSpdmLibraryWrapper;
@@ -71,6 +72,7 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.LIBSPDM_STATUS_SUCCESS;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_RAW_BIT_STREAM_REQUESTED;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -89,6 +91,14 @@ import static org.mockito.Mockito.when;
 class SpdmCallerTest {
 
     private static final int SPDM_CT_EXP = 0x02;
+    private static final int SLOT_ID = 0x02;
+    private static final byte SLOT_MASK_GOOD = 4; // SLOT_ID of 0x02 means 3rd bit set in mask - 00000100 = 4
+    private static final byte[] DIGEST = new byte[CryptoConstants.SHA384_LEN];
+    static {
+        // dummy data
+        DIGEST[0] = (byte) 0x02;
+        DIGEST[1] = (byte) 0x04;
+    }
 
     private static MockedStatic<AppContext> appContextMockedStatic;
 
@@ -185,7 +195,7 @@ class SpdmCallerTest {
     }
 
     @Test
-    void getVersion_Success() {
+    void getVersion_Success() throws Exception {
         // given
         try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
             mockWrapper();
@@ -215,6 +225,80 @@ class SpdmCallerTest {
     }
 
     @Test
+    void getDigest_ConnectionNotInitialized_InitializesConnection() {
+        // given
+        try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
+            mockWrapper();
+            prepareLibConfig();
+            prepareSpdmContextAndScratchBufferSize();
+
+            final SpdmCaller spdmCaller = SpdmCaller.getInstance();
+            final Pointer spdmContext = spdmCaller.getSpdmContext();
+
+            when(wrapperMock.libspdm_init_connection_w(spdmContext, false))
+                .thenReturn(LIBSPDM_STATUS_SUCCESS);
+
+            // when
+            assertDoesNotThrow(spdmCaller::getDigest);
+
+            // then
+            assertTrue(spdmCaller.isConnectionInitialized());
+        }
+    }
+
+    @Test
+    void getDigest_ConnectionAlreadyInitialized_SkipsInitialization() {
+        // given
+        try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
+            mockWrapper();
+            prepareLibConfig();
+            prepareSpdmContextAndScratchBufferSize();
+
+            final SpdmCaller spdmCallerSpy = mockConnectionAlreadyInitialized();
+
+            // when
+            assertDoesNotThrow(spdmCallerSpy::getDigest);
+
+            // then
+            verify(wrapperMock, never()).libspdm_init_connection_w(any(), anyBoolean());
+        }
+    }
+
+    @Test
+    void getDigest_Success() throws Exception {
+        // given
+        try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
+            mockWrapper();
+            prepareLibConfig();
+            prepareSpdmContextAndScratchBufferSize();
+
+            final SpdmCaller spdmCallerSpy = mockConnectionAlreadyInitialized();
+            final Pointer spdmContext = spdmCallerSpy.getSpdmContext();
+
+            when(wrapperMock.libspdm_get_digest_w(eq(spdmContext), any(), any()))
+                .thenAnswer((Answer<Long>) invocation -> {
+                    final Object[] arguments = invocation.getArguments();
+                    final Pointer slotMask = (Pointer) arguments[1];
+                    final Pointer digests = (Pointer) arguments[2];
+                    slotMask.setByte(0, SLOT_MASK_GOOD);
+                    for (int i = 0; i < DIGEST.length; i++) {
+                        digests.setByte(i, DIGEST[i]);
+                    }
+
+                    return LIBSPDM_STATUS_SUCCESS;
+                });
+
+
+            // when
+            final SpdmGetDigestResult result = spdmCallerSpy.getDigest();
+
+            // then
+            assertArrayEquals(new byte[] {SLOT_MASK_GOOD}, result.slotMask());
+            assertArrayEquals(DIGEST, result.digests());
+        }
+    }
+
+    @Test
     void getCerts_ConnectionNotInitialized_InitializesConnection() {
         // given
         try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
@@ -229,7 +313,7 @@ class SpdmCallerTest {
                 .thenReturn(LIBSPDM_STATUS_SUCCESS);
 
             // when
-            assertDoesNotThrow(spdmCaller::getCerts);
+            assertDoesNotThrow(() -> spdmCaller.getCerts(SLOT_ID));
 
             // then
             assertTrue(spdmCaller.isConnectionInitialized());
@@ -247,7 +331,7 @@ class SpdmCallerTest {
             final SpdmCaller spdmCallerSpy = mockConnectionAlreadyInitialized();
 
             // when
-            assertDoesNotThrow(spdmCallerSpy::getCerts);
+            assertDoesNotThrow(() -> spdmCallerSpy.getCerts(SLOT_ID));
 
             // then
             verify(wrapperMock, never()).libspdm_init_connection_w(any(), anyBoolean());
@@ -255,7 +339,7 @@ class SpdmCallerTest {
     }
 
     @Test
-    void getCerts_Success() {
+    void getCerts_Success() throws Exception {
         // given
         try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
             mockWrapper();
@@ -264,9 +348,6 @@ class SpdmCallerTest {
 
             final SpdmCaller spdmCallerSpy = mockConnectionAlreadyInitialized();
             final Pointer spdmContext = spdmCallerSpy.getSpdmContext();
-
-            when(wrapperMock.libspdm_get_digest_w(eq(spdmContext), any(), any()))
-                .thenReturn(LIBSPDM_STATUS_SUCCESS);
 
             final byte[] expectedCertChain = new byte[]{1, 2, 3, 4};
             when(wrapperMock.libspdm_get_certificate_w(eq(spdmContext), any(), any(), any()))
@@ -280,7 +361,7 @@ class SpdmCallerTest {
                 });
 
             // when
-            final String result = spdmCallerSpy.getCerts();
+            final String result = spdmCallerSpy.getCerts(SLOT_ID);
 
             // then
             assertEquals(toHex(expectedCertChain), result);
@@ -302,7 +383,7 @@ class SpdmCallerTest {
                 .thenReturn(LIBSPDM_STATUS_SUCCESS);
 
             // when
-            assertDoesNotThrow(spdmCaller::getMeasurements);
+            assertDoesNotThrow(() -> spdmCaller.getMeasurements(SLOT_ID));
 
             // then
             assertTrue(spdmCaller.isConnectionInitialized());
@@ -320,7 +401,7 @@ class SpdmCallerTest {
             final SpdmCaller spdmCallerSpy = mockConnectionAlreadyInitialized();
 
             // when
-            assertDoesNotThrow(spdmCallerSpy::getMeasurements);
+            assertDoesNotThrow(() -> spdmCallerSpy.getMeasurements(SLOT_ID));
 
             // then
             verify(wrapperMock, never()).libspdm_init_connection_w(any(), anyBoolean());
@@ -328,7 +409,7 @@ class SpdmCallerTest {
     }
 
     @Test
-    void getMeasurements_Success() {
+    void getMeasurements_Success() throws Exception {
         // given
         try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
             mockWrapper();
@@ -350,7 +431,7 @@ class SpdmCallerTest {
                 });
 
             // when
-            final String result = spdmCallerSpy.getMeasurements();
+            final String result = spdmCallerSpy.getMeasurements(SLOT_ID);
 
             // then
             assertEquals(toHex(expectedMeasurements), result);
@@ -358,7 +439,7 @@ class SpdmCallerTest {
     }
 
     @Test
-    void getMeasurements_WithoutSignature_CallsMethodWithOnlyRawBitStreamRequest() {
+    void getMeasurements_WithoutSignature_CallsMethodWithOnlyRawBitStreamRequest() throws Exception {
         // given
         try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
             mockWrapper();
@@ -371,7 +452,7 @@ class SpdmCallerTest {
             when(libSpdmParamsMock.isMeasurementsRequestSignature()).thenReturn(false);
 
             // when
-            spdmCallerSpy.getMeasurements();
+            spdmCallerSpy.getMeasurements(SLOT_ID);
 
             // then
             verify(wrapperMock).libspdm_get_measurement_w(eq(spdmContext), any(), any(), any(),
@@ -380,7 +461,7 @@ class SpdmCallerTest {
     }
 
     @Test
-    void getMeasurements_WithSignature_CallsMethodWithSignatureRequest() {
+    void getMeasurements_WithSignature_CallsMethodWithSignatureRequest() throws Exception {
         // given
         try (var wrapperMockedStatic = mockStatic(LibSpdmLibraryWrapperImpl.class)) {
             mockWrapper();
@@ -393,7 +474,7 @@ class SpdmCallerTest {
             when(libSpdmParamsMock.isMeasurementsRequestSignature()).thenReturn(true);
 
             // when
-            spdmCallerSpy.getMeasurements();
+            spdmCallerSpy.getMeasurements(SLOT_ID);
 
             // then
             verify(wrapperMock).libspdm_get_measurement_w(eq(spdmContext), any(), any(), any(),

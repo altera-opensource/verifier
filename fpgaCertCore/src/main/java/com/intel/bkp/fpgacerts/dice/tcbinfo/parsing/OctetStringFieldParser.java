@@ -37,13 +37,13 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 
 import java.util.Locale;
 
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseOctetString;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseImplicitlyTaggedOctetString;
 import static com.intel.bkp.utils.HexConverter.toHex;
 
 public class OctetStringFieldParser implements ITcbInfoFieldParser<String> {
 
     @Override
     public String parse(ASN1TaggedObject object) {
-        return toHex(parseOctetString(object)).toLowerCase(Locale.ROOT);
+        return toHex(parseImplicitlyTaggedOctetString(object)).toLowerCase(Locale.ROOT);
     }
 }

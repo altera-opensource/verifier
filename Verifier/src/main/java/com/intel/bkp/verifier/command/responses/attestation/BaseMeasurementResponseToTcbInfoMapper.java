@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.interfaces.IMeasurementProvider;
 import com.intel.bkp.verifier.interfaces.IMeasurementRecordToTcbInfoMapper;
@@ -44,17 +44,17 @@ import java.util.List;
 
 public abstract class BaseMeasurementResponseToTcbInfoMapper<T, R extends IMeasurementProvider> {
 
-    public List<TcbInfo> map(R response) {
-        final List<TcbInfo> tcbInfos = new ArrayList<>();
+    public List<TcbInfoMeasurement> map(R response) {
+        final List<TcbInfoMeasurement> tcbInfoMeasurements = new ArrayList<>();
 
         final ByteBufferSafe buffer = ByteBufferSafe.wrap(response.getMeasurementRecord());
         final var builder = getBuilder();
         while (builder.canBeParsed(buffer)) {
             final var header = builder.parse(buffer).build();
-            tcbInfos.add(getMapper().map(header, buffer));
+            tcbInfoMeasurements.add(getMapper().map(header, buffer));
         }
 
-        return tcbInfos;
+        return tcbInfoMeasurements;
     }
 
     protected abstract IMeasurementRecordToTcbInfoMapper<T> getMapper();

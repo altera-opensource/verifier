@@ -56,4 +56,10 @@ public class DistributionPointCertificate {
             .map(DistributionPointCertificate::getX509Cert)
             .collect(Collectors.toList());
     }
+
+    public static List<String> getUrls(@NonNull Collection<DistributionPointCertificate> dpCerts) {
+        return dpCerts.stream()
+            .map(DistributionPointCertificate::getUrl)
+            .collect(Collectors.toList());
+    }
 }

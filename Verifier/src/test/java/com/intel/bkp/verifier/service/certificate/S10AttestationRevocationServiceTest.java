@@ -145,7 +145,7 @@ class S10AttestationRevocationServiceTest {
     private void mockFetchingCertificates(byte[] deviceId, String pufType) {
         final S10Params expectedParams = S10Params.from(deviceId, pufType);
         when(addressProvider.getAttestationCertUrl(expectedParams)).thenReturn(ATTESTATION_CERT_URL);
-        when(chainFetcher.downloadCertificateChain(ATTESTATION_CERT_URL))
+        when(chainFetcher.downloadCertificateChainAsX509(ATTESTATION_CERT_URL))
             .thenReturn(List.of(attestationCert, parentCert, rootCert));
     }
 

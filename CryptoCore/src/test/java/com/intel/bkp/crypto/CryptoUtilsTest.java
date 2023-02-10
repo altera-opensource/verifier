@@ -63,7 +63,7 @@ public class CryptoUtilsTest {
 
         // then
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDSA_KEY, result.getPrivate().getAlgorithm());
+        Assertions.assertEquals(CryptoConstants.EC_KEY, result.getPrivate().getAlgorithm());
     }
 
     @Test

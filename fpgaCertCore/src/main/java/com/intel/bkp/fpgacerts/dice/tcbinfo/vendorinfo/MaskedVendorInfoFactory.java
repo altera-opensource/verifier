@@ -40,10 +40,10 @@ import lombok.NoArgsConstructor;
 public class MaskedVendorInfoFactory {
 
     public static MaskedVendorInfo get(Object vendorInfoObj) {
-        if (vendorInfoObj instanceof MaskedVendorInfo) {
-            return (MaskedVendorInfo) vendorInfoObj;
-        } else if (vendorInfoObj instanceof String) {
-            return new MaskedVendorInfo((String) vendorInfoObj);
+        if (vendorInfoObj instanceof MaskedVendorInfo maskedVendorInfo) {
+            return maskedVendorInfo;
+        } else if (vendorInfoObj instanceof String vendorInfo) {
+            return new MaskedVendorInfo(vendorInfo);
         } else {
             return new MaskedVendorInfo("");
         }

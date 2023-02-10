@@ -33,6 +33,7 @@
 
 package com.intel.bkp.verifier.service.spdm;
 
+import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.jna.LibSpdmLibraryWrapperImpl;
@@ -50,6 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.ByteBuffer;
 
 import static com.intel.bkp.crypto.constants.CryptoConstants.SHA384_SIG_LEN;
+import static com.intel.bkp.utils.BitUtils.countSetBits;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE;
 import static com.intel.bkp.verifier.jna.model.SpdmConstants.LIBSPDM_STATUS_SUCCESS;
@@ -86,8 +88,10 @@ public class SpdmCaller {
     }
 
     public String getVersion() throws SpdmCommandFailedException {
+        log.debug("Sending SPDM GET_VERSION ...");
+
         final Long initGetVersionStatus = jnaInterface.libspdm_init_connection_w(spdmContext, true);
-        log.debug("Init get version status: 0x{}", toHex(initGetVersionStatus));
+        log.debug("VERSION status: 0x{}", toHex(initGetVersionStatus));
 
         throwOnError(initGetVersionStatus);
 
@@ -97,24 +101,37 @@ public class SpdmCaller {
         return toHex(buffer.get());
     }
 
-    public String getCerts() throws SpdmCommandFailedException {
+    public SpdmGetDigestResult getDigest() throws SpdmCommandFailedException {
         initializeConnection();
+
+        log.debug("Sending SPDM GET_DIGESTS ...");
 
         final Pointer digestBuffer = new Memory(LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE);
         final Pointer slotMask = new Memory(Byte.BYTES);
 
         final Long statusDigest = jnaInterface.libspdm_get_digest_w(spdmContext, slotMask, digestBuffer);
-        log.debug("GET_DIGEST status: 0x{}", toHex(statusDigest));
+        log.debug("DIGESTS status: 0x{}", toHex(statusDigest));
 
         throwOnError(statusDigest);
+
+        final int hashAlgSize = CryptoConstants.SHA384_LEN;
+        final byte[] slotMaskBytes = getBytes(slotMask, Byte.BYTES);
+        return new SpdmGetDigestResult(slotMaskBytes,
+            getBytes(digestBuffer, countSetBits(slotMaskBytes) * hashAlgSize), hashAlgSize);
+    }
+
+    public String getCerts(int slotId) throws SpdmCommandFailedException {
+        initializeConnection();
+
+        log.debug("Sending SPDM GET_CERTIFICATE ...");
 
         final Pointer certChain = new Memory(LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE);
         final Pointer certChainSize = new Memory(Long.BYTES);
         certChainSize.setLong(0, LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE);
 
         final Long statusCert = jnaInterface.libspdm_get_certificate_w(spdmContext,
-            getSlotId(), certChainSize, certChain);
-        log.debug("GET_CERTIFICATE status: 0x{}", toHex(statusCert));
+            new Uint8(slotId), certChainSize, certChain);
+        log.debug("CERTIFICATE status: 0x{}", toHex(statusCert));
 
         throwOnError(statusCert);
 
@@ -126,8 +143,10 @@ public class SpdmCaller {
         return chain;
     }
 
-    public String getMeasurements() throws SpdmCommandFailedException {
+    public String getMeasurements(int slotId) throws SpdmCommandFailedException {
         initializeConnection();
+
+        log.debug("Sending SPDM GET_MEASUREMENTS ...");
 
         final Memory measurementRecord = new Memory(LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE);
         final Memory signature = new Memory(SHA384_SIG_LEN);
@@ -135,8 +154,8 @@ public class SpdmCaller {
         measurementRecordLength.setInt(0, LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE);
 
         final Long status = jnaInterface.libspdm_get_measurement_w(spdmContext, measurementRecordLength,
-            measurementRecord, getSlotId(), getRequestAttributes(), signature);
-        log.debug("GET_MEASUREMENT status: 0x{}", toHex(status));
+            measurementRecord, new Uint8(slotId), getRequestAttributes(), signature);
+        log.debug("MEASUREMENTS status: 0x{}", toHex(status));
 
         throwOnError(status);
 
@@ -171,7 +190,7 @@ public class SpdmCaller {
         spdmParametersSetter.setLibspdmParameters(spdmContext);
     }
 
-    private void initializeConnection() {
+    private void initializeConnection() throws SpdmCommandFailedException {
         if (!isConnectionInitialized()) {
             log.debug("Initializing SPDM connection.");
 
@@ -197,20 +216,17 @@ public class SpdmCaller {
         jnaInterface.register_spdm_device_release_receiver_buffer(SpdmCallbacks::spdmDeviceReleaseReceiverBuffer);
     }
 
-    private Uint8 getSlotId() {
-        final AppContext appContext = AppContext.instance();
-        return new Uint8(appContext.getLibConfig().getLibSpdmParams().getCertificatesEfuseUdsSlotId());
-    }
-
     private Uint8 getRequestAttributes() {
         final AppContext appContext = AppContext.instance();
         final boolean libSpdmMeasurementsRequestSignature =
             appContext.getLibConfig().getLibSpdmParams().isMeasurementsRequestSignature();
 
         if (libSpdmMeasurementsRequestSignature) {
+            log.info("Verifying signature over measurements.");
             return new Uint8(SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE
                 | SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_RAW_BIT_STREAM_REQUESTED);
         } else {
+            log.info("Skipping signature verification over measurements.");
             return new Uint8(SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_RAW_BIT_STREAM_REQUESTED);
         }
     }

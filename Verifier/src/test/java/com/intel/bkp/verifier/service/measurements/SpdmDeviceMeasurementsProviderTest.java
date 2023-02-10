@@ -34,7 +34,9 @@
 package com.intel.bkp.verifier.service.measurements;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponse;
+import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
 import com.intel.bkp.verifier.interfaces.IMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.service.sender.SpdmGetMeasurementMessageSender;
 import org.junit.jupiter.api.Test;
@@ -51,7 +53,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SpdmDeviceMeasurementsProviderTest {
 
-    private final List<TcbInfo> expectedResult = List.of(new TcbInfo());
+    private static final int SLOT_ID = 2;
+    private final List<TcbInfoMeasurement> expectedResult = List.of(new TcbInfoMeasurement(new TcbInfo()));
 
     @Mock
     private SpdmDeviceMeasurementsRequest spdmDeviceMeasurementsRequest;
@@ -66,13 +69,14 @@ class SpdmDeviceMeasurementsProviderTest {
     private SpdmDeviceMeasurementsProvider sut;
 
     @Test
-    void getMeasurementsFromDevice_CallsMapper_ReturnsListOfTcbInfos() {
+    void getMeasurementsFromDevice_CallsMapper_ReturnsListOfTcbInfos() throws SpdmCommandFailedException {
         // given
-        when(spdmGetMeasurementMessageSender.send()).thenReturn(spdmMeasurementResponse);
+        when(spdmDeviceMeasurementsRequest.slotId()).thenReturn(SLOT_ID);
+        when(spdmGetMeasurementMessageSender.send(SLOT_ID)).thenReturn(spdmMeasurementResponse);
         when(measurementResponseMapper.map(spdmMeasurementResponse)).thenReturn(expectedResult);
 
         // when
-        final List<TcbInfo> result = sut.getMeasurementsFromDevice(spdmDeviceMeasurementsRequest);
+        final List<TcbInfoMeasurement> result = sut.getMeasurementsFromDevice(spdmDeviceMeasurementsRequest);
 
         // then
         assertEquals(expectedResult, result);

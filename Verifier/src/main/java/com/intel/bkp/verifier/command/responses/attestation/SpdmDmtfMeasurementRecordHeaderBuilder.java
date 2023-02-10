@@ -33,12 +33,12 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.command.maps.SpdmDmtfMeasurementHeaderEndianessMapImpl;
+import com.intel.bkp.verifier.command.maps.SpdmDmtfMeasurementHeaderEndiannessMapImpl;
 import com.intel.bkp.verifier.command.responses.BaseResponseBuilder;
-import com.intel.bkp.verifier.endianess.EndianessStructureFields;
-import com.intel.bkp.verifier.endianess.EndianessStructureType;
+import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.verifier.endianness.EndiannessStructureType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -52,25 +52,25 @@ public class SpdmDmtfMeasurementRecordHeaderBuilder
     private short size = 0;
 
     @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.SPDM_DMTF_MEASUREMENT_HEADER;
+    public EndiannessStructureType currentStructureMap() {
+        return EndiannessStructureType.SPDM_DMTF_MEASUREMENT_HEADER;
     }
 
     @Override
-    public SpdmDmtfMeasurementRecordHeaderBuilder withActor(EndianessActor actor) {
+    public SpdmDmtfMeasurementRecordHeaderBuilder withActor(EndiannessActor actor) {
         changeActor(actor);
         return this;
     }
 
     @Override
-    public void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new SpdmDmtfMeasurementHeaderEndianessMapImpl(currentActor));
+    public void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new SpdmDmtfMeasurementHeaderEndiannessMapImpl(currentActor));
     }
 
     public SpdmDmtfMeasurementHeader build() {
         final var header = new SpdmDmtfMeasurementHeader();
         header.setType(type);
-        header.setSize(convertShort(size, EndianessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN));
+        header.setSize(convertShort(size, EndiannessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN));
         return header;
     }
 
@@ -78,7 +78,7 @@ public class SpdmDmtfMeasurementRecordHeaderBuilder
         type = buffer.getByte();
         size = buffer.getShort();
 
-        size = convertShort(size, EndianessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN);
+        size = convertShort(size, EndiannessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN);
 
         return this;
     }

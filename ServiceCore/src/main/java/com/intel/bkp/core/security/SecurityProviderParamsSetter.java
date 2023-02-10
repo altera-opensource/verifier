@@ -75,7 +75,7 @@ public class SecurityProviderParamsSetter {
         aesProperties.setCipherType(CryptoConstants.AES_CIPHER_TYPE);
 
         EcProperties ecProperties = new EcProperties();
-        ecProperties.setKeyName(CryptoConstants.ECDSA_KEY);
+        ecProperties.setKeyName(CryptoConstants.EC_KEY);
         ecProperties.setCurveSpec384(CryptoConstants.EC_CURVE_SPEC_384);
         ecProperties.setCurveSpec256(CryptoConstants.EC_CURVE_SPEC_256);
         ecProperties.setSignatureAlgorithm(CryptoConstants.SHA384_WITH_ECDSA);

@@ -38,7 +38,6 @@ import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.workload.exceptions.WorkloadAppException;
 import com.intel.bkp.workload.model.CommandType;
 import com.intel.bkp.workload.util.AppArgument;
-import com.intel.bkp.workload.util.AppArgumentBuilder;
 import com.intel.bkp.workload.util.WorkloadFileReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +76,7 @@ class VerifierServiceTest {
         final String context = "0102";
         final String pufType = "EFUSE";
 
-        AppArgument appArgument = AppArgumentBuilder
+        AppArgument appArgument = AppArgument
             .instance()
             .command(CommandType.CREATE.name())
             .context(context)
@@ -96,7 +95,7 @@ class VerifierServiceTest {
     void callVerifier_WithHealthCommand_Success() {
         // given
 
-        AppArgument appArgument = AppArgumentBuilder
+        AppArgument appArgument = AppArgument
             .instance()
             .command(CommandType.HEALTH.name())
             .transportId(transportId)
@@ -120,7 +119,7 @@ class VerifierServiceTest {
         when(verifierExchange.getDeviceAttestation(transportId, refMeasurementContent))
             .thenReturn(new VerifierExchangeResponseDTO());
 
-        AppArgument appArgument = AppArgumentBuilder
+        AppArgument appArgument = AppArgument
             .instance()
             .command(CommandType.GET.name())
             .refMeasurement(refMeasurementFile)
@@ -139,7 +138,7 @@ class VerifierServiceTest {
         doReturn(fileReader).when(sut).getFileReader();
         when(fileReader.exists(refMeasurementFile)).thenReturn(false);
 
-        AppArgument appArgument = AppArgumentBuilder
+        AppArgument appArgument = AppArgument
             .instance()
             .command(CommandType.GET.name())
             .refMeasurement(refMeasurementFile)
@@ -162,7 +161,7 @@ class VerifierServiceTest {
     @Test
     void callVerifier_WithMissingRequiredArgsForCommand_ThrowsException() {
         // given
-        AppArgument appArgument = AppArgumentBuilder
+        AppArgument appArgument = AppArgument
             .instance()
             .command(CommandType.CREATE.name())
             .build();

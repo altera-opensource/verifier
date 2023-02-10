@@ -33,8 +33,8 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.utils.ByteSwapOrder;
@@ -53,7 +53,8 @@ public class SpdmMeasurementRecordToTcbInfoMapper
     public static final int DMTF_MEASUREMENT_FLAG = 1;
 
     @Override
-    public TcbInfo map(SpdmMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
+    public TcbInfoMeasurement map(SpdmMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
+        log.debug("Parsing measurement: {}", header);
         if (isDmtfMeasurement(header)) {
             final var dmtfHeader = parseDmtfHeader(recordContentBuffer);
             try {
@@ -67,7 +68,7 @@ public class SpdmMeasurementRecordToTcbInfoMapper
         }
 
         recordContentBuffer.skip(getMeasurementSize(header));
-        return new TcbInfo();
+        return TcbInfoMeasurement.empty();
     }
 
     @Override
@@ -89,9 +90,9 @@ public class SpdmMeasurementRecordToTcbInfoMapper
 
     private static SpdmDmtfMeasurementHeader parseDmtfHeader(ByteBufferSafe recordContentBuffer) {
         return new SpdmDmtfMeasurementRecordHeaderBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(recordContentBuffer)
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
     }
 

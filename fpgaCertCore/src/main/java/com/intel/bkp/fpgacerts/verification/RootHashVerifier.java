@@ -40,16 +40,25 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Locale;
 
 @Slf4j
 public class RootHashVerifier {
 
     public boolean verifyRootHash(X509Certificate rootCert, String trustedRootHash) {
         if (StringUtils.isBlank(trustedRootHash)) {
-            log.debug("Skipping root hash verification - trusted root hash was not provided.");
+            log.warn("Skipping root hash verification - trusted root hash was not provided.");
             return true;
         }
-        return getCertificateFingerprint(rootCert).equalsIgnoreCase(trustedRootHash);
+
+        final String rootHash = getCertificateFingerprint(rootCert);
+        final boolean isRootTrusted = rootHash.equalsIgnoreCase(trustedRootHash);
+        if (!isRootTrusted) {
+            log.debug("Root fingerprints do not match.\nExpected: {}\nActual:   {}",
+                trustedRootHash.toUpperCase(Locale.ROOT), rootHash.toUpperCase(Locale.ROOT));
+        }
+
+        return isRootTrusted;
     }
 
     private String getCertificateFingerprint(X509Certificate certificate) {

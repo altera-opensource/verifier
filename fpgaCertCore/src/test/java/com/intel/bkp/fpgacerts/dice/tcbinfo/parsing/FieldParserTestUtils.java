@@ -35,6 +35,7 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
@@ -70,7 +71,19 @@ class FieldParserTestUtils {
         return new DERBitString(fromHex(dataHex), padBits);
     }
 
-    public static ASN1TaggedObject getSequence(ASN1Primitive... obj) {
-        return getTaggedObject(new DLSequence(obj));
+    public static ASN1Sequence getSequence(ASN1Primitive... elements) {
+        return new DLSequence(elements);
+    }
+
+    public static ASN1Sequence getFwIdSequence(ASN1ObjectIdentifier hashAlg, DEROctetString digest) {
+        return getSequence(hashAlg, digest);
+    }
+
+    public static ASN1TaggedObject getFwIdsSequence(ASN1Sequence... fwIds) {
+        return getTaggedSequence(fwIds);
+    }
+
+    public static ASN1TaggedObject getTaggedSequence(ASN1Primitive... elements) {
+        return getTaggedObject(new DLSequence(elements));
     }
 }

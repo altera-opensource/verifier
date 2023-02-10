@@ -36,11 +36,10 @@ package com.intel.bkp.core.security;
 import com.intel.bkp.core.security.params.KeyTypesProperties;
 import com.intel.bkp.core.security.params.ProviderProperties;
 import com.intel.bkp.core.security.params.SecurityProperties;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.validation.Valid;
 
 @Getter
 @Setter

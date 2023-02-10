@@ -40,15 +40,17 @@ import lombok.NoArgsConstructor;
 public class CryptoConstants {
 
     public static final String CERTIFICATE_FACTORY_TYPE = "X.509";
-    public static final String ECDSA_ALG_TYPE = "ECDSA";
     public static final String KEY_AGREEMENT_ALG_TYPE = "ECDH";
     public static final String ECDH_KEY = "ECDH";
-    public static final String ECDSA_KEY = "EC";
+    public static final String EC_KEY = "EC";
     public static final String AES_KEY = "AES";
     public static final String RSA_KEY = "RSA";
-    public static final String SHA384_WITH_ECDSA = "SHA384withECDSA";
-    public static final String SHA384_WITH_RSA = "SHA384withRSA";
     public static final String SHA256_WITH_ECDSA = "SHA256withECDSA";
+    public static final String SHA384_WITH_ECDSA = "SHA384withECDSA";
+    public static final String SHA512_WITH_ECDSA = "SHA512withECDSA";
+    public static final String SHA384_WITH_RSA = "SHA384withRSA";
+
+    public static final String EC_CURVE_SPEC_521 = "secp521r1"; // NISTP521
     public static final String EC_CURVE_SPEC_384 = "secp384r1"; // NISTP384
     public static final String EC_CURVE_SPEC_256 = "secp256r1"; // NISTP256
     public static final String AES_CIPHER_TYPE = "GCM";

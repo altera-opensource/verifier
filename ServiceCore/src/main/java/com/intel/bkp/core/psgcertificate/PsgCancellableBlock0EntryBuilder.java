@@ -33,9 +33,10 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.core.endianess.EndianessStructureType;
-import com.intel.bkp.core.endianess.maps.PsgCancellableBlock0EntryEndianessMapImpl;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.EndiannessBuilder;
+import com.intel.bkp.core.endianness.EndiannessStructureType;
+import com.intel.bkp.core.endianness.maps.PsgCancellableBlock0EntryEndiannessMapImpl;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellableBlock0Entry;
@@ -47,24 +48,25 @@ import lombok.Getter;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
 
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_CANCELLATION_ID;
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_DATA_LEN;
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_ENTRY_MAGIC;
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_LENGTH_OFFSET;
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_META_MAGIC;
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_SHA_LEN;
-import static com.intel.bkp.core.endianess.EndianessStructureFields.CANCELLABLE_BLOCK0_SIG_LEN;
-import static com.intel.bkp.utils.HexConverter.toHex;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_CANCELLATION_ID;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_DATA_LEN;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_ENTRY_MAGIC;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_META_MAGIC;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_SHA_LEN;
+import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_SIG_LEN;
+import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
-public class PsgCancellableBlock0EntryBuilder extends PsgDataBuilder<PsgCancellableBlock0EntryBuilder> {
+public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCancellableBlock0EntryBuilder> {
 
     public static final int MAGIC = 0x65495853;
     public static final int METADATA_MAGIC = 0x71050792;
 
     private static final int ENTRY_BASIC_SIZE = 8 * Integer.BYTES; // 8 fields with 4 bytes
     private static final PsgSignatureCurveType SIGNATURE_CURVE_TYPE = PsgSignatureCurveType.SECP384R1;
-    private static final int SIGNATURE_SIZE = PsgSignatureHelper.getTotalSignatureSize(SIGNATURE_CURVE_TYPE);
+    private static final int SIGNATURE_SIZE = PsgSignatureBuilder.getTotalSignatureSize(SIGNATURE_CURVE_TYPE);
 
     private int lengthOffset = ENTRY_BASIC_SIZE + SIGNATURE_SIZE;
     private int dataLength = 0;
@@ -73,27 +75,33 @@ public class PsgCancellableBlock0EntryBuilder extends PsgDataBuilder<PsgCancella
     private int reserved = 0;
     private int cancellationId = 0;
     @Getter
-    private final PsgSignatureBuilder psgSignatureBuilder = new PsgSignatureBuilder().withActor(EndianessActor.SERVICE);
+    private final PsgSignatureBuilder psgSignatureBuilder = PsgSignatureBuilder
+        .empty(PsgSignatureCurveType.SECP384R1)
+        .withActor(EndiannessActor.SERVICE);
 
-    @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.PSG_CANCELLABLE_BLOCK0_ENTRY;
+    public PsgCancellableBlock0EntryBuilder() {
+        super(EndiannessStructureType.PSG_CANCELLABLE_BLOCK0_ENTRY);
     }
 
     @Override
-    public PsgCancellableBlock0EntryBuilder withActor(EndianessActor actor) {
-        changeActor(actor);
-        psgSignatureBuilder.withActor(actor);
+    public PsgCancellableBlock0EntryBuilder withActor(EndiannessActor actor) {
+        super.withActor(actor);
+        Optional.ofNullable(psgSignatureBuilder).ifPresent(item -> item.withActor(getActor()));
         return this;
     }
 
     @Override
-    protected void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new PsgCancellableBlock0EntryEndianessMapImpl(currentActor));
+    protected PsgCancellableBlock0EntryBuilder self() {
+        return this;
     }
 
-    public PsgCancellableBlock0EntryBuilder signature(byte[] signedData) {
-        psgSignatureBuilder.signature(signedData);
+    @Override
+    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new PsgCancellableBlock0EntryEndiannessMapImpl(currentActor));
+    }
+
+    public PsgCancellableBlock0EntryBuilder signature(byte[] signedData, PsgSignatureCurveType signatureType) {
+        psgSignatureBuilder.signature(signedData, signatureType);
         return this;
     }
 
@@ -130,8 +138,8 @@ public class PsgCancellableBlock0EntryBuilder extends PsgDataBuilder<PsgCancella
     }
 
     public byte[] getCustomPayloadForSignature(byte[] payloadForSignature) {
-        final EndianessActor currentActor = getActor();
-        withActor(EndianessActor.FIRMWARE);
+        final EndiannessActor currentActor = getActor();
+        withActor(EndiannessActor.FIRMWARE);
         final PsgCancellableBlock0Entry cancellableBlock0Entry = build();
         withActor(currentActor);
         return customPayloadForSignature(cancellableBlock0Entry, payloadForSignature);
@@ -141,7 +149,7 @@ public class PsgCancellableBlock0EntryBuilder extends PsgDataBuilder<PsgCancella
      * Signature is in custom format: Block0MetadataMagic + CancellationId + SHA384 (payloadForSignature).
      * Example: 92070571ffffffff + DigestUtils.sha384Hex(payloadForSignature)
      *
-     * @param entry Entry in Firmware endianess
+     * @param entry Entry in Firmware endianness
      * @param payloadForSignature Payload of signature
      *
      * @return custom Signature
@@ -165,7 +173,7 @@ public class PsgCancellableBlock0EntryBuilder extends PsgDataBuilder<PsgCancella
         if (MAGIC != entryMagic) {
             throw new PsgBlock0EntryException(
                 String.format("Invalid magic number in CancellableBlock0 Entry. Expected: %s, Actual: %s.",
-                    toHex(MAGIC), toHex(entryMagic)));
+                    toFormattedHex(MAGIC), toFormattedHex(entryMagic)));
         }
     }
 
@@ -174,7 +182,7 @@ public class PsgCancellableBlock0EntryBuilder extends PsgDataBuilder<PsgCancella
         if (METADATA_MAGIC != entryMetaDataMagic) {
             throw new PsgBlock0EntryException(
                 String.format("Invalid meta data magic number in CancellableBlock0 Entry. Expected: %s, Actual: %s.",
-                    toHex(METADATA_MAGIC), toHex(entryMetaDataMagic)));
+                    toFormattedHex(METADATA_MAGIC), toFormattedHex(entryMetaDataMagic)));
         }
     }
 

@@ -171,7 +171,7 @@ class KeystoreUtilsTest {
     private KeyPair prepareEcKey() throws KeystoreGenericException {
         provider.setProperty("KeyPairGenerator.EC", providerHelperClassEC);
         provider.setProperty("Signature.Sha384WithEcdsa", providerHelperClassECDSA);
-        return EcUtils.genEc(provider, CryptoConstants.ECDSA_KEY, CryptoConstants.EC_CURVE_SPEC_384);
+        return EcUtils.genEc(provider, CryptoConstants.EC_KEY, CryptoConstants.EC_CURVE_SPEC_384);
     }
 
     private KeyStore prepareKeyStore(boolean loadKeyStore) throws Exception {

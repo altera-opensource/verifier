@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.CertificateEntryWrapper;
 import com.intel.bkp.core.psgcertificate.model.PsgCertificateType;
@@ -82,9 +82,9 @@ public class PsgCertificateForBkpsAdapter {
         bufferSafe.get(certificateContent);
         return new CertificateEntryWrapper(PsgCertificateType.ROOT,
             new PsgCertificateRootEntryBuilder()
-                .withActor(EndianessActor.FIRMWARE)
+                .withActor(EndiannessActor.FIRMWARE)
                 .parse(certificateContent)
-                .withActor(EndianessActor.SERVICE)
+                .withActor(EndiannessActor.SERVICE)
                 .build()
                 .array()
         );
@@ -96,9 +96,9 @@ public class PsgCertificateForBkpsAdapter {
         bufferSafe.get(certificateContent);
         return new CertificateEntryWrapper(PsgCertificateType.LEAF,
             new PsgCertificateEntryBuilder()
-                .withActor(EndianessActor.FIRMWARE)
+                .withActor(EndiannessActor.FIRMWARE)
                 .parse(certificateContent)
-                .withActor(EndianessActor.SERVICE)
+                .withActor(EndiannessActor.SERVICE)
                 .build()
                 .array()
         );

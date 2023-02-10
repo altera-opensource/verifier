@@ -33,15 +33,19 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.iidutils.IidUdsChainUtils;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import lombok.SneakyThrows;
 import org.bouncycastle.asn1.DEROctetString;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.security.auth.x500.X500Principal;
@@ -54,6 +58,7 @@ import java.util.Set;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -74,6 +79,8 @@ class TcbInfoVerifierTest {
     private static final String TCBINFO_WITH_LAYER_2 =
         "305D8009696E74656C2E636F6D81064167696C6578830105840102850100A63F303D06096086480165030402020430FF01020304050607"
             + "08090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F";
+
+    private static MockedStatic<IidUdsChainUtils> iidUdsChainUtilsMockedStatic;
 
     @Mock
     private X509Certificate childCertificate;
@@ -108,13 +115,23 @@ class TcbInfoVerifierTest {
     @Mock
     private FlagsVerifier flagsVerifier;
 
-    private TcbInfoAggregator aggregator;
+    private TcbInfoMeasurementsAggregator aggregator;
 
     private TcbInfoVerifier sut;
 
+    @BeforeAll
+    public static void prepareStaticMock() {
+        iidUdsChainUtilsMockedStatic = mockStatic(IidUdsChainUtils.class);
+    }
+
+    @AfterAll
+    public static void closeStaticMock() {
+        iidUdsChainUtilsMockedStatic.close();
+    }
+
     @BeforeEach
     void init() {
-        aggregator = new TcbInfoAggregator();
+        aggregator = new TcbInfoMeasurementsAggregator();
         sut = new TcbInfoVerifier(aggregator, new TcbInfoExtensionParser(), requiredMeasurementsVerifier,
             modelVerifier, vendorVerifier, svnVerifier, layerVerifier, hashAlgVerifier, typeVerifier, flagsVerifier);
     }
@@ -195,6 +212,22 @@ class TcbInfoVerifierTest {
 
         // then
         Assertions.assertFalse(result);
+    }
+
+    @Test
+    void verify_NotAllRequiredMeasurements_IidUdsChain_Success() {
+        // given
+        final var chain = List.of(childCertificate, parentCertificate);
+        mockFamilyName();
+        mockTcbInfoExtension(childCertificate, TCBINFO_WITH_CMF_HASH_LAYER);
+        mockAllFieldsVerifiersToPassValidation();
+        mockIsIidUdsChain(chain);
+
+        // when
+        final boolean result = sut.certificates(chain).verify();
+
+        // then
+        Assertions.assertTrue(result);
     }
 
     @Test
@@ -359,5 +392,9 @@ class TcbInfoVerifierTest {
         final Field field = obj.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(obj);
+    }
+
+    private void mockIsIidUdsChain(List<X509Certificate> chain) {
+        when(IidUdsChainUtils.isIidUdsChain(chain)).thenReturn(true);
     }
 }

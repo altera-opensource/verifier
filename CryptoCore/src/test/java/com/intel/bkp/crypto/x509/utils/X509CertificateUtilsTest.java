@@ -34,12 +34,12 @@
 package com.intel.bkp.crypto.x509.utils;
 
 import com.intel.bkp.crypto.TestUtil;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.security.auth.x500.X500Principal;
@@ -50,29 +50,30 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.pemToX509Certificate;
-import static org.bouncycastle.asn1.x509.Extension.basicConstraints;
-import static org.bouncycastle.asn1.x509.Extension.subjectKeyIdentifier;
+import static com.intel.bkp.utils.ListUtils.toLinkedList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class X509CertificateUtilsTest {
 
-    /* Below certs were generated using OpenSSL with command:
-        openssl req -newkey rsa:2048 -nodes -keyout test.pem -x509 -days 365 -out cert.pem
-        The fact if cert contains AKI and SKI extensions depends on content of openssl.cnf
-        Value of KEY_IDENTIFIER is equal to both AKI and SKI (cert is self-signed) and is taken from output of command:
-        openssl x509 --text -in cert.pem
-     */
-    private static final String CERT_WITHOUT_AKI_AND_SKI = "cert_withoutAKIandSKI.pem";
+    private static final String CERT_PEM_FILE = "cert_withoutAKIandSKI.pem";
 
     private static String certInPem;
-    private static X509Certificate certWithoutAKIandSKI;
     private final X500Principal issuer = new X500Principal("CN=ISSUER");
     private final X500Principal subject = new X500Principal("CN=SUBJECT");
+
+    @Mock
+    private X509Certificate selfSignedCert;
+    @Mock
+    private X509Certificate leafCert;
 
     @Mock
     private X509Certificate certificate;
@@ -81,17 +82,16 @@ class X509CertificateUtilsTest {
 
     @BeforeAll
     static void init() throws Exception {
-        certInPem = TestUtil.getResourceAsString("/certs/", CERT_WITHOUT_AKI_AND_SKI);
-        certWithoutAKIandSKI = pemToX509Certificate(certInPem);
+        certInPem = TestUtil.getResourceAsString("/certs/", CERT_PEM_FILE);
     }
 
     @Test
     void toPem_Success() throws Exception {
         // when
-        final String result = X509CertificateUtils.toPem(certWithoutAKIandSKI);
+        final String result = X509CertificateUtils.toPem(pemToX509Certificate(certInPem));
 
         // then
-        Assertions.assertEquals(certInPem, result);
+        assertEquals(certInPem, result);
     }
 
     @Test
@@ -138,39 +138,74 @@ class X509CertificateUtilsTest {
     }
 
     @Test
-    void containsExtension_ExtensionIsCritical_ReturnsTrue() {
+    void makeRootLastCert_EmptyList_ReturnsEmptyList() {
         // given
-        final ASN1ObjectIdentifier oid = basicConstraints;
-        when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(oid.getId()));
-
-        // when
-        final boolean result = X509CertificateUtils.containsExtension(certificate, oid);
+        final List<X509Certificate> result = X509CertificateUtils.makeRootLastCert(List.of());
 
         // then
-        Assertions.assertTrue(result);
-
+        assertEquals(0, result.size());
     }
 
     @Test
-    void containsExtension_ExtensionIsNonCritical_ReturnsTrue() {
+    void makeRootLastCert_NoRootPresent_ReturnsEmptyList() {
         // given
-        final ASN1ObjectIdentifier oid = basicConstraints;
-        when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of());
-        when(certificate.getNonCriticalExtensionOIDs()).thenReturn(Set.of(oid.getId()));
+        final LinkedList<X509Certificate> certs = toLinkedList(List.of(leafCert, selfSignedCert));
 
-        // when
-        final boolean result = X509CertificateUtils.containsExtension(certificate, oid);
+        try (var x509CertUtilsMockedStatic = mockStatic(X509CertificateUtils.class, CALLS_REAL_METHODS)) {
+            mockSelfSigned(x509CertUtilsMockedStatic, leafCert, false);
+            mockSelfSigned(x509CertUtilsMockedStatic, selfSignedCert, false);
 
-        // then
-        Assertions.assertTrue(result);
+            // when
+            final LinkedList<X509Certificate> result = toLinkedList(X509CertificateUtils.makeRootLastCert(certs));
+
+            // then
+            assertEquals(0, result.size());
+        }
     }
 
     @Test
-    void containsExtension_ExtensionDoesNotExist_ReturnsFalse() {
-        // when
-        final boolean result = X509CertificateUtils.containsExtension(certWithoutAKIandSKI, subjectKeyIdentifier);
+    void makeRootLastCert_RootLast_DoesNothing() {
+        // given
+        final LinkedList<X509Certificate> certs = toLinkedList(List.of(leafCert, selfSignedCert));
 
-        // then
-        Assertions.assertFalse(result);
+        try (var x509CertUtilsMockedStatic = mockStatic(X509CertificateUtils.class, CALLS_REAL_METHODS)) {
+            mockSelfSigned(x509CertUtilsMockedStatic, leafCert, false);
+            mockSelfSigned(x509CertUtilsMockedStatic, selfSignedCert, true);
+
+            // when
+            final LinkedList<X509Certificate> result = toLinkedList(X509CertificateUtils.makeRootLastCert(certs));
+
+            // then
+            assertCertsInOrder(result);
+        }
+    }
+
+    @Test
+    void makeRootLastCert_RootFirst_Reverses() {
+        // given
+        final LinkedList<X509Certificate> certs = toLinkedList(List.of(selfSignedCert, leafCert));
+
+        try (var x509CertUtilsMockedStatic = mockStatic(X509CertificateUtils.class, CALLS_REAL_METHODS)) {
+            mockSelfSigned(x509CertUtilsMockedStatic, leafCert, false);
+            mockSelfSigned(x509CertUtilsMockedStatic, selfSignedCert, true);
+
+            // when
+            final LinkedList<X509Certificate> result = toLinkedList(X509CertificateUtils.makeRootLastCert(certs));
+
+            // then
+            assertCertsInOrder(result);
+        }
+    }
+
+    private void mockSelfSigned(MockedStatic<X509CertificateUtils> x509CertUtilsMockedStatic,
+                                X509Certificate cert, boolean value) {
+        x509CertUtilsMockedStatic
+            .when(() -> X509CertificateUtils.isSelfSigned(cert))
+            .thenReturn(value);
+    }
+
+    private void assertCertsInOrder(LinkedList<X509Certificate> result) {
+        assertEquals(leafCert, result.getFirst());
+        assertEquals(selfSignedCert, result.getLast());
     }
 }

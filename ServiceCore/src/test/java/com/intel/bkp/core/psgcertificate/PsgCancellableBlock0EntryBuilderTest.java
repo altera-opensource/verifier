@@ -34,9 +34,10 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellableBlock0Entry;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.utils.ByteSwapOrder;
@@ -53,7 +54,7 @@ class PsgCancellableBlock0EntryBuilderTest {
     @Test
     void build_returnsSuccess() throws PsgBlock0EntryException {
         // given
-        final PsgCancellableBlock0Entry expected = prepareEntry(EndianessActor.SERVICE);
+        final PsgCancellableBlock0Entry expected = prepareEntry(EndiannessActor.SERVICE);
 
         // when
         PsgCancellableBlock0Entry result = new PsgCancellableBlock0EntryBuilder()
@@ -67,11 +68,11 @@ class PsgCancellableBlock0EntryBuilderTest {
     @Test
     void build_WithFirmwareActor_returnsSuccess() throws PsgBlock0EntryException {
         // given
-        final PsgCancellableBlock0Entry expected = prepareEntry(EndianessActor.FIRMWARE);
+        final PsgCancellableBlock0Entry expected = prepareEntry(EndiannessActor.FIRMWARE);
 
         // when
         PsgCancellableBlock0Entry result = new PsgCancellableBlock0EntryBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(expected.array())
             .build();
 
@@ -90,7 +91,7 @@ class PsgCancellableBlock0EntryBuilderTest {
     @Test
     void parse_WithWrongMetaDataMagic_ThrowsException() {
         // given
-        final PsgCancellableBlock0Entry expected = prepareEntry(EndianessActor.SERVICE);
+        final PsgCancellableBlock0Entry expected = prepareEntry(EndiannessActor.SERVICE);
         expected.setBlock0MetaMagic(ByteSwap.getSwappedArray(0x99999999, ByteSwapOrder.CONVERT));
 
         // when-then
@@ -125,15 +126,15 @@ class PsgCancellableBlock0EntryBuilderTest {
         Assertions.assertArrayEquals(expected.getPsgSignature(), actual.getPsgSignature());
     }
 
-    private static PsgCancellableBlock0Entry prepareEntry(EndianessActor endianessActor) {
+    private static PsgCancellableBlock0Entry prepareEntry(EndiannessActor endiannessActor) {
         KeyPair keyPair = genEcKeys(null);
         byte[] dataToSign = new byte[1];
         assert keyPair != null;
         final byte[] signedData = TestUtil.signEcData(dataToSign, keyPair.getPrivate(),
             CryptoConstants.SHA384_WITH_ECDSA);
         return new PsgCancellableBlock0EntryBuilder()
-            .signature(signedData)
-            .withActor(endianessActor)
+            .signature(signedData, PsgSignatureCurveType.SECP384R1)
+            .withActor(endiannessActor)
             .build();
     }
 }

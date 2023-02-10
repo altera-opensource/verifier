@@ -35,10 +35,9 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
 import com.intel.bkp.fpgacerts.dice.subject.DiceCertificateSubject;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -46,9 +45,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.containsExtension;
-import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
-import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
+import static com.intel.bkp.fpgacerts.dice.iidutils.IidUdsChainUtils.isIidUdsChain;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser.containsTcbInfoExtension;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement.asMeasurements;
 import static com.intel.bkp.utils.ListUtils.toLinkedList;
 
 
@@ -57,14 +56,13 @@ public class TcbInfoVerifier {
 
     private final ModelVerifier modelVerifier;
     private final TcbInfoExtensionParser extensionParser;
-    private final TcbInfoAggregator aggregator;
+    private final TcbInfoMeasurementsAggregator aggregator;
     private final RequiredMeasurementsExistenceVerifier requiredMeasurementsExistenceVerifier;
     private final List<ITcbInfoFieldVerifier> fieldVerifiers;
-
     private LinkedList<X509Certificate> certificates = new LinkedList<>();
 
     public TcbInfoVerifier(boolean testModeSecrets) {
-        this(new TcbInfoAggregator(),
+        this(new TcbInfoMeasurementsAggregator(),
             new TcbInfoExtensionParser(),
             new RequiredMeasurementsExistenceVerifier(),
             new ModelVerifier(),
@@ -76,7 +74,7 @@ public class TcbInfoVerifier {
             new FlagsVerifier(testModeSecrets));
     }
 
-    public TcbInfoVerifier(TcbInfoAggregator aggregator, TcbInfoExtensionParser extensionParser,
+    public TcbInfoVerifier(TcbInfoMeasurementsAggregator aggregator, TcbInfoExtensionParser extensionParser,
                            RequiredMeasurementsExistenceVerifier requiredMeasurementsExistenceVerifier,
                            ModelVerifier modelVerifier, ITcbInfoFieldVerifier... verifiers) {
         this.aggregator = aggregator;
@@ -111,7 +109,8 @@ public class TcbInfoVerifier {
     private boolean verifyInternal() {
         final var familyName = getFamilyName(certificates.getFirst());
         modelVerifier.withFamilyName(familyName);
-        return verifyAllTcbInfosAreValid() && verifyAllRequiredMeasurementsExistInChain(familyName);
+        return verifyAllTcbInfosAreValid()
+            && (isIidUdsChain(certificates) || verifyAllRequiredMeasurementsExistInChain(familyName));
     }
 
     private String getFamilyName(X509Certificate certificate) {
@@ -145,19 +144,13 @@ public class TcbInfoVerifier {
         return valid;
     }
 
-    private boolean containsTcbInfoExtension(final X509Certificate certificate) {
-        final var tcbInfoOid = new ASN1ObjectIdentifier(TCG_DICE_TCB_INFO.getOid());
-        final var multiTcbInfoOid = new ASN1ObjectIdentifier(TCG_DICE_MULTI_TCB_INFO.getOid());
-        return containsExtension(certificate, tcbInfoOid) || containsExtension(certificate, multiTcbInfoOid);
-    }
-
     private List<TcbInfo> getTcbInfosFromCertificate(final X509Certificate certificate) {
         return extensionParser.parse(certificate);
     }
 
     private boolean verifyThereAreNoDifferentValuesForGivenTcbInfoKeyInChain(List<TcbInfo> tcbInfos) {
         try {
-            aggregator.add(tcbInfos);
+            aggregator.add(asMeasurements(tcbInfos));
             return true;
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
@@ -178,5 +171,4 @@ public class TcbInfoVerifier {
             return false;
         }
     }
-
 }

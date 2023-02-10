@@ -61,14 +61,13 @@ public abstract class TcbInfoFieldVerifierBase<T> implements ITcbInfoFieldVerifi
                 log.error("TcbInfo does not contain required {} field.", field.toString());
                 return false;
             }
-            log.debug("TcbInfo does not contain {} field, but it is not required.", field.toString());
             return true;
         }
 
         final T value = fieldValue.get();
         final boolean valid = isValueValid(value, tcbInfo);
         if (!valid) {
-            log.error("TcbInfo contains incorrect {} field value. \nExpected: {} \nActual: {}",
+            log.error("TcbInfo contains incorrect {} field value.\nExpected: {}\nActual: {}",
                 field.toString(), getExpected(), value);
         }
 

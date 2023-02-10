@@ -41,10 +41,11 @@ public interface VerifierExchange {
      * Create device attestation sub key.
      *
      * @param transportId device identifier config for communication specific to transport layer:
-     *                    "host:[HPS hostname or IP]; port:[HPS port number]"
-     *                    i.e. "host:127.0.0.1; port:50001"
-     * @param context     random hex value provided as seed to SDM and cached by Verifier, max 28 bytes length
-     * @param pufType     enum string value
+     *     "host:[HPS hostname or IP]; port:[HPS port number]"
+     *     i.e. "host:127.0.0.1; port:50001"
+     * @param context random hex value provided as seed to SDM and cached by Verifier, max 28 bytes length
+     * @param pufType enum string value
+     *
      * @return result where 0 is SUCCESS, -1 is ERROR
      */
     int createDeviceAttestationSubKey(String transportId, String context, String pufType);
@@ -53,10 +54,11 @@ public interface VerifierExchange {
      * Get device attestation.
      *
      * @param transportId device identifier config for communication specific to transport layer:
-     *                    "host:[HPS hostname or IP]; port:[HPS port number]"
-     *                    i.e. "host:127.0.0.1; port:50001"
-     * @param refMeasurement reference evidence with policy, which describes which part of evidence received from
-     *                       device should match with provided reference evidence
+     *     "host:[HPS hostname or IP]; port:[HPS port number]"
+     *     i.e. "host:127.0.0.1; port:50001"
+     * @param refMeasurement path to Reference Integrity Manifest (RIM) file, which describes which part of evidence
+     *     received from device should match with provided reference evidence
+     *
      * @return DTO with result where 0 is SUCCESS, 1 is FAIL, -1 is ERROR along with deviceId of the platform attested
      */
     VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurement);
@@ -65,8 +67,9 @@ public interface VerifierExchange {
      * Perform health check to test chosen transfer layer implementation.
      *
      * @param transportId device identifier config for communication specific to transport layer:
-     *                    "host:[HPS hostname or IP]; port:[HPS port number]"
-     *                    i.e. "host:127.0.0.1; port:50001"
+     *     "host:[HPS hostname or IP]; port:[HPS port number]"
+     *     i.e. "host:127.0.0.1; port:50001"
+     *
      * @return result where 0 is SUCCESS, -1 is ERROR
      */
     int healthCheck(String transportId);

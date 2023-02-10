@@ -41,8 +41,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.FLAGS;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.FWIDS;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.SVN;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR_INFO;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VERSION;
+import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfPresent;
 
 @Getter
 @Setter
@@ -50,26 +57,56 @@ import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
 @EqualsAndHashCode
 public class TcbInfoValue {
 
-    private FwIdField fwid;
-    private MaskedVendorInfo maskedVendorInfo;
+    private static final TcbInfoValue EMPTY = new TcbInfoValue();
+
+    private Optional<String> version = Optional.empty();
+    private Optional<Integer> svn = Optional.empty();
+    private Optional<FwIdField> fwid = Optional.empty();
+    private Optional<MaskedVendorInfo> maskedVendorInfo = Optional.empty();
+    private Optional<String> flags = Optional.empty();
 
     public static TcbInfoValue from(TcbInfo tcbInfo) {
         final TcbInfoValue value = new TcbInfoValue();
 
-        final Optional<FwIdField> fwIdsField = tcbInfo.get(TcbInfoField.FWIDS);
-        fwIdsField.ifPresent(value::setFwid);
-
-        final Optional<Object> vendorInfoField = tcbInfo.get(TcbInfoField.VENDOR_INFO);
-        vendorInfoField.map(MaskedVendorInfoFactory::get).ifPresent(value::setMaskedVendorInfo);
+        value.setVersion(tcbInfo.get(VERSION));
+        value.setSvn(tcbInfo.get(SVN));
+        value.setFwid(tcbInfo.get(FWIDS));
+        value.setMaskedVendorInfo(tcbInfo.get(VENDOR_INFO).map(MaskedVendorInfoFactory::get));
+        value.setFlags(tcbInfo.get(FLAGS));
 
         return value;
+    }
+
+    public boolean isEmpty() {
+        return this.equals(EMPTY);
     }
 
     @Override
     public String toString() {
         return "TcbInfoValue("
-                + includeIfNonNull("fwid", fwid)
-                + includeIfNonNull("maskedVendorInfo", maskedVendorInfo)
-                + " )";
+            + includeIfPresent("version", version)
+            + includeIfPresent("svn", svn)
+            + includeIfPresent("fwid", fwid)
+            + includeIfPresent("maskedVendorInfo", maskedVendorInfo)
+            + includeIfPresent("flags", flags)
+            + " )";
+    }
+
+    public boolean matchesReferenceValue(TcbInfoValue referenceValue) {
+        return matchesReferenceValue(referenceValue, TcbInfoValue::getVersion, String::equals)
+            && matchesReferenceValue(referenceValue, TcbInfoValue::getSvn, Integer::equals)
+            && matchesReferenceValue(referenceValue, TcbInfoValue::getFwid, FwIdField::equals)
+            && matchesReferenceValue(referenceValue, TcbInfoValue::getMaskedVendorInfo, MaskedVendorInfo::equals)
+            && matchesReferenceValue(referenceValue, TcbInfoValue::getFlags, String::equals);
+    }
+
+    private <T> boolean matchesReferenceValue(TcbInfoValue referenceValue,
+                                              Function<TcbInfoValue, Optional<T>> getField,
+                                              BiFunction<T, T, Boolean> match) {
+        return getField.apply(referenceValue)
+            .map(referenceFieldValue -> getField.apply(this)
+                .map(actualFieldValue -> match.apply(actualFieldValue, referenceFieldValue))
+                .orElse(false))
+            .orElse(true);
     }
 }

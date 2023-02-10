@@ -51,13 +51,11 @@ import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.Set;
 
-import static com.intel.bkp.crypto.x509.validation.BasicConstraintsVerifier.CA_TRUE_PATHLENGTH_NONE;
 import static com.intel.bkp.crypto.x509.validation.ExtendedKeyUsageVerifier.KEY_PURPOSE_CODE_SIGNING;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,7 +65,7 @@ class DiceChainVerifierBaseTest {
     private static class DiceChainVerifierTestImpl extends DiceChainVerifierBase {
 
         DiceChainVerifierTestImpl(ExtendedKeyUsageVerifier extendedKeyUsageVerifier,
-                                  ChainVerifier chainVerifier, CrlVerifier crlVerifier,
+                                  ChainVerifier chainVerifier, DiceCrlVerifier crlVerifier,
                                   RootHashVerifier rootHashVerifier, UeidVerifier ueidVerifier,
                                   SubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier,
                                   String trustedRootHash, TcbInfoVerifier tcbInfoVerifier,
@@ -92,7 +90,7 @@ class DiceChainVerifierBaseTest {
     private static final byte[] DICE_ROOT_CERT = new byte[]{7, 8};
     private static final String DICE_ROOT_HASH = DigestUtils.sha256Hex(DICE_ROOT_CERT);
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
-            TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
+        TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
 
     @Mock
     private X509Certificate certificate;
@@ -110,7 +108,7 @@ class DiceChainVerifierBaseTest {
     private SubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier;
 
     @Mock
-    private CrlVerifier crlVerifier;
+    private DiceCrlVerifier crlVerifier;
 
     @Mock
     private RootHashVerifier rootHashVerifier;
@@ -185,21 +183,6 @@ class DiceChainVerifierBaseTest {
     }
 
     @Test
-    void verifyChain_CrlVerificationFails_Throws() {
-        // given
-        final String expectedError = "One of the certificates in chain is revoked.";
-        mockCertificateParentVerification(true);
-        mockUeidVerification(true);
-        mockSkiVerification(true);
-        mockRootHashVerification(true);
-        mockCrlVerification(false);
-
-        // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
-    }
-
-    @Test
     void verifyChain_ExtendedKeyUsageVerificationFails_Throws() {
         // given
         final String expectedError = "Leaf certificate has invalid key usages.";
@@ -207,7 +190,6 @@ class DiceChainVerifierBaseTest {
         mockUeidVerification(true);
         mockSkiVerification(true);
         mockRootHashVerification(true);
-        mockCrlVerification(true);
         mockExtendedKeyUsageVerification(false);
 
         // when-then
@@ -223,9 +205,25 @@ class DiceChainVerifierBaseTest {
         mockUeidVerification(true);
         mockSkiVerification(true);
         mockRootHashVerification(true);
-        mockCrlVerification(true);
         mockExtendedKeyUsageVerification(true);
         mockDiceSubjectVerification(false);
+
+        // when-then
+        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        Assertions.assertEquals(expectedError, ex.getMessage());
+    }
+
+    @Test
+    void verifyChain_CrlVerificationFails_Throws() {
+        // given
+        final String expectedError = "One of the certificates in chain is revoked.";
+        mockCertificateParentVerification(true);
+        mockUeidVerification(true);
+        mockSkiVerification(true);
+        mockRootHashVerification(true);
+        mockExtendedKeyUsageVerification(true);
+        mockDiceSubjectVerification(true);
+        mockCrlVerification(false);
 
         // when-then
         final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
@@ -238,36 +236,16 @@ class DiceChainVerifierBaseTest {
         mockCertificateParentVerification(true);
         mockUeidVerification(true);
         mockSkiVerification(true);
-        mockExtendedKeyUsageVerification(true);
         mockRootHashVerification(true);
-        mockCrlVerification(true);
-        mockDiceSubjectVerification(true);
-
-        // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verifyChain(certificates));
-        verify(chainVerifier).rootBasicConstraints(CA_TRUE_PATHLENGTH_NONE);
-        verify(chainVerifier).knownExtensionOids(DICE_EXTENSION_OIDS);
-        verify(extendedKeyUsageVerifier).verify(KEY_PURPOSE);
-        verify(ueidVerifier).verify(DEVICE_ID);
-    }
-
-    @Test
-    void verifyChainWitchTcbInfoValidation_Success() {
-        // given
-        mockCertificateParentVerification(true);
-        mockUeidVerification(true);
-        mockSkiVerification(true);
         mockExtendedKeyUsageVerification(true);
-        mockRootHashVerification(true);
-        mockCrlVerification(true);
         mockDiceSubjectVerification(true);
+        mockCrlVerification(true);
         mockTcbInfoVerification(true);
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verifyChainWitchTcbInfoValidation(certificates));
+        Assertions.assertDoesNotThrow(() -> sut.verifyChain(certificates));
 
         // then
-        verify(chainVerifier).rootBasicConstraints(CA_TRUE_PATHLENGTH_NONE);
         verify(chainVerifier).knownExtensionOids(DICE_EXTENSION_OIDS);
         verify(extendedKeyUsageVerifier).verify(KEY_PURPOSE);
         verify(ueidVerifier).verify(DEVICE_ID);
@@ -275,7 +253,7 @@ class DiceChainVerifierBaseTest {
     }
 
     @Test
-    void verifyChainWitchTcbInfoValidation_TcbInfoValidationFails_Throws() {
+    void verifyChain_TcbInfoValidationFails_Throws() {
         // given
         final String expectedError = "TcbInfo validation failed.";
         mockCertificateParentVerification(true);
@@ -289,13 +267,12 @@ class DiceChainVerifierBaseTest {
 
         // when-then
         final var ex = Assertions.assertThrows(RuntimeException.class,
-            () -> sut.verifyChainWitchTcbInfoValidation(certificates));
+            () -> sut.verifyChain(certificates));
         Assertions.assertEquals(expectedError, ex.getMessage());
     }
 
     private void mockCertificateParentVerification(boolean verificationPassed) {
         when(chainVerifier.certificates(certificates)).thenReturn(chainVerifier);
-        when(chainVerifier.rootBasicConstraints(anyInt())).thenReturn(chainVerifier);
         when(chainVerifier.knownExtensionOids(any())).thenReturn(chainVerifier);
         when(chainVerifier.verify()).thenReturn(verificationPassed);
     }

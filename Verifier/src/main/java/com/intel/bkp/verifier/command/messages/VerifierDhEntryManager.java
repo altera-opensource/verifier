@@ -33,8 +33,9 @@
 
 package com.intel.bkp.verifier.command.messages;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgBlock0EntryBuilder;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import lombok.AllArgsConstructor;
@@ -50,8 +51,8 @@ public class VerifierDhEntryManager {
             byte[] signedData = appContext.getSecurityProvider()
                 .signObject(dataToSign, appContext.getVerifierKeyManager().getVerifierKeyName());
             return new PsgBlock0EntryBuilder()
-                .signature(signedData)
-                .withActor(EndianessActor.FIRMWARE)
+                .signature(signedData, PsgSignatureCurveType.SECP384R1)
+                .withActor(EndiannessActor.FIRMWARE)
                 .build()
                 .array();
         } catch (Exception e) {

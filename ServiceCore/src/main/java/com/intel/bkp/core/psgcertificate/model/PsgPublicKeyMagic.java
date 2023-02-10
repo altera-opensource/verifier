@@ -33,8 +33,14 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
+import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
 @AllArgsConstructor
 public enum PsgPublicKeyMagic {
@@ -43,4 +49,19 @@ public enum PsgPublicKeyMagic {
 
     @Getter
     private final int value;
+
+    public static String getAllowedMagics() {
+        return Arrays.stream(values())
+            .map(item -> toFormattedHex(item.getValue()))
+            .collect(Collectors.joining(", "));
+    }
+
+    public static PsgPublicKeyMagic from(int magic) throws PsgPubKeyException {
+        return Arrays.stream(values())
+            .filter(item -> item.getValue() == magic)
+            .findAny()
+            .orElseThrow(() -> new PsgPubKeyException(
+                "Invalid magic number in PSG pub key. Expected any of: %s, Actual: %s."
+                    .formatted(PsgPublicKeyMagic.getAllowedMagics(), toFormattedHex(magic))));
+    }
 }

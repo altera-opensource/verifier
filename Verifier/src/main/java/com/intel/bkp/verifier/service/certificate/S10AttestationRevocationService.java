@@ -88,7 +88,7 @@ public class S10AttestationRevocationService {
 
         final var s10Params = S10Params.from(deviceId, pufTypeHex);
         final String attestationCertificateUrl = addressProvider.getAttestationCertUrl(s10Params);
-        return chainFetcher.downloadCertificateChain(attestationCertificateUrl);
+        return chainFetcher.downloadCertificateChainAsX509(attestationCertificateUrl);
     }
 
 }

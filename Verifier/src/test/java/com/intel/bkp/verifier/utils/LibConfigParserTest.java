@@ -48,11 +48,9 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_PARAMS_GROUP;
-import static com.intel.bkp.verifier.utils.LibConfigParser.DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID;
-import static com.intel.bkp.verifier.utils.LibConfigParser.DEFAULT_LIB_SPDM_CT_EXPONENT;
+import static com.intel.bkp.verifier.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -94,12 +92,11 @@ class LibConfigParserTest {
         // then
         assertNotNull(config);
         assertEquals(TransportLayerType.HPS, config.getTransportLayerType());
-        assertTrue(config.getAttestationCertificateFlow().isOnlyEfuseUds());
+        assertFalse(config.getAttestationCertificateFlow().isRequireIidUds());
         assertTrue(config.isTestModeSecrets());
         assertFalse(config.isRunGpAttestation());
         assertEquals("fake_path", config.getLibSpdmParams().getWrapperLibraryPath());
         assertEquals(0xAA, config.getLibSpdmParams().getCtExponent());
-        assertEquals(0x55, config.getLibSpdmParams().getCertificatesEfuseUdsSlotId());
         assertFalse(config.getLibSpdmParams().isMeasurementsRequestSignature());
         assertTrue(config.getDatabaseConfiguration().isInternalDatabase());
 
@@ -153,13 +150,11 @@ class LibConfigParserTest {
         assertEquals("", distributionPoint.getTrustedRootHash().getS10());
         assertEquals("", distributionPoint.getProxy().getHost());
         assertNull(distributionPoint.getProxy().getPort());
-        assertFalse(config.getAttestationCertificateFlow().isOnlyEfuseUds());
+        assertTrue(config.getAttestationCertificateFlow().isRequireIidUds());
         assertFalse(config.isTestModeSecrets());
         assertFalse(config.isRunGpAttestation());
         assertEquals("", config.getLibSpdmParams().getWrapperLibraryPath());
-        assertEquals(DEFAULT_LIB_SPDM_CT_EXPONENT, config.getLibSpdmParams().getCtExponent());
-        assertEquals(DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID,
-            config.getLibSpdmParams().getCertificatesEfuseUdsSlotId());
+        assertEquals(DEFAULT_CT_EXPONENT, config.getLibSpdmParams().getCtExponent());
         assertTrue(config.getLibSpdmParams().isMeasurementsRequestSignature());
     }
 
@@ -220,22 +215,6 @@ class LibConfigParserTest {
 
         // when
         final int result = sut.getLibSpdmCtExponent(prop);
-
-        // then
-        assertEquals(expectedResult, result);
-    }
-
-    @Test
-    void parse_getLibSpdmCertificatesEfuseUdsSlotId_VerifyThatValue0x00ParsesCorrectly() {
-        // given
-        final SchemaParams prop = new SchemaParams();
-        prop.setProperty(
-            String.join(".", LIB_SPDM_PARAMS_GROUP, LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID),
-            "0x00");
-        final int expectedResult = 0;
-
-        // when
-        final int result = sut.getLibSpdmCertificatesEfuseUdsSlotId(prop);
 
         // then
         assertEquals(expectedResult, result);

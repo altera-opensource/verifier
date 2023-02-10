@@ -40,14 +40,14 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DLSequence;
 
 import java.util.Arrays;
 
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseAsn1Identifier;
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseOctetString;
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseSequence;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseAsn1Identifier;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseOctetString;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseSequence;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.bouncycastle.asn1.BERTags.SEQUENCE;
 
 @Slf4j
 public class FwidFieldParser implements ITcbInfoFieldParser<FwIdField> {
@@ -56,31 +56,38 @@ public class FwidFieldParser implements ITcbInfoFieldParser<FwIdField> {
 
     @Override
     public FwIdField parse(ASN1TaggedObject object) {
-        log.debug("Parsing FwId field from extension from certificate.");
-
         final FwIdField field = new FwIdField();
-        final ASN1Sequence sequence = parseSequence(object.getObject());
+        final ASN1Sequence fwIdsSequence = parseSequence(object.getBaseUniversal(false, SEQUENCE));
 
-        if (hasMultipleFwIds(sequence)) {
-            throw new IllegalArgumentException("FwIds field contains multiple FwId values: " + sequence);
+        if (containsElementThatIsNotASequence(fwIdsSequence)) {
+            throw new IllegalArgumentException("FwIds field contains element that is not an FwId: " + fwIdsSequence);
         }
 
-        if (hasTooManyElementsInSingleFwId(sequence)) {
-            throw new IllegalArgumentException("FwId contains too many elements: " + sequence);
+        if (hasMultipleFwIds(fwIdsSequence)) {
+            throw new IllegalArgumentException("FwIds field contains multiple FwId values: " + fwIdsSequence);
         }
 
-        sequence.forEach(obj -> mapToField(field, obj));
+        final ASN1Sequence fwIdSequence = (ASN1Sequence) fwIdsSequence.getObjectAt(0);
+        if (hasTooManyElementsInSingleFwId(fwIdSequence)) {
+            throw new IllegalArgumentException("FwId contains too many elements: " + fwIdSequence);
+        }
+
+        fwIdSequence.forEach(obj -> mapToField(field, obj));
 
         if (!field.isSet()) {
             throw new IllegalArgumentException(String.format(
-                "FwIds field does not contain hashAlg or digest: %s", sequence));
+                "FwIds field does not contain hashAlg or digest: %s", fwIdSequence));
         }
 
         return field;
     }
 
+    private boolean containsElementThatIsNotASequence(ASN1Sequence sequence) {
+        return !Arrays.stream(sequence.toArray()).allMatch(obj -> obj instanceof ASN1Sequence);
+    }
+
     private boolean hasMultipleFwIds(ASN1Sequence sequence) {
-        return Arrays.stream(sequence.toArray()).anyMatch(obj -> obj instanceof DLSequence);
+        return sequence.size() > 1;
     }
 
     private boolean hasTooManyElementsInSingleFwId(ASN1Sequence sequence) {

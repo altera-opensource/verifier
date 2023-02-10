@@ -33,10 +33,10 @@
 
 package com.intel.bkp.verifier.interfaces;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 
 public interface IMeasurementRecordToTcbInfoMapper<T> {
 
-    TcbInfo map(T header, ByteBufferSafe recordContentBuffer);
+    TcbInfoMeasurement map(T header, ByteBufferSafe recordContentBuffer);
 }

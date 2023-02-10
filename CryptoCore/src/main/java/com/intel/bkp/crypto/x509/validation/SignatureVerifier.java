@@ -49,6 +49,8 @@ public class SignatureVerifier {
 
     public boolean verify(X509Certificate child, X509Certificate parent) {
         try {
+            log.debug("Verifying certificate {} with public key of {}",
+                child.getSubjectX500Principal(), parent.getSubjectX500Principal());
             child.verify(parent.getPublicKey());
             return true;
         } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException

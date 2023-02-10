@@ -37,8 +37,7 @@ import com.intel.bkp.crypto.pem.PemFormatEncoder;
 import com.intel.bkp.crypto.pem.PemFormatHeader;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -47,10 +46,11 @@ import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class X509CertificateUtils {
 
@@ -79,25 +79,28 @@ public class X509CertificateUtils {
     }
 
     /**
-     * Checks if certificate contains extension with specified oid, either as critical or non-critical.
+     * Ensures that root certificate in the list is last, reverses the list order if necessary.
+     * Does not search for root in the middle of the list.
+     *
+     * @param chain - chain of certificates, might be empty
+     * @return copy of chain with root last, empty list if no root is found
      */
-    public static boolean containsExtension(final X509Certificate certificate, ASN1ObjectIdentifier extensionOid) {
-        final String oid = extensionOid.getId();
-        final Set<String> allExtOids = new HashSet<>();
-        Optional.ofNullable(certificate.getCriticalExtensionOIDs()).ifPresent(allExtOids::addAll);
-        Optional.ofNullable(certificate.getNonCriticalExtensionOIDs()).ifPresent(allExtOids::addAll);
-        return allExtOids.contains(oid);
-    }
+    public static List<X509Certificate> makeRootLastCert(List<X509Certificate> chain) {
+        final var chainCopy = new LinkedList<>(chain);
 
-    public static Optional<byte[]> getExtensionBytes(final X509Certificate certificate,
-                                                     ASN1ObjectIdentifier extensionOid) {
-        return getExtensionBytes(certificate, extensionOid.getId());
-    }
+        if (chain.isEmpty()) {
+            return List.of();
+        }
 
-    public static Optional<byte[]> getExtensionBytes(final X509Certificate certificate, String extensionOid) {
-        return Optional.ofNullable(certificate.getExtensionValue(extensionOid))
-                .map(ASN1OctetString::getInstance)
-                .map(ASN1OctetString::getOctets);
-    }
+        if (isSelfSigned(chainCopy.getLast())) {
+            return chainCopy;
+        }
 
+        if (isSelfSigned(chainCopy.getFirst())) {
+            Collections.reverse(chainCopy);
+            return chainCopy;
+        }
+
+        return List.of();
+    }
 }

@@ -33,12 +33,14 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo;
 
+import com.intel.bkp.utils.MaskHelper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Objects;
 
 import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
+import static java.util.Objects.nonNull;
 
 @Data
 @AllArgsConstructor
@@ -49,6 +51,16 @@ public class MaskedVendorInfo {
 
     public MaskedVendorInfo(String vendorInfo) {
         this.vendorInfo = vendorInfo;
+    }
+
+    public void setMaskBasedOnVendorInfo() {
+        if (nonNull(vendorInfo)) {
+            vendorInfoMask = MaskHelper.getMask(vendorInfo.length());
+        }
+    }
+
+    public boolean hasMask() {
+        return nonNull(vendorInfoMask);
     }
 
     @Override

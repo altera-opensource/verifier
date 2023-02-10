@@ -33,9 +33,10 @@
 
 package com.intel.bkp.fpgacerts.verification;
 
+import ch.qos.logback.classic.Level;
 import com.intel.bkp.crypto.x509.utils.CrlDistributionPointsUtils;
 import com.intel.bkp.crypto.x509.validation.SignatureVerifier;
-import com.intel.bkp.fpgacerts.LogUtils;
+import com.intel.bkp.fpgacerts.LoggerTestUtil;
 import com.intel.bkp.fpgacerts.exceptions.CrlSignatureException;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import lombok.SneakyThrows;
@@ -51,7 +52,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.org.lidalia.slf4jext.Level;
 
 import java.math.BigInteger;
 import java.security.cert.X509CRL;
@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.intel.bkp.fpgacerts.verification.CrlVerifier.INVALID_NEXT_UPDATE_LOG_MSG;
 import static org.mockito.Mockito.mock;
@@ -74,6 +73,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CrlVerifierTest {
+
+    private LoggerTestUtil loggerTestUtil;
 
     private static final BigInteger REVOKED_SERIAL_NUMBER = BigInteger.ONE;
     private static final BigInteger NOT_REVOKED_SERIAL_NUMBER = BigInteger.TWO;
@@ -131,11 +132,12 @@ class CrlVerifierTest {
     @BeforeEach
     void setUpClass() {
         sut.certificates(certificates);
+        loggerTestUtil = LoggerTestUtil.instance(sut.getClass());
     }
 
     @AfterEach
     void clearLogs() {
-        LogUtils.clearLogs(sut.getClass());
+        loggerTestUtil.reset();
     }
 
     @Test
@@ -229,7 +231,7 @@ class CrlVerifierTest {
         Assertions.assertTrue(() -> sut.verify());
 
         // then
-        Assertions.assertTrue(getWarningLogs().anyMatch(log -> log.contains(INVALID_NEXT_UPDATE_LOG_MSG)));
+        Assertions.assertTrue(loggerTestUtil.contains(INVALID_NEXT_UPDATE_LOG_MSG, Level.WARN));
     }
 
     @Test
@@ -246,7 +248,7 @@ class CrlVerifierTest {
         Assertions.assertTrue(() -> sut.verify());
 
         // then
-        Assertions.assertTrue(getWarningLogs().anyMatch(log -> log.contains(INVALID_NEXT_UPDATE_LOG_MSG)));
+        Assertions.assertTrue(loggerTestUtil.contains(INVALID_NEXT_UPDATE_LOG_MSG, Level.WARN));
     }
 
     @Test
@@ -263,7 +265,7 @@ class CrlVerifierTest {
         Assertions.assertTrue(() -> sut.verify());
 
         // then
-        Assertions.assertTrue(getWarningLogs().findAny().isEmpty());
+        Assertions.assertEquals(0, loggerTestUtil.getSize(Level.WARN));
     }
 
     @Test
@@ -409,9 +411,5 @@ class CrlVerifierTest {
         final X509CRLEntry crlEntry = mock(X509CRLEntry.class);
         when(crl.getRevokedCertificates()).thenReturn((Set) Set.of(crlEntry));
         when(crlEntry.getSerialNumber()).thenReturn(revokedSerialNumber);
-    }
-
-    private Stream<String> getWarningLogs() {
-        return LogUtils.getLogs(sut.getClass(), Level.WARN);
     }
 }

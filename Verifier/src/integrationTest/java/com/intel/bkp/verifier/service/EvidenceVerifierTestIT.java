@@ -33,10 +33,10 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.verifier.Utils;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
@@ -52,6 +52,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement.asMeasurements;
 import static com.intel.bkp.verifier.x509.X509UtilsWrapper.toX509;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,10 +84,10 @@ public class EvidenceVerifierTestIT {
     private static X509Certificate deviceIdEnrollmentCert;
 
     private final GpMeasurementResponseToTcbInfoMapper measurementMapper = new GpMeasurementResponseToTcbInfoMapper();
-    private TcbInfoExtensionParser tcbInfoExtensionParser = new TcbInfoExtensionParser();
-    private TcbInfoAggregator tcbInfoAggregator = new TcbInfoAggregator();
+    private final TcbInfoExtensionParser tcbInfoExtensionParser = new TcbInfoExtensionParser();
+    private final TcbInfoMeasurementsAggregator tcbInfoAggregator = new TcbInfoMeasurementsAggregator();
 
-    private EvidenceVerifier sut = new EvidenceVerifier();
+    private final EvidenceVerifier sut = new EvidenceVerifier();
 
     @BeforeAll
     static void init() throws Exception {
@@ -110,9 +111,9 @@ public class EvidenceVerifierTestIT {
     private static GetMeasurementResponse readResponse(String filename) throws Exception {
         final byte[] response = Utils.readFromResources(TEST_FOLDER_INTEGRATION, filename);
         return new GetMeasurementResponseBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(response)
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
     }
 
@@ -123,7 +124,7 @@ public class EvidenceVerifierTestIT {
     @Test
     public void verify_S10() {
         // given
-        tcbInfoAggregator.add(measurementMapper.map(responseS10));
+        prepareTcbInfoAggregatorForS10();
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsStratix);
@@ -135,7 +136,7 @@ public class EvidenceVerifierTestIT {
     @Test
     public void verify_S10_InvalidIoMeasurements_ReturnsFail() {
         // given
-        tcbInfoAggregator.add(measurementMapper.map(responseS10));
+        prepareTcbInfoAggregatorForS10();
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsStratixInvalidIoSection);
@@ -147,13 +148,7 @@ public class EvidenceVerifierTestIT {
     @Test
     public void verify_Agilex() {
         // given
-        final List<TcbInfo> tcbInfosFromGetMeasurementResponse = measurementMapper.map(responseAgilex);
-
-        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(aliasCert));
-        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(firmwareCert));
-        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(deviceIdEnrollmentCert));
-
-        tcbInfoAggregator.add(tcbInfosFromGetMeasurementResponse);
+        prepareTcbInfoMeasurementsAggregatorForAgilex();
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilex);
@@ -165,18 +160,29 @@ public class EvidenceVerifierTestIT {
     @Test
     public void verify_Agilex_InvalidHpsMeasurements_ReturnsFail() {
         // given
-        final List<TcbInfo> tcbInfosFromGetMeasurementResponse = measurementMapper.map(responseAgilex);
-
-        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(aliasCert));
-        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(firmwareCert));
-        tcbInfoAggregator.add(tcbInfoExtensionParser.parse(deviceIdEnrollmentCert));
-
-        tcbInfoAggregator.add(tcbInfosFromGetMeasurementResponse);
+        prepareTcbInfoMeasurementsAggregatorForAgilex();
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilexInvalidHpsSection);
 
         // then
         Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
+    }
+
+    private void prepareTcbInfoAggregatorForS10() {
+        tcbInfoAggregator.add(measurementMapper.map(responseS10));
+    }
+
+    private void prepareTcbInfoMeasurementsAggregatorForAgilex() {
+        final List<TcbInfoMeasurement> tcbInfosFromGetMeasurementResponse = measurementMapper.map(responseAgilex);
+        tcbInfoAggregator.add(tcbInfosFromGetMeasurementResponse);
+
+        tcbInfoAggregator.add(getMeasurementsFromCertificate(aliasCert));
+        tcbInfoAggregator.add(getMeasurementsFromCertificate(firmwareCert));
+        tcbInfoAggregator.add(getMeasurementsFromCertificate(deviceIdEnrollmentCert));
+    }
+
+    private List<TcbInfoMeasurement> getMeasurementsFromCertificate(X509Certificate aliasCert) {
+        return asMeasurements(tcbInfoExtensionParser.parse(aliasCert));
     }
 }

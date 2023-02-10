@@ -55,6 +55,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -72,15 +73,14 @@ import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PROXY_
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_S10_TRUSTED_ROOT;
 import static com.intel.bkp.verifier.config.Properties.EC_GROUP;
 import static com.intel.bkp.verifier.config.Properties.KEY_TYPES_GROUP;
-import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_MEASUREMENTS_REQUEST_SIGNATURE;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_PARAMS_GROUP;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_WRAPPER_LIBRARY_PATH;
-import static com.intel.bkp.verifier.config.Properties.ONLY_EFUSE_UDS;
 import static com.intel.bkp.verifier.config.Properties.PROVIDER_GROUP;
 import static com.intel.bkp.verifier.config.Properties.PROVIDER_PARAMS_GROUP;
 import static com.intel.bkp.verifier.config.Properties.PROXY_GROUP;
+import static com.intel.bkp.verifier.config.Properties.REQUIRE_IID_UDS;
 import static com.intel.bkp.verifier.config.Properties.RUN_GP_ATTESTATION;
 import static com.intel.bkp.verifier.config.Properties.SECURITY_GROUP;
 import static com.intel.bkp.verifier.config.Properties.TEST_MODE_SECRETS;
@@ -91,14 +91,13 @@ import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_GROUP
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_KEY_NAME;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_MULTI_ROOT_QKY_CHAIN_PATH;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_SINGLE_ROOT_QKY_CHAIN_PATH;
+import static com.intel.bkp.verifier.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
 
 @Slf4j
 @NoArgsConstructor
 public class LibConfigParser {
 
     private static final String VERIFIER_SECURITY_PROVIDER_PASSWORD = "VERIFIER_SECURITY_PROVIDER_PASSWORD";
-    static final int DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID = 0x00;
-    static final int DEFAULT_LIB_SPDM_CT_EXPONENT = 0x0E;
 
     public LibConfig parseConfigFile(String configFileName) {
         final SchemaParams prop = new SchemaParams();
@@ -109,7 +108,7 @@ public class LibConfigParser {
                 tryLoadFromExternalSource(externalFilepath, prop);
                 return getPropValues(prop);
             }
-        } catch (FileNotFoundException | URISyntaxException e) {
+        } catch (FileNotFoundException | FileSystemNotFoundException | URISyntaxException e) {
             log.debug("External config file not available: {}", e.getMessage());
         }
 
@@ -158,9 +157,10 @@ public class LibConfigParser {
 
     private AttestationCertificateFlow getAttestationCertificateFlow(SchemaParams prop) {
         return new AttestationCertificateFlow(
-            Optional.ofNullable(prop.getProperty(ONLY_EFUSE_UDS))
+            Optional.ofNullable(prop.getProperty(REQUIRE_IID_UDS))
+                .filter(StringUtils::isNotBlank)
                 .map(Boolean::valueOf)
-                .orElse(false)
+                .orElse(true)
         );
     }
 
@@ -211,7 +211,6 @@ public class LibConfigParser {
         return new LibSpdmParams(
             getLibSpdmWrapperLibraryPath(prop),
             getLibSpdmCtExponent(prop),
-            getLibSpdmCertificatesEfuseUdsSlotId(prop),
             getLibSpdmMeasurementsRequestSignature(prop)
         );
     }
@@ -228,16 +227,7 @@ public class LibConfigParser {
             .filter(StringUtils::isNotBlank)
             .map(this::remove0x)
             .map(s -> toInt(s, LIB_SPDM_CT_EXPONENT))
-            .orElse(DEFAULT_LIB_SPDM_CT_EXPONENT);
-    }
-
-    int getLibSpdmCertificatesEfuseUdsSlotId(SchemaParams prop) {
-        return Optional.ofNullable(
-                prop.getPropertyGroup(LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID, LIB_SPDM_PARAMS_GROUP))
-            .filter(StringUtils::isNotBlank)
-            .map(this::remove0x)
-            .map(s -> toInt(s, LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID))
-            .orElse(DEFAULT_LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID);
+            .orElse(DEFAULT_CT_EXPONENT);
     }
 
     private boolean getLibSpdmMeasurementsRequestSignature(SchemaParams prop) {
@@ -251,6 +241,7 @@ public class LibConfigParser {
     private DatabaseConfiguration getDatabaseConfiguration(SchemaParams prop) {
         return new DatabaseConfiguration(
             Optional.ofNullable(prop.getPropertyGroup("internal-database", DATABASE_CONFIGURATION_GROUP))
+                .filter(StringUtils::isNotBlank)
                 .map(Boolean::valueOf)
                 .orElse(true)
         );
@@ -287,12 +278,14 @@ public class LibConfigParser {
 
     private boolean getRunGpAttestation(SchemaParams prop) {
         return Optional.ofNullable(prop.getProperty(RUN_GP_ATTESTATION))
+            .filter(StringUtils::isNotBlank)
             .map(Boolean::valueOf)
             .orElse(false);
     }
 
     private boolean getTestModeSecrets(SchemaParams prop) {
         return Optional.ofNullable(prop.getProperty(TEST_MODE_SECRETS))
+            .filter(StringUtils::isNotBlank)
             .map(Boolean::valueOf)
             .orElse(false);
     }

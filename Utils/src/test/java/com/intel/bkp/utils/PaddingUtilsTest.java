@@ -36,72 +36,63 @@ package com.intel.bkp.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.BiFunction;
+
+import static com.intel.bkp.utils.HexConverter.fromHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
+
 public class PaddingUtilsTest {
 
-    private static final byte[] ARRAY_LEN_3 = new byte[]{1, 2, 3};
-    private static final byte[] EXPECTED_ARRAY_FROM_3 = new byte[]{0, 0, 0, 1, 2, 3};
-    private static final byte[] ARRAY_LEN_7 = new byte[]{1, 2, 3, 4, 5, 6, 7};
-    private static final byte[] EXPECTED_ARRAY_FROM_7 = new byte[]{2, 3, 4, 5, 6, 7};
-    private static final int EXPECTED_LEN = 6;
+    private static final byte[] ARRAY = new byte[]{1, 2, 3};
 
     @Test
-    void addPadding_SmallerSize_AddsPadding() {
-        // when
-        final byte[] result = PaddingUtils.addPadding(ARRAY_LEN_3, EXPECTED_LEN);
-
-        // then
-        Assertions.assertEquals(EXPECTED_LEN, result.length);
-        Assertions.assertArrayEquals(EXPECTED_ARRAY_FROM_3, result);
+    void padRight_SmallerSize_AddsPaddingAtTheEnd() {
+        padRight_ReturnsExpected("1234", 3, "123400");
     }
 
     @Test
-    void addPadding_GreaterSize_DoesNothing() {
-        // when
-        final byte[] result = PaddingUtils.addPadding(ARRAY_LEN_7, EXPECTED_LEN);
-
-        // then
-        Assertions.assertEquals(ARRAY_LEN_7.length, result.length);
-        Assertions.assertArrayEquals(ARRAY_LEN_7, result);
+    void padRight_GreaterSize_DoesNothing() {
+        padRight_ReturnsExpected("1234", 1, "1234");
     }
 
     @Test
-    void removePadding_GreaterSize_RemovesPadding() {
-        // when
-        final byte[] result = PaddingUtils.removePadding(ARRAY_LEN_7, EXPECTED_LEN);
-
-        // then
-        Assertions.assertEquals(EXPECTED_LEN, result.length);
-        Assertions.assertArrayEquals(EXPECTED_ARRAY_FROM_7, result);
+    void padLeft_SmallerSize_AddsPadding() {
+        padLeft_ReturnsExpected("112233", 4, "00112233");
     }
 
     @Test
-    void removePadding_SmallerSize_DoesNothing() {
-        // when
-        final byte[] result = PaddingUtils.removePadding(ARRAY_LEN_3, EXPECTED_LEN);
-
-        // then
-        Assertions.assertEquals(ARRAY_LEN_3.length, result.length);
-        Assertions.assertArrayEquals(ARRAY_LEN_3, result);
+    void padLeft_GreaterSize_DoesNothing() {
+        padLeft_ReturnsExpected("112233", 2, "112233");
     }
 
     @Test
-    void alignTo_SmallerSize_AlignsToExpected() {
-        // when
-        final byte[] result = PaddingUtils.alignTo(ARRAY_LEN_3, EXPECTED_LEN);
-
-        // then
-        Assertions.assertEquals(EXPECTED_LEN, result.length);
-        Assertions.assertArrayEquals(EXPECTED_ARRAY_FROM_3, result);
+    void trimLeft_GreaterSize_RemovesPadding() {
+        trimLeft_ReturnsExpected("112233", 2, "2233");
     }
 
     @Test
-    void alignTo_GreaterSize_AlignsToExpected() {
-        // when
-        final byte[] result = PaddingUtils.alignTo(ARRAY_LEN_7, EXPECTED_LEN);
+    void trimLeft_SmallerSize_DoesNothing() {
+        trimLeft_ReturnsExpected("112233", 5, "112233");
+    }
 
-        // then
-        Assertions.assertEquals(EXPECTED_LEN, result.length);
-        Assertions.assertArrayEquals(EXPECTED_ARRAY_FROM_7, result);
+    @Test
+    void trimRight_GreaterSize_TrimsEnding() {
+        trimRight_ReturnsExpected("112233", 2, "1122");
+    }
+
+    @Test
+    void trimRight_SmallerSize_DoesNothing() {
+        trimRight_ReturnsExpected("112233", 4, "112233");
+    }
+
+    @Test
+    void alignLeft_SmallerSize_AlignsToExpected() {
+        alignLeft("112233", 4, "00112233");
+    }
+
+    @Test
+    void alignLeft_GreaterSize_AlignsToExpected() {
+        alignLeft("112233", 2, "2233");
     }
 
     @Test
@@ -176,19 +167,51 @@ public class PaddingUtilsTest {
 
     @Test
     void getPaddingPacked_WithDifferentLengths_Success() {
+        // given
+        final int paddingLength = 4;
+
         // when
-        final byte[] result = PaddingUtils.getPaddingPacked(ARRAY_LEN_3, EXPECTED_LEN);
+        final byte[] result = PaddingUtils.getPaddingPacked(ARRAY, paddingLength + ARRAY.length);
 
         // then
-        Assertions.assertEquals(EXPECTED_LEN - ARRAY_LEN_3.length, result.length);
+        Assertions.assertEquals(paddingLength, result.length);
     }
 
     @Test
     void getPaddingPacked_WithSameLengths_Success() {
         // when
-        final byte[] result = PaddingUtils.getPaddingPacked(ARRAY_LEN_3, 3);
+        final byte[] result = PaddingUtils.getPaddingPacked(ARRAY, ARRAY.length);
 
         // then
         Assertions.assertEquals(0, result.length);
+    }
+
+    private void padRight_ReturnsExpected(String hex, int lengthInBytes, String expectedHex) {
+        method_ReturnsExpected(PaddingUtils::padRight, hex, lengthInBytes, expectedHex);
+    }
+
+    private void padLeft_ReturnsExpected(String hex, int lengthInBytes, String expectedHex) {
+        method_ReturnsExpected(PaddingUtils::padLeft, hex, lengthInBytes, expectedHex);
+    }
+
+    private void trimRight_ReturnsExpected(String hex, int lengthInBytes, String expectedHex) {
+        method_ReturnsExpected(PaddingUtils::trimRight, hex, lengthInBytes, expectedHex);
+    }
+
+    private void trimLeft_ReturnsExpected(String hex, int lengthInBytes, String expectedHex) {
+        method_ReturnsExpected(PaddingUtils::trimLeft, hex, lengthInBytes, expectedHex);
+    }
+
+    private void alignLeft(String hex, int lengthInBytes, String expectedHex) {
+        method_ReturnsExpected(PaddingUtils::alignLeft, hex, lengthInBytes, expectedHex);
+    }
+
+    private void method_ReturnsExpected(BiFunction<byte[], Integer, byte[]> method,
+                                        String hex, int lengthInBytes, String expectedHex) {
+        // when
+        final byte[] result = method.apply(fromHex(hex), lengthInBytes);
+
+        // then
+        Assertions.assertEquals(expectedHex, toHex(result));
     }
 }

@@ -66,13 +66,15 @@ public class SpdmCallbacks {
                                     PointerByReference transportMessage) {
         try {
             final ByteBuffer messageBuffer = message.getByteBuffer(0, messageSize.longValue());
+            SpdmMessageResponseHandler.logMessage(messageBuffer);
             final ByteBuffer mctpMessageBuffer = buildMctpMessageBuffer(messageBuffer);
 
             copyBuffer(mctpMessageBuffer, transportMessage, transportMessageSize);
 
             return new LibSpdmReturn(LIBSPDM_STATUS_SUCCESS);
         } catch (Exception e) {
-            log.error("MCTP Encode failed.", e);
+            log.error("MCTP Encode failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_VERIFIER_EXCEPTION);
         }
     }
@@ -85,12 +87,14 @@ public class SpdmCallbacks {
             final ByteBuffer transportMessageBuffer =
                 transportMessage.getByteBuffer(0, transportMessageSize.longValue());
             final ByteBuffer mctpMessagePayloadBuffer = getMctpMessagePayload(transportMessageBuffer);
+            SpdmMessageResponseHandler.logResponse(mctpMessagePayloadBuffer);
 
             copyBuffer(mctpMessagePayloadBuffer, message, messageSize);
 
             return new LibSpdmReturn(LIBSPDM_STATUS_SUCCESS);
         } catch (Exception e) {
-            log.error("MCTP Decode failed.", e);
+            log.error("MCTP Decode failed.", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_VERIFIER_EXCEPTION);
         }
     }
@@ -111,7 +115,8 @@ public class SpdmCallbacks {
             log.warn("SPDM is not supported on this platform. Error message: {}", e.getMessage());
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_NOT_SUPPORTED);
         } catch (Exception e) {
-            log.error("Sending message failed.", e);
+            log.error("Sending message failed.", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_VERIFIER_EXCEPTION);
         }
     }
@@ -123,7 +128,8 @@ public class SpdmCallbacks {
             copyBuffer(ByteBuffer.wrap(NATIVE_MEMORY_HANDLER.getResponse()), response, responseSize);
             return new LibSpdmReturn(LIBSPDM_STATUS_SUCCESS);
         } catch (Exception e) {
-            log.error("Receiving message failed.", e);
+            log.error("Receiving message failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_VERIFIER_EXCEPTION);
         }
     }
@@ -134,7 +140,8 @@ public class SpdmCallbacks {
             NATIVE_MEMORY_HANDLER.acquireSenderBuffer(maxMsgSize, msgBufPtr);
             return new LibSpdmReturn(LIBSPDM_STATUS_SUCCESS);
         } catch (Exception e) {
-            log.error("Acquire sender buffer failed.", e);
+            log.error("Acquire sender buffer failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_VERIFIER_EXCEPTION);
         }
     }
@@ -149,7 +156,8 @@ public class SpdmCallbacks {
             NATIVE_MEMORY_HANDLER.acquireReceiverBuffer(maxMsgSize, msgBufPtr);
             return new LibSpdmReturn(LIBSPDM_STATUS_SUCCESS);
         } catch (Exception e) {
-            log.error("Acquire receiver buffer failed.", e);
+            log.error("Acquire receiver buffer failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return new LibSpdmReturn(LIBSPDM_STATUS_SPDM_VERIFIER_EXCEPTION);
         }
     }

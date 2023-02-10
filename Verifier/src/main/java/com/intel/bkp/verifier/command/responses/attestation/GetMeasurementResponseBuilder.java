@@ -33,14 +33,15 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgSignatureBuilder;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.command.maps.GetMeasurementRspEndianessMapImpl;
+import com.intel.bkp.verifier.command.maps.GetMeasurementRspEndiannessMapImpl;
 import com.intel.bkp.verifier.command.responses.BaseResponseBuilder;
-import com.intel.bkp.verifier.endianess.EndianessStructureFields;
-import com.intel.bkp.verifier.endianess.EndianessStructureType;
+import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.verifier.endianness.EndiannessStructureType;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import lombok.Getter;
 import lombok.Setter;
@@ -82,52 +83,55 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
     private byte reserved3 = 0;
     private short measurementRecordLen = 0;
     private byte[] measurementRecord = new byte[0];
-    private PsgSignatureBuilder signatureBuilder = new PsgSignatureBuilder().withActor(EndianessActor.FIRMWARE);
+    private PsgSignatureBuilder signatureBuilder = PsgSignatureBuilder
+        .empty(PsgSignatureCurveType.SECP384R1)
+        .withActor(EndiannessActor.FIRMWARE);
     private byte[] mac = new byte[SHA_384_MAC_LEN];
 
     @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.GET_MEASUREMENT_RSP;
+    public EndiannessStructureType currentStructureMap() {
+        return EndiannessStructureType.GET_MEASUREMENT_RSP;
     }
 
     @Override
-    public GetMeasurementResponseBuilder withActor(EndianessActor actor) {
+    public GetMeasurementResponseBuilder withActor(EndiannessActor actor) {
         changeActor(actor);
         return this;
     }
 
     @Override
-    public void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new GetMeasurementRspEndianessMapImpl(currentActor));
+    public void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new GetMeasurementRspEndiannessMapImpl(currentActor));
     }
 
     public GetMeasurementResponse build() {
         final GetMeasurementResponse response = new GetMeasurementResponse();
         response.setReservedHeader(reservedHeader);
-        response.setMagic(convert(magic, EndianessStructureFields.GET_MEASUREMENT_MAGIC));
-        response.setSdmSessionId(convert(sdmSessionId, EndianessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID));
-        response.setDeviceUniqueId(convert(deviceUniqueId, EndianessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID));
-        response.setRomVersionNum(convert(romVersionNum, EndianessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM));
-        response.setSdmFwBuildId(convert(sdmFwBuildId, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID));
+        response.setMagic(convert(magic, EndiannessStructureFields.GET_MEASUREMENT_MAGIC));
+        response.setSdmSessionId(convert(sdmSessionId, EndiannessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID));
+        response.setDeviceUniqueId(convert(deviceUniqueId, EndiannessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID));
+        response.setRomVersionNum(convert(romVersionNum, EndiannessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM));
+        response.setSdmFwBuildId(convert(sdmFwBuildId, EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID));
         response.setSdmFwSecurityVersionNum(convert(sdmFwSecurityVersionNum,
-            EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM));
+            EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM));
         response.setDeviceFamilyFuseMap(deviceFamilyFuseMap);
         response.setReserved(reserved);
         response.setPublicEfuseValues(
-            convert(publicEfuseValues, EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES));
-        response.setDeviceDhPubKey(convert(deviceDhPubKey, EndianessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY));
+            convert(publicEfuseValues, EndiannessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES));
+        response.setDeviceDhPubKey(
+            convert(deviceDhPubKey, EndiannessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY));
         response.setVerifierDhPubKey(
-            convert(verifierDhPubKey, EndianessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY));
+            convert(verifierDhPubKey, EndiannessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY));
         response.setCmfDescriptorHash(
-            convert(cmfDescriptorHash, EndianessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH));
+            convert(cmfDescriptorHash, EndiannessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH));
         response.setReserved2(reserved2);
         response.setNumberOfMeasurementBlocks(numberOfMeasurementBlocks);
         response.setReserved3(reserved3);
         response.setMeasurementRecordLen(
-            convertShort(measurementRecordLen, EndianessStructureFields.GET_MEASUREMENT_RECORD_LEN));
+            convertShort(measurementRecordLen, EndiannessStructureFields.GET_MEASUREMENT_RECORD_LEN));
         response.setMeasurementRecord(measurementRecord);
         response.setSignature(signatureBuilder.withActor(getActor()).build().array());
-        response.setMac(convert(mac, EndianessStructureFields.GET_MEASUREMENT_MAC));
+        response.setMac(convert(mac, EndiannessStructureFields.GET_MEASUREMENT_MAC));
         return response;
     }
 
@@ -156,18 +160,18 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
         reserved3 = buffer.getByte();
         measurementRecordLen = buffer.getShort();
 
-        magic = convert(magic, EndianessStructureFields.GET_MEASUREMENT_MAGIC);
-        sdmSessionId = convert(sdmSessionId, EndianessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID);
-        deviceUniqueId = convert(deviceUniqueId, EndianessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID);
-        romVersionNum = convert(romVersionNum, EndianessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM);
-        sdmFwBuildId = convert(sdmFwBuildId, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID);
+        magic = convert(magic, EndiannessStructureFields.GET_MEASUREMENT_MAGIC);
+        sdmSessionId = convert(sdmSessionId, EndiannessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID);
+        deviceUniqueId = convert(deviceUniqueId, EndiannessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID);
+        romVersionNum = convert(romVersionNum, EndiannessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM);
+        sdmFwBuildId = convert(sdmFwBuildId, EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID);
         sdmFwSecurityVersionNum = convert(sdmFwSecurityVersionNum,
-            EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM);
-        publicEfuseValues = convert(publicEfuseValues, EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES);
-        deviceDhPubKey = convert(deviceDhPubKey, EndianessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY);
-        verifierDhPubKey = convert(verifierDhPubKey, EndianessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY);
-        cmfDescriptorHash = convert(cmfDescriptorHash, EndianessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH);
-        measurementRecordLen = convertShort(measurementRecordLen, EndianessStructureFields.GET_MEASUREMENT_RECORD_LEN);
+            EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM);
+        publicEfuseValues = convert(publicEfuseValues, EndiannessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES);
+        deviceDhPubKey = convert(deviceDhPubKey, EndiannessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY);
+        verifierDhPubKey = convert(verifierDhPubKey, EndiannessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY);
+        cmfDescriptorHash = convert(cmfDescriptorHash, EndiannessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH);
+        measurementRecordLen = convertShort(measurementRecordLen, EndiannessStructureFields.GET_MEASUREMENT_RECORD_LEN);
 
         measurementRecord = buffer.arrayFromShort(measurementRecordLen);
         buffer.get(measurementRecord);
@@ -179,7 +183,7 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
         }
 
         buffer.getAll(mac);
-        mac = convert(mac, EndianessStructureFields.GET_MEASUREMENT_MAC);
+        mac = convert(mac, EndiannessStructureFields.GET_MEASUREMENT_MAC);
 
         return this;
     }
@@ -204,22 +208,23 @@ public class GetMeasurementResponseBuilder extends BaseResponseBuilder<GetMeasur
             + measurementRecord.length;
 
         return ByteBuffer.allocate(capacity)
-            .put(convert(magic, EndianessStructureFields.GET_MEASUREMENT_MAGIC))
-            .put(convert(sdmSessionId, EndianessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID))
-            .put(convert(deviceUniqueId, EndianessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID))
-            .put(convert(romVersionNum, EndianessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM))
-            .put(convert(sdmFwBuildId, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID))
-            .put(convert(sdmFwSecurityVersionNum, EndianessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM))
+            .put(convert(magic, EndiannessStructureFields.GET_MEASUREMENT_MAGIC))
+            .put(convert(sdmSessionId, EndiannessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID))
+            .put(convert(deviceUniqueId, EndiannessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID))
+            .put(convert(romVersionNum, EndiannessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM))
+            .put(convert(sdmFwBuildId, EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID))
+            .put(
+                convert(sdmFwSecurityVersionNum, EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM))
             .put(deviceFamilyFuseMap)
             .put(reserved)
-            .put(convert(publicEfuseValues, EndianessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES))
-            .put(convert(deviceDhPubKey, EndianessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY))
-            .put(convert(verifierDhPubKey, EndianessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY))
-            .put(convert(cmfDescriptorHash, EndianessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH))
+            .put(convert(publicEfuseValues, EndiannessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES))
+            .put(convert(deviceDhPubKey, EndiannessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY))
+            .put(convert(verifierDhPubKey, EndiannessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY))
+            .put(convert(cmfDescriptorHash, EndiannessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH))
             .put(reserved2)
             .put(numberOfMeasurementBlocks)
             .put(reserved3)
-            .putShort(convertShort(measurementRecordLen, EndianessStructureFields.GET_MEASUREMENT_RECORD_LEN))
+            .putShort(convertShort(measurementRecordLen, EndiannessStructureFields.GET_MEASUREMENT_RECORD_LEN))
             .put(measurementRecord)
             .array();
     }

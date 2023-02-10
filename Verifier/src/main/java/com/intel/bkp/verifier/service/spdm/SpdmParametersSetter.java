@@ -67,11 +67,6 @@ public class SpdmParametersSetter {
                 libSpdmMeasurementSpecData, Uint8.NATIVE_SIZE);
 
 
-        final Uint32 libSpdmCapabilityFlagsData =
-            new Uint32(SpdmConstants.SPDM_GET_CAPABILITIES_REQUEST_FLAGS_CERT_CAP);
-        jnaInterface.libspdm_set_data_w32(context, LibSpdmDataType.LIBSPDM_DATA_CAPABILITY_FLAGS, parameter,
-                libSpdmCapabilityFlagsData, Uint32.NATIVE_SIZE);
-
         final Uint32 libSpdmBaseAsymAlgoData =
             new Uint32(SpdmConstants.SPDM_ALGORITHMS_BASE_ASYM_ALGO_TPM_ALG_ECDSA_ECC_NIST_P384);
         jnaInterface.libspdm_set_data_w32(context, LibSpdmDataType.LIBSPDM_DATA_BASE_ASYM_ALGO, parameter,

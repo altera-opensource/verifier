@@ -37,7 +37,7 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.FlagsVerifier;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.ITcbInfoFieldVerifier;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoVerifier;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
-import com.intel.bkp.verifier.exceptions.SigmaException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,12 +92,12 @@ class DiceAliasChainVerifierTest {
     }
 
     @Test
-    void handleVerificationFailure_throwsSigmaException() {
+    void handleVerificationFailure_throwsException() {
         // given
         final String failureDetails = "some details about why validation happened.";
 
         // when-then
-        SigmaException ex = Assertions.assertThrows(SigmaException.class,
+        VerifierRuntimeException ex = Assertions.assertThrows(VerifierRuntimeException.class,
             () -> sut.handleVerificationFailure(failureDetails));
 
         // then
