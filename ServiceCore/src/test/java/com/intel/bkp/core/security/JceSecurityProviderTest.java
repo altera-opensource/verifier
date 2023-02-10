@@ -155,7 +155,7 @@ class JceSecurityProviderTest {
         when(keystoreManagerChooser.getKeystoreManager()).thenReturn(new TestKeystoreManager());
 
         when(keyTypesProperties.getEc()).thenReturn(ecProperties);
-        when(ecProperties.getKeyName()).thenReturn(CryptoConstants.ECDSA_KEY);
+        when(ecProperties.getKeyName()).thenReturn(CryptoConstants.EC_KEY);
         when(ecProperties.getCurveSpec384()).thenReturn(CryptoConstants.EC_CURVE_SPEC_384);
         when(ecProperties.getSignatureAlgorithm()).thenReturn(CryptoConstants.SHA384_WITH_ECDSA);
 
@@ -253,7 +253,7 @@ class JceSecurityProviderTest {
         securityService.setKeyStore(keyStore);
 
         // when
-        final Object secObj = securityService.createSecurityObject(SecurityKeyType.AES256, testKeyAliasPositive);
+        final Object secObj = securityService.createSecurityObject(SecurityKeyType.AES, testKeyAliasPositive);
 
         // then
         Assertions.assertNotNull(secObj);
@@ -525,7 +525,7 @@ class JceSecurityProviderTest {
         Provider provider = securityService.getProvider();
 
         if (generateKey) {
-            return EcUtils.genEc(provider, CryptoConstants.ECDSA_KEY, CryptoConstants.EC_CURVE_SPEC_384);
+            return EcUtils.genEc(provider, CryptoConstants.EC_KEY, CryptoConstants.EC_CURVE_SPEC_384);
         } else {
             return null;
         }

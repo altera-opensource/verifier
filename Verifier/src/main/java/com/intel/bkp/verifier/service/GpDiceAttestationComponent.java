@@ -34,8 +34,9 @@
 package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.core.manufacturing.model.PufType;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.interfaces.IDeviceMeasurementsProvider;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.certificate.GpDiceChainService;
@@ -58,7 +59,7 @@ public class GpDiceAttestationComponent {
     private final IDeviceMeasurementsProvider<GpDeviceMeasurementsRequest> deviceMeasurementsProvider =
         new GpDeviceMeasurementsProvider();
     private EvidenceVerifier evidenceVerifier = new EvidenceVerifier();
-    private TcbInfoAggregator tcbInfoAggregator = new TcbInfoAggregator();
+    private TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
     private GpDiceChainService gpDiceChainService = new GpDiceChainService();
 
     public VerifierExchangeResponse perform(byte[] firmwareCertificateResponse, String refMeasurement,
@@ -66,15 +67,19 @@ public class GpDiceAttestationComponent {
 
         gpDiceChainService.fetchAndVerifyDiceChains(deviceId, firmwareCertificateResponse);
 
-        tcbInfoAggregator.add(gpDiceChainService.getTcbInfos());
-        tcbInfoAggregator.add(
-            getMeasurementsFromDevice(gpDiceChainService.getAliasPublicKey(), deviceId, PufType.EFUSE));
+        tcbInfoMeasurementsAggregator.add(gpDiceChainService.getTcbInfoMeasurements());
+        tcbInfoMeasurementsAggregator.add(getMeasurementsFromDevice(
+            gpDiceChainService.getAliasPublicKey(), deviceId, PufType.EFUSE));
 
-        return evidenceVerifier.verify(tcbInfoAggregator, refMeasurement);
+        return evidenceVerifier.verify(tcbInfoMeasurementsAggregator, refMeasurement);
     }
 
-    private List<TcbInfo> getMeasurementsFromDevice(PublicKey aliasKey, byte[] deviceId, PufType pufType) {
+    private List<TcbInfoMeasurement> getMeasurementsFromDevice(PublicKey aliasKey, byte[] deviceId, PufType pufType) {
         final var measurementsRequest = GpDeviceMeasurementsRequest.forDice(deviceId, aliasKey, pufType);
-        return deviceMeasurementsProvider.getMeasurementsFromDevice(measurementsRequest);
+        try {
+            return deviceMeasurementsProvider.getMeasurementsFromDevice(measurementsRequest);
+        } catch (Exception e) {
+            throw new VerifierRuntimeException("Failed to retrieve measurements from device.", e);
+        }
     }
 }

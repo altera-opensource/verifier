@@ -34,7 +34,6 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,19 +41,39 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @ExtendWith(MockitoExtension.class)
 class TcbInfoValueTest {
 
+    private static final String VERSION = "VERSION";
+    private static final String DIFFERENT_VERSION = "DIFFERENT_VERSION";
+    private static final int SVN = 3;
+    private static final int DIFFERENT_SVN = SVN + 1;
     private static final FwIdField FWIDS = new FwIdField("HASH_ALG", "DIGEST");
+    private static final FwIdField DIFFERENT_FWIDS = new FwIdField("HASH_ALG", "DIFFERENT_DIGEST");
     private static final MaskedVendorInfo VENDOR_INFO = new MaskedVendorInfo("VENDOR_INFO");
+    private static final MaskedVendorInfo DIFFERENT_VENDOR_INFO = new MaskedVendorInfo("DIFFERENT_VENDOR_INFO");
+    private static final String FLAGS = "80";
+    private static final String DIFFERENT_FLAGS = "00";
 
     private static TcbInfo TCB_INFO;
 
     @BeforeAll
     static void init() {
         final var map = Map.of(
+            TcbInfoField.VENDOR, TcbInfoConstants.VENDOR,
+            TcbInfoField.MODEL, "MODEL",
+            TcbInfoField.VERSION, VERSION,
+            TcbInfoField.SVN, SVN,
+            TcbInfoField.LAYER, 0,
+            TcbInfoField.INDEX, 0,
             TcbInfoField.FWIDS, FWIDS,
-            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+            TcbInfoField.FLAGS, FLAGS,
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO,
+            TcbInfoField.TYPE, "1.2.3.4"
         );
         TCB_INFO = new TcbInfo(map);
     }
@@ -65,8 +84,11 @@ class TcbInfoValueTest {
         final TcbInfoValue result = TcbInfoValue.from(new TcbInfo());
 
         // then
-        Assertions.assertNull(result.getFwid());
-        Assertions.assertNull(result.getMaskedVendorInfo());
+        assertTrue(result.getVersion().isEmpty());
+        assertTrue(result.getSvn().isEmpty());
+        assertTrue(result.getFwid().isEmpty());
+        assertTrue(result.getMaskedVendorInfo().isEmpty());
+        assertTrue(result.getFlags().isEmpty());
     }
 
     @Test
@@ -75,8 +97,11 @@ class TcbInfoValueTest {
         final TcbInfoValue result = TcbInfoValue.from(TCB_INFO);
 
         // then
-        Assertions.assertEquals(FWIDS, result.getFwid());
-        Assertions.assertEquals(VENDOR_INFO, result.getMaskedVendorInfo());
+        assertEquals(VERSION, result.getVersion().get());
+        assertEquals(SVN, result.getSvn().get());
+        assertEquals(FWIDS, result.getFwid().get());
+        assertEquals(VENDOR_INFO, result.getMaskedVendorInfo().get());
+        assertEquals(FLAGS, result.getFlags().get());
     }
 
     @Test
@@ -88,19 +113,157 @@ class TcbInfoValueTest {
         final String result = TcbInfoValue.from(new TcbInfo()).toString();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
     void toString_AllSet() {
         // given
-        final String expected = "TcbInfoValue( fwid=FwIdField( hashAlg=HASH_ALG digest=DIGEST ) "
-                + "maskedVendorInfo=MaskedVendorInfo( vendorInfo=VENDOR_INFO ) )";
+        final String expected = "TcbInfoValue( version=VERSION svn=3 fwid=FwIdField( hashAlg=HASH_ALG digest=DIGEST ) "
+            + "maskedVendorInfo=MaskedVendorInfo( vendorInfo=VENDOR_INFO ) flags=80 )";
 
         // when
         final String result = TcbInfoValue.from(TCB_INFO).toString();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void matchesReferenceValue_Identical_ReturnsTrue() {
+        // given
+        final TcbInfoValue referenceValue = TcbInfoValue.from(TCB_INFO);
+        final TcbInfoValue value = TcbInfoValue.from(TCB_INFO);
+
+        // when-then
+        assertTrue(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_ReferenceEmpty_ReturnsTrue() {
+        // given
+        final TcbInfoValue referenceValue = new TcbInfoValue();
+        final TcbInfoValue value = TcbInfoValue.from(TCB_INFO);
+
+        // when-then
+        assertTrue(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_LessFieldsInValueThanInReference_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.FWIDS, FWIDS,
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_MoreFieldsInValueThanInReference_ReturnsTrue() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.FWIDS, FWIDS,
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+        ));
+
+        // when-then
+        assertTrue(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_NoVendorInfo_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.FWIDS, FWIDS
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_DifferentVendorInfo_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.VENDOR_INFO, VENDOR_INFO
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.VENDOR_INFO, DIFFERENT_VENDOR_INFO
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_DifferentFwIds_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.FWIDS, FWIDS
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.FWIDS, DIFFERENT_FWIDS
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_DifferentSvn_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.SVN, SVN
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.SVN, DIFFERENT_SVN
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_DifferentVersion_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.VERSION, VERSION
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.VERSION, DIFFERENT_VERSION
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    @Test
+    void matchesReferenceValue_DifferentFlags_ReturnsFalse() {
+        // given
+        final TcbInfoValue referenceValue = getTcbInfoValue(Map.of(
+            TcbInfoField.FLAGS, FLAGS
+        ));
+        final TcbInfoValue value = getTcbInfoValue(Map.of(
+            TcbInfoField.FLAGS, DIFFERENT_FLAGS
+        ));
+
+        // when-then
+        assertFalse(value.matchesReferenceValue(referenceValue));
+    }
+
+    private TcbInfoValue getTcbInfoValue(Map<TcbInfoField, Object> map) {
+        return TcbInfoValue.from(new TcbInfo(map));
     }
 }

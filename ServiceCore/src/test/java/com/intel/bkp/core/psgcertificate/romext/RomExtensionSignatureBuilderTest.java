@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate.romext;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
@@ -74,7 +74,7 @@ class RomExtensionSignatureBuilderTest {
 
         // when-then
         Assertions.assertThrows(RomExtensionSignatureException.class,
-            () -> RomExtensionSignatureBuilder.instance().withActor(EndianessActor.FIRMWARE)
+            () -> RomExtensionSignatureBuilder.instance().withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
 
@@ -88,7 +88,7 @@ class RomExtensionSignatureBuilderTest {
         // when-then
         Assertions.assertThrows(RomExtensionSignatureException.class,
             () -> RomExtensionSignatureBuilder.instance()
-                .withActor(EndianessActor.FIRMWARE)
+                .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
 
@@ -102,7 +102,7 @@ class RomExtensionSignatureBuilderTest {
         // when-then
         Assertions.assertThrows(RomExtensionSignatureException.class,
             () -> RomExtensionSignatureBuilder.instance()
-                .withActor(EndianessActor.FIRMWARE)
+                .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
 
@@ -116,7 +116,7 @@ class RomExtensionSignatureBuilderTest {
         // when-then
         Assertions.assertThrows(RomExtensionSignatureException.class,
             () -> RomExtensionSignatureBuilder.instance()
-                .withActor(EndianessActor.FIRMWARE)
+                .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
 
@@ -130,14 +130,14 @@ class RomExtensionSignatureBuilderTest {
         // when-then
         Assertions.assertThrows(RomExtensionSignatureException.class,
             () -> RomExtensionSignatureBuilder.instance()
-                .withActor(EndianessActor.FIRMWARE)
+                .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
 
     @SneakyThrows
     private static RomExtensionStructureBuilder prepareBuilder() {
         return new RomExtensionStructureBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(ROM_EXT_STRUCTURE_WITH_SIG);
     }
 

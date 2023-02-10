@@ -42,7 +42,7 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.getExtensionBytes;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.getExtensionBytes;
 
 public class AuthorityInformationAccessUtils {
 

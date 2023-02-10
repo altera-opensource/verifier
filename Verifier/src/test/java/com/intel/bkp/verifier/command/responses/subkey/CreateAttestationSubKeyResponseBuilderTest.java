@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command.responses.subkey;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.Utils;
 import org.junit.jupiter.api.Assertions;
@@ -65,9 +65,9 @@ class CreateAttestationSubKeyResponseBuilderTest {
     void parse() {
         // when
         final CreateAttestationSubKeyResponse result = sut
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(subkeyResponse)
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
 
         // then

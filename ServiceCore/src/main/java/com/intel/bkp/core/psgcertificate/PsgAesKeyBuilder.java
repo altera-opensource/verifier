@@ -33,10 +33,11 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.core.endianess.EndianessStructureFields;
-import com.intel.bkp.core.endianess.EndianessStructureType;
-import com.intel.bkp.core.endianess.maps.PsgAesKeyEndianessMapImpl;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.EndiannessBuilder;
+import com.intel.bkp.core.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.EndiannessStructureType;
+import com.intel.bkp.core.endianness.maps.PsgAesKeyEndiannessMapImpl;
 import com.intel.bkp.core.psgcertificate.enumerations.KeyWrappingType;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgAesKeyBuilderException;
@@ -48,7 +49,7 @@ import lombok.Getter;
 import java.math.BigInteger;
 
 @Getter
-public class PsgAesKeyBuilder extends PsgDataBuilder<PsgAesKeyBuilder> {
+public class PsgAesKeyBuilder extends EndiannessBuilder<PsgAesKeyBuilder> {
 
     public static final int ENTRY_MAGIC = 0x25D04E7F;
     public static final int USER_AES_CERT_MAGIC = 0xD0850CAA;
@@ -73,30 +74,28 @@ public class PsgAesKeyBuilder extends PsgDataBuilder<PsgAesKeyBuilder> {
     private final byte[] reservedSecond = new byte[RESERVED_SECOND_LEN];
     private byte[] certSigningKeyChain = new byte[0];
 
-    @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.PSG_AES_KEY_ENTRY;
+    public PsgAesKeyBuilder() {
+        super(EndiannessStructureType.PSG_AES_KEY_ENTRY);
     }
 
     @Override
-    public PsgAesKeyBuilder withActor(EndianessActor actor) {
-        changeActor(actor);
+    protected PsgAesKeyBuilder self() {
         return this;
     }
 
     @Override
-    protected void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new PsgAesKeyEndianessMapImpl(currentActor));
+    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new PsgAesKeyEndiannessMapImpl(currentActor));
     }
 
     public PsgAesKey build() {
         PsgAesKey entry = new PsgAesKey();
 
-        entry.setMagic(convert(ENTRY_MAGIC, EndianessStructureFields.PSG_AES_KEY_MAGIC));
-        entry.setCertDataLength(convert(certDataLength, EndianessStructureFields.PSG_AES_KEY_CERT_DATA_LENGTH));
-        entry.setCertVersion(convert(certVersion, EndianessStructureFields.PSG_AES_KEY_CERT_VERSION));
-        entry.setCertType(convert(certType, EndianessStructureFields.PSG_AES_KEY_CERT_TYPE));
-        entry.setUserAesCertMagic(convert(userAesCertMagic, EndianessStructureFields.PSG_AES_KEY_USER_AES_CERT_MAGIC));
+        entry.setMagic(convert(ENTRY_MAGIC, EndiannessStructureFields.PSG_AES_KEY_MAGIC));
+        entry.setCertDataLength(convert(certDataLength, EndiannessStructureFields.PSG_AES_KEY_CERT_DATA_LENGTH));
+        entry.setCertVersion(convert(certVersion, EndiannessStructureFields.PSG_AES_KEY_CERT_VERSION));
+        entry.setCertType(convert(certType, EndiannessStructureFields.PSG_AES_KEY_CERT_TYPE));
+        entry.setUserAesCertMagic(convert(userAesCertMagic, EndiannessStructureFields.PSG_AES_KEY_USER_AES_CERT_MAGIC));
         entry.setKeyStorageType(storageType.getType().byteValue());
         entry.setKeyWrappingType(keyWrappingType.getType().byteValue());
         entry.setReserved(reserved);
@@ -112,20 +111,20 @@ public class PsgAesKeyBuilder extends PsgDataBuilder<PsgAesKeyBuilder> {
         ByteBufferSafe buffer = ByteBufferSafe.wrap(content);
         try {
             buffer.get(magic);
-            magic = convert(magic, EndianessStructureFields.PSG_AES_KEY_MAGIC);
+            magic = convert(magic, EndiannessStructureFields.PSG_AES_KEY_MAGIC);
             if (ENTRY_MAGIC != new BigInteger(magic).intValue()) {
                 throw new PsgAesKeyBuilderException("Invalid entry magic");
             }
 
             buffer.get(certDataLength);
-            certDataLength = convert(certDataLength, EndianessStructureFields.PSG_AES_KEY_CERT_DATA_LENGTH);
+            certDataLength = convert(certDataLength, EndiannessStructureFields.PSG_AES_KEY_CERT_DATA_LENGTH);
             buffer.get(certVersion);
-            certVersion = convert(certVersion, EndianessStructureFields.PSG_AES_KEY_CERT_VERSION);
+            certVersion = convert(certVersion, EndiannessStructureFields.PSG_AES_KEY_CERT_VERSION);
             buffer.get(certType);
-            certType = convert(certType, EndianessStructureFields.PSG_AES_KEY_CERT_TYPE);
+            certType = convert(certType, EndiannessStructureFields.PSG_AES_KEY_CERT_TYPE);
 
             buffer.get(userAesCertMagic);
-            userAesCertMagic = convert(userAesCertMagic, EndianessStructureFields.PSG_AES_KEY_USER_AES_CERT_MAGIC);
+            userAesCertMagic = convert(userAesCertMagic, EndiannessStructureFields.PSG_AES_KEY_USER_AES_CERT_MAGIC);
             if (USER_AES_CERT_MAGIC != new BigInteger(userAesCertMagic).intValue()) {
                 throw new PsgAesKeyBuilderException("Invalid user aes entry magic");
             }

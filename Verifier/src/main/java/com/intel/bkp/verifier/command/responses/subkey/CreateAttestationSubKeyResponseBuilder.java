@@ -33,16 +33,17 @@
 
 package com.intel.bkp.verifier.command.responses.subkey;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgPublicKeyBuilder;
 import com.intel.bkp.core.psgcertificate.PsgSignatureBuilder;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.command.maps.CreateSubKeyRspEndianessMapImpl;
+import com.intel.bkp.verifier.command.maps.CreateSubKeyRspEndiannessMapImpl;
 import com.intel.bkp.verifier.command.responses.BaseResponseBuilder;
-import com.intel.bkp.verifier.endianess.EndianessStructureFields;
-import com.intel.bkp.verifier.endianess.EndianessStructureType;
+import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.verifier.endianness.EndiannessStructureType;
 import com.intel.bkp.verifier.exceptions.SigmaException;
 import lombok.Getter;
 import lombok.Setter;
@@ -75,47 +76,50 @@ public class CreateAttestationSubKeyResponseBuilder
     private byte[] verifierDhPubKey = new byte[DH_PUB_KEY_LEN];
     private byte[] verifierInputContext = new byte[CONTEXT_LEN];
     private byte[] verifierCounter = new byte[COUNTER_LEN];
-    private PsgPublicKeyBuilder publicKeyBuilder = new PsgPublicKeyBuilder().withActor(EndianessActor.FIRMWARE);
-    private PsgSignatureBuilder signatureBuilder = new PsgSignatureBuilder().withActor(EndianessActor.FIRMWARE);
+    private PsgPublicKeyBuilder publicKeyBuilder = new PsgPublicKeyBuilder()
+        .withActor(EndiannessActor.FIRMWARE);
+    private PsgSignatureBuilder signatureBuilder = PsgSignatureBuilder
+        .empty(PsgSignatureCurveType.SECP384R1)
+        .withActor(EndiannessActor.FIRMWARE);
     private byte[] mac = new byte[SHA_384_MAC_LEN];
 
     @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.CREATE_ATTESTATION_SUBKEY_RSP;
+    public EndiannessStructureType currentStructureMap() {
+        return EndiannessStructureType.CREATE_ATTESTATION_SUBKEY_RSP;
     }
 
     @Override
-    public CreateAttestationSubKeyResponseBuilder withActor(EndianessActor actor) {
+    public CreateAttestationSubKeyResponseBuilder withActor(EndiannessActor actor) {
         changeActor(actor);
         return this;
     }
 
     @Override
-    public void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new CreateSubKeyRspEndianessMapImpl(currentActor));
+    public void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new CreateSubKeyRspEndiannessMapImpl(currentActor));
     }
 
     public CreateAttestationSubKeyResponse build() {
         final CreateAttestationSubKeyResponse response = new CreateAttestationSubKeyResponse();
-        response.setReservedHeader(convert(reservedHeader, EndianessStructureFields.SUBKEY_RESERVED_HEADER));
-        response.setMagic(convert(magic, EndianessStructureFields.SUBKEY_MAGIC));
-        response.setSdmSessionId(convert(sdmSessionId, EndianessStructureFields.SUBKEY_SDM_SESSION_ID));
-        response.setDeviceUniqueId(convert(deviceUniqueId, EndianessStructureFields.SUBKEY_DEVICE_UNIQUE_ID));
-        response.setRomVersionNum(convert(romVersionNum, EndianessStructureFields.SUBKEY_ROM_VERSION_NUM));
-        response.setSdmFwBuildId(convert(sdmFwBuildId, EndianessStructureFields.SUBKEY_SDM_FW_BUILD_ID));
+        response.setReservedHeader(convert(reservedHeader, EndiannessStructureFields.SUBKEY_RESERVED_HEADER));
+        response.setMagic(convert(magic, EndiannessStructureFields.SUBKEY_MAGIC));
+        response.setSdmSessionId(convert(sdmSessionId, EndiannessStructureFields.SUBKEY_SDM_SESSION_ID));
+        response.setDeviceUniqueId(convert(deviceUniqueId, EndiannessStructureFields.SUBKEY_DEVICE_UNIQUE_ID));
+        response.setRomVersionNum(convert(romVersionNum, EndiannessStructureFields.SUBKEY_ROM_VERSION_NUM));
+        response.setSdmFwBuildId(convert(sdmFwBuildId, EndiannessStructureFields.SUBKEY_SDM_FW_BUILD_ID));
         response.setSdmFwSecurityVersionNum(convert(sdmFwSecurityVersionNum,
-            EndianessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM));
-        response.setReserved(convert(reserved, EndianessStructureFields.SUBKEY_RESERVED));
+            EndiannessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM));
+        response.setReserved(convert(reserved, EndiannessStructureFields.SUBKEY_RESERVED));
         response
-            .setPublicEfuseValues(convert(publicEfuseValues, EndianessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES));
-        response.setDeviceDhPubKey(convert(deviceDhPubKey, EndianessStructureFields.SUBKEY_DEVICE_DH_PUB_KEY));
+            .setPublicEfuseValues(convert(publicEfuseValues, EndiannessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES));
+        response.setDeviceDhPubKey(convert(deviceDhPubKey, EndiannessStructureFields.SUBKEY_DEVICE_DH_PUB_KEY));
         response
-            .setVerifierDhPubKey(convert(verifierDhPubKey, EndianessStructureFields.SUBKEY_VERIFIER_DH_PUB_KEY));
-        response.setVerifierInputContext(convert(verifierInputContext, EndianessStructureFields.SUBKEY_CONTEXT));
-        response.setVerifierCounter(convert(verifierCounter, EndianessStructureFields.SUBKEY_COUNTER));
+            .setVerifierDhPubKey(convert(verifierDhPubKey, EndiannessStructureFields.SUBKEY_VERIFIER_DH_PUB_KEY));
+        response.setVerifierInputContext(convert(verifierInputContext, EndiannessStructureFields.SUBKEY_CONTEXT));
+        response.setVerifierCounter(convert(verifierCounter, EndiannessStructureFields.SUBKEY_COUNTER));
         response.setAttestationPublicKey(publicKeyBuilder.withActor(getActor()).build().array());
         response.setSignature(signatureBuilder.withActor(getActor()).build().array());
-        response.setMac(convert(mac, EndianessStructureFields.SUBKEY_MAC));
+        response.setMac(convert(mac, EndiannessStructureFields.SUBKEY_MAC));
         return response;
     }
 
@@ -136,32 +140,32 @@ public class CreateAttestationSubKeyResponseBuilder
             .get(verifierInputContext)
             .get(verifierCounter);
 
-        reservedHeader = convert(reservedHeader, EndianessStructureFields.SUBKEY_RESERVED_HEADER);
-        magic = convert(magic, EndianessStructureFields.SUBKEY_MAGIC);
-        sdmSessionId = convert(sdmSessionId, EndianessStructureFields.SUBKEY_SDM_SESSION_ID);
-        deviceUniqueId = convert(deviceUniqueId, EndianessStructureFields.SUBKEY_DEVICE_UNIQUE_ID);
-        romVersionNum = convert(romVersionNum, EndianessStructureFields.SUBKEY_ROM_VERSION_NUM);
-        sdmFwBuildId = convert(sdmFwBuildId, EndianessStructureFields.SUBKEY_SDM_FW_BUILD_ID);
+        reservedHeader = convert(reservedHeader, EndiannessStructureFields.SUBKEY_RESERVED_HEADER);
+        magic = convert(magic, EndiannessStructureFields.SUBKEY_MAGIC);
+        sdmSessionId = convert(sdmSessionId, EndiannessStructureFields.SUBKEY_SDM_SESSION_ID);
+        deviceUniqueId = convert(deviceUniqueId, EndiannessStructureFields.SUBKEY_DEVICE_UNIQUE_ID);
+        romVersionNum = convert(romVersionNum, EndiannessStructureFields.SUBKEY_ROM_VERSION_NUM);
+        sdmFwBuildId = convert(sdmFwBuildId, EndiannessStructureFields.SUBKEY_SDM_FW_BUILD_ID);
         sdmFwSecurityVersionNum = convert(sdmFwSecurityVersionNum,
-            EndianessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM);
-        reserved = convert(reserved, EndianessStructureFields.SUBKEY_RESERVED);
-        publicEfuseValues = convert(publicEfuseValues, EndianessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES);
-        deviceDhPubKey = convert(deviceDhPubKey, EndianessStructureFields.SUBKEY_DEVICE_DH_PUB_KEY);
-        verifierDhPubKey = convert(verifierDhPubKey, EndianessStructureFields.SUBKEY_VERIFIER_DH_PUB_KEY);
-        verifierInputContext = convert(verifierInputContext, EndianessStructureFields.SUBKEY_CONTEXT);
-        verifierCounter = convert(verifierCounter, EndianessStructureFields.SUBKEY_COUNTER);
+            EndiannessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM);
+        reserved = convert(reserved, EndiannessStructureFields.SUBKEY_RESERVED);
+        publicEfuseValues = convert(publicEfuseValues, EndiannessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES);
+        deviceDhPubKey = convert(deviceDhPubKey, EndiannessStructureFields.SUBKEY_DEVICE_DH_PUB_KEY);
+        verifierDhPubKey = convert(verifierDhPubKey, EndiannessStructureFields.SUBKEY_VERIFIER_DH_PUB_KEY);
+        verifierInputContext = convert(verifierInputContext, EndiannessStructureFields.SUBKEY_CONTEXT);
+        verifierCounter = convert(verifierCounter, EndiannessStructureFields.SUBKEY_COUNTER);
 
         try {
             publicKeyBuilder.withActor(getActor()).parse(buffer);
             signatureBuilder.withActor(getActor()).parse(buffer);
         } catch (PsgInvalidSignatureException e) {
             throw new SigmaException("Parsing signature from CREATE_ATTESTATION_SUBKEY_RSP failed.", e);
-        } catch (PsgCertificateException e) {
+        } catch (PsgPubKeyException e) {
             throw new SigmaException("Parsing public key from CREATE_ATTESTATION_SUBKEY_RSP failed.", e);
         }
 
         buffer.getAll(mac);
-        mac = convert(mac, EndianessStructureFields.SUBKEY_MAC);
+        mac = convert(mac, EndiannessStructureFields.SUBKEY_MAC);
 
         return this;
     }
@@ -184,18 +188,18 @@ public class CreateAttestationSubKeyResponseBuilder
         capacity += attestationPublicKey.length;
 
         return ByteBuffer.allocate(capacity)
-            .put(convert(magic, EndianessStructureFields.SUBKEY_MAGIC))
-            .put(convert(sdmSessionId, EndianessStructureFields.SUBKEY_SDM_SESSION_ID))
-            .put(convert(deviceUniqueId, EndianessStructureFields.SUBKEY_DEVICE_UNIQUE_ID))
-            .put(convert(romVersionNum, EndianessStructureFields.SUBKEY_ROM_VERSION_NUM))
-            .put(convert(sdmFwBuildId, EndianessStructureFields.SUBKEY_SDM_FW_BUILD_ID))
-            .put(convert(sdmFwSecurityVersionNum, EndianessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM))
-            .put(convert(reserved, EndianessStructureFields.SUBKEY_RESERVED))
-            .put(convert(publicEfuseValues, EndianessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES))
-            .put(convert(deviceDhPubKey, EndianessStructureFields.SUBKEY_DEVICE_DH_PUB_KEY))
-            .put(convert(verifierDhPubKey, EndianessStructureFields.SUBKEY_VERIFIER_DH_PUB_KEY))
-            .put(convert(verifierInputContext, EndianessStructureFields.SUBKEY_CONTEXT))
-            .put(convert(verifierCounter, EndianessStructureFields.SUBKEY_COUNTER))
+            .put(convert(magic, EndiannessStructureFields.SUBKEY_MAGIC))
+            .put(convert(sdmSessionId, EndiannessStructureFields.SUBKEY_SDM_SESSION_ID))
+            .put(convert(deviceUniqueId, EndiannessStructureFields.SUBKEY_DEVICE_UNIQUE_ID))
+            .put(convert(romVersionNum, EndiannessStructureFields.SUBKEY_ROM_VERSION_NUM))
+            .put(convert(sdmFwBuildId, EndiannessStructureFields.SUBKEY_SDM_FW_BUILD_ID))
+            .put(convert(sdmFwSecurityVersionNum, EndiannessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM))
+            .put(convert(reserved, EndiannessStructureFields.SUBKEY_RESERVED))
+            .put(convert(publicEfuseValues, EndiannessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES))
+            .put(convert(deviceDhPubKey, EndiannessStructureFields.SUBKEY_DEVICE_DH_PUB_KEY))
+            .put(convert(verifierDhPubKey, EndiannessStructureFields.SUBKEY_VERIFIER_DH_PUB_KEY))
+            .put(convert(verifierInputContext, EndiannessStructureFields.SUBKEY_CONTEXT))
+            .put(convert(verifierCounter, EndiannessStructureFields.SUBKEY_COUNTER))
             .put(attestationPublicKey)
             .array();
     }

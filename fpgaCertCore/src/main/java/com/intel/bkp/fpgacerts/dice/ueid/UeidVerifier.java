@@ -45,7 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.containsExtension;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.containsExtension;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;

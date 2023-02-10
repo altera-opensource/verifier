@@ -73,9 +73,8 @@ class TcbInfoKeyTest {
         Assertions.assertNull(result.getVendor());
         Assertions.assertNull(result.getModel());
         Assertions.assertNull(result.getLayer());
+        Assertions.assertNull(result.getIndex());
         Assertions.assertNull(result.getType());
-
-        Assertions.assertEquals(0, result.getIndex());
     }
 
     @Test
@@ -108,7 +107,7 @@ class TcbInfoKeyTest {
     }
 
     @Test
-    void from_MeasurementType_FillsVendorAndIndexWithDefaultsButLeavesModelAsNull() {
+    void from_MeasurementType_FillsVendorWithDefaultsButLeavesModelAndIndexAsNull() {
         // given
         final MeasurementType measurementType = MeasurementType.CMF;
 
@@ -119,14 +118,14 @@ class TcbInfoKeyTest {
         Assertions.assertEquals("intel.com", result.getVendor());
         Assertions.assertEquals(measurementType.getOid(), result.getType());
         Assertions.assertEquals(measurementType.getLayer(), result.getLayer());
-        Assertions.assertEquals(0, result.getIndex());
         Assertions.assertNull(result.getModel());
+        Assertions.assertNull(result.getIndex());
     }
 
     @Test
     void toString_Empty() {
         // given
-        final String expected = "TcbInfoKey( index=0 )";
+        final String expected = "TcbInfoKey( )";
 
         // when
         final String result = TcbInfoKey.from(new TcbInfo()).toString();

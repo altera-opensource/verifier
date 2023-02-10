@@ -34,7 +34,7 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
@@ -44,7 +44,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
-import java.security.interfaces.ECPublicKey;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 
@@ -103,8 +102,8 @@ public class PsgCertificateRootEntryTest {
 
         PsgCertificateRootEntryBuilder parse =
             new PsgCertificateRootEntryBuilder()
-                .withActor(EndianessActor.FIRMWARE)
-                .parse(instance.withActor(EndianessActor.FIRMWARE).build().array());
+                .withActor(EndiannessActor.FIRMWARE)
+                .parse(instance.withActor(EndiannessActor.FIRMWARE).build().array());
 
         // then
         verifyCommonParsedAsserts(instance, parse);
@@ -147,15 +146,15 @@ public class PsgCertificateRootEntryTest {
         Assertions.assertEquals(instancePubKey.getSizeY(), parsePubKey.getSizeY());
         Assertions.assertEquals(instancePubKey.getPublicKeyPermissions(), parsePubKey.getPublicKeyPermissions());
         Assertions.assertEquals(instancePubKey.getPublicKeyCancellation(), parsePubKey.getPublicKeyCancellation());
-        Assertions.assertArrayEquals(instancePubKey.getPointX(), parsePubKey.getPointX());
-        Assertions.assertArrayEquals(instancePubKey.getPointY(), parsePubKey.getPointY());
-        Assertions.assertEquals(instancePubKey.getCurveType(), parsePubKey.getCurveType());
+        Assertions.assertArrayEquals(instancePubKey.getCurvePoint().getAlignedDataToSize(),
+            parsePubKey.getCurvePoint().getAlignedDataToSize());
+        Assertions.assertEquals(instancePubKey.getCurvePoint().getCurveSpec(),
+            parsePubKey.getCurvePoint().getCurveSpec());
     }
 
     private PsgPublicKeyBuilder getPsgPublicKeyBuilder(KeyPair keyPair, PsgCurveType secp384r1) {
         return new PsgPublicKeyBuilder()
             .magic(PsgPublicKeyMagic.M1_MAGIC)
-            .curveType(secp384r1)
-            .publicKey((ECPublicKey) keyPair.getPublic());
+            .publicKey(keyPair.getPublic(), secp384r1);
     }
 }

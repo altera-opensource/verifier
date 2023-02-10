@@ -36,13 +36,13 @@
 
 #include <stdlib.h>
 
-#include "internal/libspdm_common_lib.h"
+#include "library/spdm_common_lib.h"
 #include "library/spdm_requester_lib.h"
 
-#if PORT == WINDOWS
-#define PGM_PLUGIN_DLLEXPORT __declspec (dllexport)
+#if defined(_WIN32) || defined(WIN32)
+    #define PGM_PLUGIN_DLLEXPORT __declspec (dllexport)
 #else
-#if __GNUC__ == 4
+    #if __GNUC__ == 4
         #if __GNUC_MINOR__ >= 5 && __GNUC_MINOR__ <= 8
             #define PGM_PLUGIN_DLLEXPORT __attribute__((visibility("default")))
         #else

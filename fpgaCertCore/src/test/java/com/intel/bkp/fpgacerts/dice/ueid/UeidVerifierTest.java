@@ -33,23 +33,23 @@
 
 package com.intel.bkp.fpgacerts.dice.ueid;
 
-import com.intel.bkp.fpgacerts.LogUtils;
+import ch.qos.logback.classic.Level;
+import com.intel.bkp.fpgacerts.LoggerTestUtil;
 import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.utils.DeviceIdUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.org.lidalia.slf4jext.Level;
 
 import javax.security.auth.x500.X500Principal;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static com.intel.bkp.utils.HexConverter.fromHex;
@@ -58,6 +58,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UeidVerifierTest {
+
+    private LoggerTestUtil loggerTestUtil;
 
     private static final String TEST_FOLDER = "certs/dice/";
     private static final String FIRMWARE_CERT = "firmware_certificate.der";
@@ -83,9 +85,15 @@ class UeidVerifierTest {
         certWithUeidExtension = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
     }
 
+    @BeforeEach
+    void setUpClass() {
+        loggerTestUtil = LoggerTestUtil.instance(sut.getClass());
+    }
+
     @AfterEach
     void clearLogs() {
-        LogUtils.clearLogs(sut.getClass());
+        loggerTestUtil.reset();
+
     }
 
     @Test
@@ -124,7 +132,7 @@ class UeidVerifierTest {
 
         // then
         Assertions.assertFalse(valid);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedErrorMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -140,7 +148,7 @@ class UeidVerifierTest {
 
         // then
         Assertions.assertFalse(valid);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedErrorMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -157,7 +165,7 @@ class UeidVerifierTest {
 
         // then
         Assertions.assertFalse(valid);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedErrorMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -176,7 +184,7 @@ class UeidVerifierTest {
 
         // then
         Assertions.assertFalse(valid);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedErrorMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -193,7 +201,7 @@ class UeidVerifierTest {
 
         // then
         Assertions.assertFalse(valid);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedErrorMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -211,7 +219,7 @@ class UeidVerifierTest {
 
         // then
         Assertions.assertFalse(valid);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedErrorMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -255,7 +263,4 @@ class UeidVerifierTest {
         Assertions.assertTrue(valid);
     }
 
-    private Stream<String> getErrorLogs() {
-        return LogUtils.getLogs(sut.getClass(), Level.ERROR);
-    }
 }

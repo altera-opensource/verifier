@@ -33,6 +33,7 @@
 
 package com.intel.bkp.verifier.service.sender;
 
+import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
 import com.intel.bkp.verifier.exceptions.UnsupportedSpdmVersionException;
 import com.intel.bkp.verifier.service.spdm.SpdmCaller;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,9 @@ public class SpdmGetVersionMessageSender {
 
     public static final String SPDM_SUPPORTED_VERSION = "12";
 
-    public String send() throws UnsupportedSpdmVersionException {
+    public String send() throws UnsupportedSpdmVersionException, SpdmCommandFailedException {
+        log.info("*** CHECKING SPDM RESPONDER VERSION ***");
+
         final String responderVersion = SpdmCaller.getInstance().getVersion();
 
         log.debug("SPDM Responder version: {}", responderVersion);

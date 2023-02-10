@@ -84,7 +84,7 @@ public abstract class CryptoUtils {
     }
 
     public static KeyPair genEcdsaBC(String curveSpec) throws KeystoreGenericException {
-        return EcUtils.genEc(bouncyCastleProvider, CryptoConstants.ECDSA_KEY, curveSpec);
+        return EcUtils.genEc(bouncyCastleProvider, CryptoConstants.EC_KEY, curveSpec);
     }
 
     public static ECPublicKeySpec getEcKeySpec(BigInteger affineX, BigInteger affineY, String curveType) {

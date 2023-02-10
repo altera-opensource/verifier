@@ -35,6 +35,7 @@ package com.intel.bkp.workload.util;
 
 import com.intel.bkp.workload.model.CommandType;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,6 +48,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
+@Builder(builderMethodName = "instance")
 public class AppArgument {
 
     private String transportId;
@@ -55,4 +57,17 @@ public class AppArgument {
     private String pufType;
     private String refMeasurement;
     private String logLevel;
+
+    public static class AppArgumentBuilder {
+
+        public AppArgumentBuilder command(String command) {
+            final String name = command.trim().toUpperCase();
+            try {
+                this.command = CommandType.valueOf(name);
+            } catch (IllegalArgumentException e) {
+                this.command = null;
+            }
+            return this;
+        }
+    }
 }

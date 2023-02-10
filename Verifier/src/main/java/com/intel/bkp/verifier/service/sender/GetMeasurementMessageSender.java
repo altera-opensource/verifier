@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service.sender;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.verifier.command.logger.SigmaLogger;
@@ -65,15 +65,15 @@ public class GetMeasurementMessageSender {
 
     public GetMeasurementResponse send(TransportLayer transportLayer, CommandLayer commandLayer,
                                        EcdhKeyPair serviceDhKeyPair, PufType pufType, String context, int counter) {
-        log.info("Preparing GET_MEASUREMENT ...");
+        log.debug("Preparing GET_MEASUREMENT ...");
         final GetMeasurementMessage message =
             buildGetMeasurementMessage(serviceDhKeyPair, pufType, context, counter);
         SigmaLogger.log(message, GET_MEASUREMENT_MESSAGE, this.getClass());
         return new GetMeasurementResponseBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(messageSender.send(transportLayer, commandLayer, message,
                 CommandIdentifier.GET_MEASUREMENT))
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
     }
 

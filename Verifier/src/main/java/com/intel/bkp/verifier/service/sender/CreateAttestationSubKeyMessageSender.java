@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service.sender;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.verifier.command.logger.SigmaLogger;
@@ -57,12 +57,12 @@ public class CreateAttestationSubKeyMessageSender {
     public CreateAttestationSubKeyResponseBuilder send(
         TransportLayer transportLayer, CommandLayer commandLayer, String context, int counter,
         PufType pufType, EcdhKeyPair serviceDhKeyPair) {
-        log.info("Preparing CREATE_ATTESTATION_SUBKEY ...");
+        log.debug("Preparing CREATE_ATTESTATION_SUBKEY ...");
         final CreateAttestationSubKeyMessage subKeyMessage =
             buildCreateSubKeyMessage(context, counter, pufType, serviceDhKeyPair);
         SigmaLogger.log(subKeyMessage, CREATE_ATTESTATION_SUBKEY_MESSAGE, this.getClass());
         return new CreateAttestationSubKeyResponseBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(messageSender.send(transportLayer, commandLayer, subKeyMessage,
                 CommandIdentifier.CREATE_ATTESTATION_SUBKEY));
     }

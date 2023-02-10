@@ -33,27 +33,29 @@
 
 package com.intel.bkp.fpgacerts.dice.subject;
 
-import com.intel.bkp.fpgacerts.LogUtils;
+import ch.qos.logback.classic.Level;
+import com.intel.bkp.fpgacerts.LoggerTestUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.org.lidalia.slf4jext.Level;
 
 import javax.security.auth.x500.X500Principal;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DiceSubjectVerifierTest {
+
+    private LoggerTestUtil loggerTestUtil;
 
     private static final String VALID_COMPANY = "Intel";
     private static final String VALID_FAMILY = "Agilex";
@@ -67,6 +69,11 @@ class DiceSubjectVerifierTest {
     private X509Certificate parent;
     @Mock
     private X509Certificate root;
+
+    @BeforeEach
+    void setup() {
+        loggerTestUtil = LoggerTestUtil.instance(sut.getClass());
+    }
 
     @Test
     void verify_ReturnsTrue() {
@@ -151,7 +158,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -174,7 +181,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -196,7 +203,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -218,7 +225,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -241,7 +248,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -262,7 +269,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -284,7 +291,7 @@ class DiceSubjectVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedError)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     private String generateSubjectWithDefaults() {
@@ -315,9 +322,5 @@ class DiceSubjectVerifierTest {
 
     private void mockUeidExtensionExists(X509Certificate certificate) {
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(TCG_DICE_UEID.getOid()));
-    }
-
-    private Stream<String> getErrorLogs() {
-        return LogUtils.getLogs(sut.getClass(), Level.ERROR);
     }
 }

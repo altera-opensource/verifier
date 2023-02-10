@@ -57,13 +57,13 @@ public class MailboxCommandLayer implements CommandLayer {
         final byte[] dataBytes = data.array();
         final byte[] header = buildCommandHeader(commandCode, getArgumentsLen(dataBytes), 0, CLIENT_IDENTIFIER);
         final byte[] rawData = withAppendedHeader(dataBytes, header);
-        log.debug("Sending raw data for command {}: {}", command.name(), toHex(rawData));
+        log.trace("Sending raw data for command {}: {}", command.name(), toHex(rawData));
         return rawData;
     }
 
     @Override
     public byte[] retrieve(byte[] data, CommandIdentifier command) {
-        log.debug("Received raw data for response {}: {}", command.name(), toHex(data));
+        log.trace("Received raw data for response {}: {}", command.name(), toHex(data));
         CommandHeaderManager.validateCommandHeaderCode(data, command.name());
         return ByteBufferSafe.wrap(data).skip(COMMAND_HEADER_LEN).getRemaining();
     }

@@ -39,9 +39,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static com.intel.bkp.crypto.x509.utils.X509CrlUtils.getX509CRLEntries;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
 import static com.intel.bkp.fpgacerts.model.Oid.MEASUREMENT_TYPES;
@@ -54,6 +56,8 @@ class TcbInfoExtensionParserTest {
     private static final String ALIAS_CERT = "alias_certificate.der";
     private static final String FIRMWARE_CERT = "firmware_certificate.der";
     private static final String DEVICE_ID_ENROLLMENT_CERT = "device_id_enrollment_certificate.der";
+
+    private static final String CRL = "crl_with_serial_number_and_tcbInfo_entries.crl";
 
     private static final String EXPECTED_VENDOR = VENDOR;
     private static final String EXPECTED_MODEL = "Agilex";
@@ -80,9 +84,16 @@ class TcbInfoExtensionParserTest {
     private static final String DEVICEID_EXPECTED_DIGEST = "B0C5586D865C5C71F203CF905D0160A15407276D7CAF65AE2D29"
         + "9F486E207D0AA8BE820309281C6CA6CE99319204C4F2";
 
+    private static final int CRLENTRY_EXPECTED_SVN = 17;
+    private static final int CRLENTRY_EXPECTED_LAYER = 1;
+    private static final int CRLENTRY_EXPECTED_INDEX = 0;
+    private static final String CRLENTRY_EXPECTED_DIGEST = "100102030405060708090A0B0C0D0E0F000102030405060708090A0B0C"
+        + "0D0E0F000102030405060708090A0B0C0D0E0F";
+
     private static X509Certificate aliasCert;
     private static X509Certificate firmwareCert;
     private static X509Certificate deviceIdEnrollmentCert;
+    private static X509CRL crl;
 
     private TcbInfoExtensionParser sut;
 
@@ -91,6 +102,8 @@ class TcbInfoExtensionParserTest {
         aliasCert = Utils.readCertificate(TEST_FOLDER, ALIAS_CERT);
         firmwareCert = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
         deviceIdEnrollmentCert = Utils.readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
+
+        crl = Utils.readCrl(TEST_FOLDER, CRL);
     }
 
     @BeforeEach
@@ -152,6 +165,29 @@ class TcbInfoExtensionParserTest {
         Assertions.assertEquals(DEVICEID_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
         Assertions.assertEquals(DEVICEID_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
         assertFwId(tcbInfo, DEVICEID_EXPECTED_DIGEST);
+    }
+
+    @Test
+    void parse_WithCrlEntry() {
+        // given
+        final var crlEntry = getX509CRLEntries(crl)
+            .filter(TcbInfoExtensionParser::containsTcbInfoExtension)
+            .findFirst()
+            .get();
+
+        // when
+        final List<TcbInfo> tcbInfos = sut.parse(crlEntry);
+
+        // then
+        Assertions.assertEquals(1, tcbInfos.size());
+
+        final TcbInfo tcbInfo = tcbInfos.get(0);
+        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
+        Assertions.assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
+        Assertions.assertEquals(CRLENTRY_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
+        Assertions.assertEquals(CRLENTRY_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
+        Assertions.assertEquals(CRLENTRY_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
+        assertFwId(tcbInfo, CRLENTRY_EXPECTED_DIGEST);
     }
 
     private void assertFwId(TcbInfo tcbInfo, String expectedDigest) {

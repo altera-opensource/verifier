@@ -33,9 +33,12 @@
 
 package com.intel.bkp.fpgacerts.dice.ueid;
 
+import ch.qos.logback.classic.Level;
+import com.intel.bkp.fpgacerts.LoggerTestUtil;
 import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.exceptions.UnknownFamilyIdException;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.fpgacerts.utils.BaseExtensionParser;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,19 +46,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.security.auth.x500.X500Principal;
 import java.security.cert.X509Certificate;
 
 import static com.intel.bkp.fpgacerts.model.AttFamily.AGILEX;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UeidExtensionParserTest {
 
+    private LoggerTestUtil loggerTestUtil;
+    private LoggerTestUtil loggerTestUtilBaseClass;
+
     private static final String TEST_FOLDER = "certs/dice/";
     private static final String FIRMWARE_CERT = "firmware_certificate.der";
+    private static final String SUBJECT = "CN=Intel:Agilex:L1:ZaIRMTvTn00ha4bR:065effc1e44f3506";
     private static final String DEVICE_ID = "06354FE4C1FF5E06";
 
     private static X509Certificate firmwareCert;
@@ -73,17 +84,33 @@ class UeidExtensionParserTest {
     @BeforeEach
     void setUp() {
         sut = new UeidExtensionParser();
+        loggerTestUtil = LoggerTestUtil.instance(sut.getClass());
+        loggerTestUtilBaseClass = LoggerTestUtil.instance(BaseExtensionParser.class);
+    }
+
+    @AfterEach
+    void clearLogs() {
+        loggerTestUtil.reset();
+        loggerTestUtilBaseClass.reset();
     }
 
     @Test
     void parse_Success() {
+        // given
+        final String parsingStartMessage = "Parsing UEID extension from certificate: " + SUBJECT;
+        final String parsingFinishedMessage =
+            "Parsed UEID Extension. FAMILY_NAME = %s, UID = %s".formatted(AGILEX.getFamilyName(), DEVICE_ID);
+
         // when
         final UeidExtension parsedExtension = sut.parse(firmwareCert);
 
         // then
-        Assertions.assertEquals(AGILEX.getFamilyName(), parsedExtension.getFamilyName());
-        Assertions.assertEquals(AGILEX.getFamilyId(), parsedExtension.getFamilyId());
-        Assertions.assertEquals(DEVICE_ID, toHex(parsedExtension.getUid()));
+        assertEquals(AGILEX.getFamilyName(), parsedExtension.getFamilyName());
+        assertEquals(AGILEX.getFamilyId(), parsedExtension.getFamilyId());
+        assertEquals(DEVICE_ID, toHex(parsedExtension.getUid()));
+
+        assertTrue(loggerTestUtilBaseClass.contains(parsingStartMessage, Level.TRACE));
+        assertTrue(loggerTestUtil.contains(parsingFinishedMessage, Level.TRACE));
     }
 
     @Test
@@ -92,7 +119,7 @@ class UeidExtensionParserTest {
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(null);
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(certificate));
+        verifyParsingThrowsIllegalArgument();
     }
 
     @Test
@@ -103,7 +130,7 @@ class UeidExtensionParserTest {
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(ueidValueWithoutLastByte));
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(certificate));
+        verifyParsingThrowsIllegalArgument();
     }
 
     @Test
@@ -113,7 +140,7 @@ class UeidExtensionParserTest {
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(ueidValueWithAppendedByte));
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(certificate));
+        verifyParsingThrowsIllegalArgument();
     }
 
     @Test
@@ -123,6 +150,17 @@ class UeidExtensionParserTest {
         when(certificate.getExtensionValue(TCG_DICE_UEID.getOid())).thenReturn(fromHex(ueidValueWithUnknownFamilyId));
 
         // when-then
-        Assertions.assertThrows(UnknownFamilyIdException.class, () -> sut.parse(certificate));
+        assertThrows(UnknownFamilyIdException.class, () -> sut.parse(certificate));
     }
+
+    private void verifyParsingThrowsIllegalArgument() {
+        // given
+        final String parsingError = "Failed to parse UEID extension from certificate: " + SUBJECT;
+        when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(SUBJECT));
+
+        // when-then
+        final var ex = assertThrows(IllegalArgumentException.class, () -> sut.parse(certificate));
+        assertEquals(parsingError, ex.getMessage());
+    }
+
 }

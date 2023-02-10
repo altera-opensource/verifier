@@ -45,23 +45,22 @@ class OperationalFlagsFieldParserTest {
     @Test
     void parse_flagSet() {
         // given
-        final String expected = "80";
-        final int padBits = 7;
-        final ASN1Primitive obj = FieldParserTestUtils.getBitString(expected, padBits);
-        final ASN1TaggedObject taggedObj = FieldParserTestUtils.getTaggedObject(obj);
+        parse_ReturnsExpected("40", 0);
+    }
 
-        // when
-        final String result = sut.parse(taggedObj);
-
-        // then
-        Assertions.assertEquals(expected, result);
+    @Test
+    void parse_flagSet_PaddingBitsIncluded() {
+        // given
+        parse_ReturnsExpected("40", 6);
     }
 
     @Test
     void parse_noFlagSet() {
         // given
-        final String expected = "";
-        final int padBits = 0;
+        parse_ReturnsExpected("", 0);
+    }
+
+    private void parse_ReturnsExpected(String expected, int padBits) {
         final ASN1Primitive obj = FieldParserTestUtils.getBitString(expected, padBits);
         final ASN1TaggedObject taggedObj = FieldParserTestUtils.getTaggedObject(obj);
 

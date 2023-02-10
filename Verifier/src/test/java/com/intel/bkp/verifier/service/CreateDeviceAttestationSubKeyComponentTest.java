@@ -33,7 +33,11 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
+import com.intel.bkp.core.psgcertificate.PsgPublicKeyBuilder;
+import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
+import com.intel.bkp.crypto.curve.CurvePoint;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.verifier.database.SQLiteHelper;
@@ -107,7 +111,7 @@ class CreateDeviceAttestationSubKeyComponentTest {
     @InjectMocks
     private CreateDeviceAttestationSubKeyComponent sut;
 
-    private CreateAttestationSubKeyResponseBuilder createSubKeyResponseBuilder =
+    private final CreateAttestationSubKeyResponseBuilder createSubKeyResponseBuilder =
         new CreateAttestationSubKeyResponseBuilder();
 
     @Test
@@ -115,6 +119,7 @@ class CreateDeviceAttestationSubKeyComponentTest {
         // given
         mockAppContext();
         mockDatabaseConnection();
+        mockPubKeyBuilder();
 
         createSubKeyResponseBuilder.setSdmSessionId(SDM_SESSION_ID);
         doReturn(createSubKeyResponseBuilder)
@@ -134,6 +139,12 @@ class CreateDeviceAttestationSubKeyComponentTest {
         verify(teardownMessageSender).send(transportLayer, commandLayer);
         verify(teardownMessageSender).send(transportLayer, commandLayer, SDM_SESSION_ID);
         verify(deviceIdVerifier).verify(eq(DEVICE_ID), any());
+    }
+
+    private void mockPubKeyBuilder() {
+        createSubKeyResponseBuilder.setPublicKeyBuilder(new PsgPublicKeyBuilder()
+            .curvePoint(CurvePoint.from(new byte[]{0}, new byte[]{0}, PsgCurveType.SECP384R1.getCurveSpec()))
+            .withActor(EndiannessActor.FIRMWARE));
     }
 
     private void mockAppContext() {

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.utils.ByteBufferSafe;
 import org.junit.jupiter.api.Test;
 
@@ -75,9 +75,9 @@ class SpdmDmtfMeasurementRecordHeaderBuilderTest {
 
     private static SpdmDmtfMeasurementHeader buildHeader(String header) {
         return new SpdmDmtfMeasurementRecordHeaderBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(ByteBufferSafe.wrap(fromHex(header)))
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
     }
 }

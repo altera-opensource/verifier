@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
@@ -100,11 +100,12 @@ public class CreateDeviceAttestationSubKeyComponent {
                 commandLayer, context, counter, pufType, serviceDhKeyPair);
         } catch (UnknownCommandException e) {
             log.error("This is FM/DM board - CreateAttestationSubKey command is not supported.");
+            log.debug("Stacktrace: ", e);
             return VerifierExchangeResponse.ERROR;
         }
 
         final CreateAttestationSubKeyResponse response = subKeyResponseBuilder
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
 
         final PublicKey pufAttestationPubKey = s10AttestationRevocationService.checkAndRetrieve(deviceId,
@@ -129,7 +130,7 @@ public class CreateDeviceAttestationSubKeyComponent {
     private byte[] getAttestationSubKeyXY(CreateAttestationSubKeyResponseBuilder responseBuilder) {
         final PsgPublicKey attestationSubKey = responseBuilder
             .getPublicKeyBuilder()
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
         final byte[] pointX = attestationSubKey.getPointX();
         final byte[] pointY = attestationSubKey.getPointY();

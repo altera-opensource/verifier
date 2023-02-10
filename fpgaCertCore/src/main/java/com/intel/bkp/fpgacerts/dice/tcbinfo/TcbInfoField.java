@@ -54,12 +54,12 @@ import java.util.Arrays;
 public enum TcbInfoField {
     VENDOR(new StringFieldParser()), // key
     MODEL(new StringFieldParser()), // key
-    VERSION(new StringFieldParser()), // unused in attestation
-    SVN(new IntegerFieldParser()), // unused in attestation
+    VERSION(new StringFieldParser()), // value
+    SVN(new IntegerFieldParser()), // value
     LAYER(new IntegerFieldParser()), // key
     INDEX(new IntegerFieldParser()), // key
     FWIDS(new FwidFieldParser()), // value
-    FLAGS(new OperationalFlagsFieldParser()), // unused in attestation
+    FLAGS(new OperationalFlagsFieldParser()), // value
     VENDOR_INFO(new OctetStringFieldParser()), // value
     TYPE(new OidFieldParser()); // key
 
@@ -69,10 +69,10 @@ public enum TcbInfoField {
 
     public static TcbInfoField from(int tagNo) {
         return Arrays.stream(values())
-                .filter(type -> type.ordinal() == tagNo)
-                .findFirst()
-                .orElseThrow(
-                        () -> new TcbInfoFieldException(String.format(UNSUPPORTED_FIELD, tagNo))
-                );
+            .filter(type -> type.ordinal() == tagNo)
+            .findFirst()
+            .orElseThrow(
+                () -> new TcbInfoFieldException(String.format(UNSUPPORTED_FIELD, tagNo))
+            );
     }
 }

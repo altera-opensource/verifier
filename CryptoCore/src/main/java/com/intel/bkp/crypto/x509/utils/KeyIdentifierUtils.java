@@ -45,7 +45,7 @@ import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.getExtensionBytes;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.getExtensionBytes;
 
 public class KeyIdentifierUtils {
 

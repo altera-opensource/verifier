@@ -82,11 +82,6 @@ public class ChainVerifier {
         return this;
     }
 
-    public ChainVerifier rootBasicConstraints(int expectedValue) {
-        this.rootBasicConstraints = Optional.of(expectedValue);
-        return this;
-    }
-
     public ChainVerifier knownExtensionOids(Set<String> additionalOids) {
         this.knownExtensionOids.addAll(additionalOids);
         return this;

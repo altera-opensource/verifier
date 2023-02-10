@@ -52,7 +52,7 @@ public class GpGetCertificateMessageSender {
     private BaseMessageSender messageSender = new BaseMessageSender();
 
     public byte[] send(TransportLayer transportLayer, CommandLayer commandLayer, CertificateRequestType requestType) {
-        log.info("Preparing GET_ATTESTATION_CERTIFICATE with type {} ...", requestType.name());
+        log.debug("Preparing GET_ATTESTATION_CERTIFICATE with type {} ...", requestType.name());
         final GetCertificateMessage message = getCertificateMessageBuilder
             .withType(requestType)
             .build();

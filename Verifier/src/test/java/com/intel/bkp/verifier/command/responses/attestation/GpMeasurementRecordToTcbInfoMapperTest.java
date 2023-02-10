@@ -34,9 +34,11 @@
 package com.intel.bkp.verifier.command.responses.attestation;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.fpgacerts.model.Oid;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.model.evidence.GpMeasurementRecordHeader;
@@ -46,14 +48,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.FLAGS;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.FWIDS;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.INDEX;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.LAYER;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.MODEL;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.SVN;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.TYPE;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR_INFO;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GpMeasurementRecordToTcbInfoMapperTest {
@@ -61,6 +69,7 @@ class GpMeasurementRecordToTcbInfoMapperTest {
     private static final String EXPECTED_VENDOR = TcbInfoConstants.VENDOR;
     private static final String EXPECTED_TYPE_PREFIX = Oid.MEASUREMENT_TYPES.getOid() + ".";
     private static final int EXPECTED_LAYER = 2;
+    private static final int SECTION_INDEX = 5;
 
     private final ByteBufferSafe buffer = ByteBufferSafe.wrap(new byte[100]);
     private final GpMeasurementRecordToTcbInfoMapper sut = new GpMeasurementRecordToTcbInfoMapper();
@@ -70,6 +79,7 @@ class GpMeasurementRecordToTcbInfoMapperTest {
     @BeforeEach
     void setUp() {
         header = new GpMeasurementRecordHeader();
+        header.setSectionIndex(SECTION_INDEX);
     }
 
     @Test
@@ -77,10 +87,10 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         // given
         header.setSectionType((byte) SectionType.DEVICE_STATE.getValue());
         final var expectedKeys = List.of(VENDOR, TYPE, LAYER, VENDOR_INFO);
-        final var notExpectedKeys = List.of(INDEX, FWIDS);
+        final var notExpectedKeys = List.of(INDEX, FWIDS, SVN, VERSION, FLAGS);
 
         // when
-        final TcbInfo result = sut.map(header, buffer);
+        final TcbInfoMeasurement result = sut.map(header, buffer);
 
         // then
         verifyKeys(result, expectedKeys, notExpectedKeys);
@@ -92,10 +102,10 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         header.setSectionType((byte) SectionType.PR.getValue());
         header.setMeasurementWithHeaderSize(getMeasurementSizeForUserDesign());
         final var expectedKeys = List.of(VENDOR, TYPE, LAYER, INDEX, FWIDS);
-        final var notExpectedKeys = List.of(VENDOR_INFO);
+        final var notExpectedKeys = List.of(VENDOR_INFO, SVN, VERSION, FLAGS);
 
         // when
-        final TcbInfo result = sut.map(header, buffer);
+        final TcbInfoMeasurement result = sut.map(header, buffer);
 
         // then
         verifyKeys(result, expectedKeys, notExpectedKeys);
@@ -107,10 +117,10 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         header.setSectionType((byte) SectionType.CORE.getValue());
         header.setMeasurementWithHeaderSize(getMeasurementSizeForUserDesign());
         final var expectedKeys = List.of(VENDOR, TYPE, LAYER, FWIDS);
-        final var notExpectedKeys = List.of(INDEX, VENDOR_INFO);
+        final var notExpectedKeys = List.of(INDEX, VENDOR_INFO, SVN, VERSION, FLAGS);
 
         // when
-        final TcbInfo result = sut.map(header, buffer);
+        final TcbInfoMeasurement result = sut.map(header, buffer);
 
         // then
         verifyKeys(result, expectedKeys, notExpectedKeys);
@@ -125,10 +135,10 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         header.setMeasurementWithHeaderSize(getMeasurementSizeForUserDesign(rawMeasurementSize));
 
         // when
-        final TcbInfo result = sut.map(header, buffer);
+        final TcbInfoMeasurement result = sut.map(header, buffer);
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.getKey().isEmpty() && result.getValue().isEmpty());
         assertEquals(0, buffer.remaining());
     }
 
@@ -140,13 +150,35 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         return (byte) (rawMeasurementSize + GpMeasurementRecordHeaderBuilder.HEADER_SIZE);
     }
 
-    private void verifyKeys(TcbInfo result, List<TcbInfoField> expectedKeys, List<TcbInfoField> notExpectedKeys) {
+    private void verifyKeys(TcbInfoMeasurement result, List<TcbInfoField> expectedKeys,
+                            List<TcbInfoField> notExpectedKeys){
 
-        expectedKeys.forEach(key -> Assertions.assertTrue(result.get(key).isPresent()));
-        notExpectedKeys.forEach(key -> Assertions.assertTrue(result.get(key).isEmpty()));
+        final var actualKeys = getFieldsSetInMeasurement(result);
+        expectedKeys.forEach(key -> Assertions.assertTrue(actualKeys.contains(key)));
+        notExpectedKeys.forEach(key -> Assertions.assertFalse(actualKeys.contains(key)));
 
-        Assertions.assertEquals(EXPECTED_VENDOR, result.get(VENDOR).get());
-        Assertions.assertEquals(EXPECTED_TYPE_PREFIX + header.getSectionType(), result.get(TYPE).get());
-        Assertions.assertEquals(EXPECTED_LAYER, result.get(LAYER).get());
+        Assertions.assertEquals(EXPECTED_VENDOR, result.getKey().getVendor());
+        Assertions.assertEquals(EXPECTED_TYPE_PREFIX + header.getSectionType(), result.getKey().getType());
+        Assertions.assertEquals(EXPECTED_LAYER, result.getKey().getLayer());
+    }
+
+    private List<TcbInfoField> getFieldsSetInMeasurement(TcbInfoMeasurement measurement) {
+        final var fields = new LinkedList<TcbInfoField>();
+
+        final TcbInfoKey key = measurement.getKey();
+        Optional.ofNullable(key.getVendor()).ifPresent(v -> fields.add(VENDOR));
+        Optional.ofNullable(key.getModel()).ifPresent(v -> fields.add(MODEL));
+        Optional.ofNullable(key.getType()).ifPresent(v -> fields.add(TYPE));
+        Optional.ofNullable(key.getLayer()).ifPresent(v -> fields.add(LAYER));
+        Optional.ofNullable(key.getIndex()).ifPresent(v -> fields.add(INDEX));
+
+        final TcbInfoValue value = measurement.getValue();
+        value.getVersion().ifPresent(v -> fields.add(VERSION));
+        value.getSvn().ifPresent(v -> fields.add(SVN));
+        value.getFwid().ifPresent(v -> fields.add(FWIDS));
+        value.getFlags().ifPresent(v -> fields.add(FLAGS));
+        value.getMaskedVendorInfo().ifPresent(v -> fields.add(VENDOR_INFO));
+
+        return fields;
     }
 }

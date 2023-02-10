@@ -35,6 +35,7 @@ package com.intel.bkp.verifier.service.sender;
 
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponseBuilder;
+import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
 import com.intel.bkp.verifier.service.spdm.SpdmCaller;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,11 +44,12 @@ import static com.intel.bkp.utils.HexConverter.fromHex;
 @Slf4j
 public class SpdmGetMeasurementMessageSender {
 
-    public SpdmMeasurementResponse send() {
-        log.info("Preparing SPDM GET_MEASUREMENT ...");
+    public SpdmMeasurementResponse send(int slotId) throws SpdmCommandFailedException {
+        log.info("*** REQUESTING MEASUREMENTS FROM DEVICE ***");
+        log.debug("Requesting measurements with slotId: {}", slotId);
 
         return new SpdmMeasurementResponseBuilder()
-            .parse(fromHex(SpdmCaller.getInstance().getMeasurements()))
+            .parse(fromHex(SpdmCaller.getInstance().getMeasurements(slotId)))
             .build();
     }
 }

@@ -38,6 +38,7 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
 import com.intel.bkp.fpgacerts.exceptions.FwidHashAlgNotSupported;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.model.evidence.SectionType;
@@ -52,13 +53,14 @@ public abstract class BaseMeasurementRecordToTcbInfoMapper<T> {
 
     private static final int LAYER = 2;
 
-    public abstract TcbInfo map(T header, ByteBufferSafe recordContentBuffer);
+    public abstract TcbInfoMeasurement map(T header, ByteBufferSafe recordContentBuffer);
 
     protected abstract int getPrSectionIndex(T header);
 
     protected abstract int getMeasurementSize(T header);
 
-    protected TcbInfo mapInternal(T header, ByteBufferSafe recordContentBuffer, SectionType sectionType) {
+    protected TcbInfoMeasurement mapInternal(T header, ByteBufferSafe recordContentBuffer,
+                                             SectionType sectionType) {
         final Map<TcbInfoField, Object> map = createBaseMap(sectionType);
 
         if (SectionType.PR == sectionType) {
@@ -73,7 +75,7 @@ public abstract class BaseMeasurementRecordToTcbInfoMapper<T> {
             );
         }
 
-        return new TcbInfo(map);
+        return new TcbInfoMeasurement(new TcbInfo(map));
     }
 
     private FwidHashAlg getFwidHashAlg(T header) {

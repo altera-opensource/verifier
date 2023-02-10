@@ -75,13 +75,14 @@ repositories {
 dependencies {
     implementation project(':Utils')
     implementation project(':CryptoCore')
-    implementation "javax.validation:validation-api:${validation_api_version}"
+    implementation "org.slf4j:slf4j-api:${slf4j_version}"
+    implementation "jakarta.validation:jakarta.validation-api:${validation_api_version}"
     implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:${jackson_version}"
     implementation "com.fasterxml.jackson.core:jackson-annotations:${jackson_version}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jackson_version}"
     api "org.bouncycastle:bcpkix-jdk15on:${bouncycastle_version}"
     api "io.swagger.core.v3:swagger-annotations:${swagger_annotations_version}"
-    api "net.jodah:failsafe:${failsafe_version}"
+    api "dev.failsafe:failsafe:${failsafe_version}"
 
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junit5_version}"
     testImplementation "org.mockito:mockito-core:${mockito_version}"

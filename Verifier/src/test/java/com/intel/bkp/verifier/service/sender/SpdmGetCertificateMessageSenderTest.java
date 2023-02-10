@@ -53,6 +53,7 @@ import static org.mockito.Mockito.when;
 class SpdmGetCertificateMessageSenderTest {
 
     private static final byte[] CERTIFICATE_CHAIN = {1, 2, 3, 4};
+    private static final int SLOT_ID = 2;
 
     private static MockedStatic<SpdmCaller> spdmCallerMockedStatic;
 
@@ -78,15 +79,15 @@ class SpdmGetCertificateMessageSenderTest {
     }
 
     @Test
-    void send_Success() {
+    void send_Success() throws Exception {
         // given
         final SpdmCertificateResponseBuilder builder = new SpdmCertificateResponseBuilder()
             .withCertificateChain(CERTIFICATE_CHAIN);
         final String certResponse = toHex(builder.build().array());
-        when(spdmCallerMock.getCerts()).thenReturn(certResponse);
+        when(spdmCallerMock.getCerts(SLOT_ID)).thenReturn(certResponse);
 
         // when
-        final byte[] result = sut.send();
+        final byte[] result = sut.send(SLOT_ID);
 
         // then
         assertArrayEquals(builder.getCertificateChain(), result);

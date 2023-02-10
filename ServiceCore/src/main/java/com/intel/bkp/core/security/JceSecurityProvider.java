@@ -48,11 +48,13 @@ import com.intel.bkp.crypto.impl.AesUtils;
 import com.intel.bkp.crypto.impl.EcUtils;
 import com.intel.bkp.crypto.impl.RsaUtils;
 import com.intel.bkp.crypto.rsa.RsaEncryptionProvider;
+import dev.failsafe.Failsafe;
+import dev.failsafe.FailsafeException;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.function.CheckedPredicate;
 import lombok.Getter;
 import lombok.Setter;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.FailsafeException;
-import net.jodah.failsafe.RetryPolicy;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -71,8 +73,8 @@ import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 
+@Slf4j
 public class JceSecurityProvider implements ISecurityProvider {
 
     private static final int DELAY_SECONDS = 1;
@@ -111,8 +113,8 @@ public class JceSecurityProvider implements ISecurityProvider {
     private final RetryPolicy<Object> retryPolicyWithResult = prepareRetryPolicy(Optional.of(Objects::isNull));
     private final RetryPolicy<Object> retryPolicyWithBoolean = prepareRetryPolicy(Optional.of(o -> !((boolean) o)));
 
-    private RetryPolicy<Object> prepareRetryPolicy(Optional<Predicate<Object>> handleResultIfPredicate) {
-        final var retryPolicy = new RetryPolicy<>()
+    private RetryPolicy<Object> prepareRetryPolicy(Optional<CheckedPredicate<Object>> handleResultIfPredicate) {
+        final var retryPolicy = RetryPolicy.builder()
             .handle(KeyStoreException.class)
             .withDelay(Duration.ofSeconds(DELAY_SECONDS))
             .withMaxRetries(MAX_RETRIES)
@@ -121,7 +123,8 @@ public class JceSecurityProvider implements ISecurityProvider {
 
         return handleResultIfPredicate
             .map(retryPolicy::handleResultIf)
-            .orElse(retryPolicy);
+            .orElse(retryPolicy)
+            .build();
     }
 
     public JceSecurityProvider(SecurityProviderParams params, IKeystoreManagerChooser chooserCallback) {
@@ -161,6 +164,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public void login() {
+        log.trace("Login to keystore: {}", keyStoreName);
         try {
             if (keyStore == null) {
                 keyStore = KeyStore.getInstance(keyStoreName, provider);
@@ -176,6 +180,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     private void saveSecureEnclave() {
+        log.debug("Saving secure enclave.");
         try {
             String password = securityProperties.getPassword();
             keystoreManager.store(keyStore, inputStreamParam, password);
@@ -189,6 +194,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public synchronized Object createSecurityObject(String name, String algorithm) {
+        log.debug("Creating security object with name {} and algorithm {}.", name, algorithm);
         final KeyPair kp;
         try {
             kp = EcUtils.genEc(provider, ecProperties.getKeyName(), ecProperties.getCurveSpec384());
@@ -201,6 +207,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public synchronized Object createSecurityObject(SecurityKeyType keyType, String name) {
+        log.debug("Creating security object with name {} and type {}.", name, keyType.name());
         try {
             if (SecurityKeyType.RSA == keyType) {
                 final KeyPair kp = RsaUtils.genRSA(rsaProperties.getKeyName(), rsaProperties.getKeySize(), provider);
@@ -208,7 +215,7 @@ public class JceSecurityProvider implements ISecurityProvider {
                 KeystoreUtils.storeKeyWithCertificate(provider, keyStore, kp, name, 40L, algorithm);
                 saveSecureEnclave();
                 return kp;
-            } else if (SecurityKeyType.AES256 == keyType) {
+            } else if (SecurityKeyType.AES == keyType) {
                 SecretKey secretKey = AesUtils.genAES(provider, aesProperties.getKeyName(), aesProperties.getKeySize());
                 KeystoreUtils.storeSecretKey(keyStore, secretKey, name);
                 saveSecureEnclave();
@@ -227,6 +234,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public byte[] decryptRSA(String alias, byte[] encryptedData) {
+        log.debug("Decrypting RSA data with alias {}.", alias);
         try {
             final Key rsaKey = Failsafe.with(retryPolicy).get(
                 () -> keyStore.getKey(alias, "".toCharArray())
@@ -242,6 +250,7 @@ public class JceSecurityProvider implements ISecurityProvider {
 
     @Override
     public void importSecretKey(String name, SecretKey secretKey) {
+        log.debug("Importing secret key with name {}.", name);
         try {
             KeystoreUtils.storeSecretKey(keyStore, secretKey, name);
             saveSecureEnclave();
@@ -253,6 +262,7 @@ public class JceSecurityProvider implements ISecurityProvider {
 
     @Override
     public void importEcKey(String name, PublicKey publicKey, PrivateKey privateKey) {
+        log.debug("Importing EC key with name {}.", name);
         try {
             KeystoreUtils.storeKeyWithCertificate(provider, keyStore, publicKey, privateKey,
                 name, 40L, ecProperties.getSignatureAlgorithm());
@@ -264,6 +274,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public synchronized void deleteSecurityObject(String name) {
+        log.debug("Deleting security object with name {}.", name);
         try {
             Failsafe.with(retryPolicy).run(() -> keyStore.deleteEntry(name));
             saveSecureEnclave();
@@ -273,8 +284,8 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public synchronized boolean existsSecurityObject(String name) {
+        log.debug("Looking for key with name {}.", name);
         try {
-            System.out.println("Looking for key: " + name);
             return Failsafe.with(retryPolicyWithBoolean).get(() -> keyStore.isKeyEntry(name));
         } catch (FailsafeException e) {
             throw new JceSecurityProviderException(
@@ -283,6 +294,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public byte[] getPubKeyFromSecurityObject(String name) {
+        log.debug("Getting public key from security object with name {}.", name);
         return Optional.ofNullable(getCertificates(name))
             .filter(certs -> certs.length != 0)
             .map(certificates1 -> certificates1[0])
@@ -293,6 +305,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     private Certificate[] getCertificates(String name) {
+        log.debug("Getting certificates from security object with name {}.", name);
         try {
             return Failsafe.with(retryPolicyWithResult).get(() -> keyStore.getCertificateChain(name));
         } catch (FailsafeException e) {
@@ -302,6 +315,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public byte[] signObject(byte[] content, String name) {
+        log.debug("Signing object with name {}.", name);
         try {
             final PrivateKey privateKey = Failsafe.with(retryPolicyWithResult).get(
                 () -> (PrivateKey) keyStore.getKey(name, "".toCharArray())
@@ -318,10 +332,10 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public SecretKey getKeyFromSecurityObject(String name) {
+        log.debug("Getting secret key from security object with name {}.", name);
         try {
             return Failsafe.with(retryPolicyWithResult)
-                .get(() -> (SecretKey) keyStore.getKey(name, "".toCharArray())
-                );
+                .get(() -> (SecretKey) keyStore.getKey(name, "".toCharArray()));
         } catch (FailsafeException e) {
             throw new JceSecurityProviderException(
                 String.format("Failed to retrieve SecretKey for alias '%s'.", name), e);
@@ -329,10 +343,10 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public PrivateKey getPrivateKeyFromSecurityObject(String name) {
+        log.debug("Getting private key from security object with name {}.", name);
         try {
             return Failsafe.with(retryPolicyWithResult)
-                .get(() -> (PrivateKey) keyStore.getKey(name, "".toCharArray())
-                );
+                .get(() -> (PrivateKey) keyStore.getKey(name, "".toCharArray()));
         } catch (FailsafeException e) {
             throw new JceSecurityProviderException(
                 String.format("Failed to retrieve PrivateKey for alias '%s'.", name), e);
@@ -345,6 +359,7 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     private void reloadKeystore() {
+        log.trace("Reloading keystore.");
         login();
     }
 }

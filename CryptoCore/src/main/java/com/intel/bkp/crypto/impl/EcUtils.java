@@ -33,8 +33,10 @@
 
 package com.intel.bkp.crypto.impl;
 
+import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.constants.SecurityKeyType;
+import com.intel.bkp.crypto.curve.CurvePoint;
 import com.intel.bkp.crypto.ecdh.EcdhVerifier;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.crypto.exceptions.InvalidSignatureException;
@@ -49,6 +51,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 
 import javax.crypto.KeyAgreement;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
@@ -76,6 +79,7 @@ import java.util.Objects;
 
 import static com.intel.bkp.crypto.CryptoUtils.getBytesFromPubKey;
 import static com.intel.bkp.crypto.CryptoUtils.toPublicEncodedBC;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.convertToDerSignature;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EcUtils {
@@ -155,6 +159,23 @@ public class EcUtils {
         }
     }
 
+    public static boolean sigVerify(PublicKey publicKey, byte[] data, byte[] signature, String sigAlgorithmName)
+        throws InvalidSignatureException {
+        return sigVerify(publicKey, data, signature, sigAlgorithmName, CryptoUtils.getBouncyCastleProvider());
+    }
+
+    public static boolean sigVerify(PublicKey publicKey, byte[] data, CurvePoint signaturePoint,
+                                    String sigAlgorithmName)
+        throws InvalidSignatureException {
+        final byte[] signature;
+        try {
+            signature = convertToDerSignature(signaturePoint.getPointA(), signaturePoint.getPointB());
+        } catch (IOException e) {
+            throw new InvalidSignatureException("Failed to convert point to DER format", e);
+        }
+        return sigVerify(publicKey, data, signature, sigAlgorithmName, CryptoUtils.getBouncyCastleProvider());
+    }
+
     public static PrivateKey toPrivate(byte[] privateKeyBytes, String algorithm, String ecCurve384spec,
                                        Provider bouncyCastleProvider)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -177,8 +198,8 @@ public class EcUtils {
         bufferSafe.get(xBytes);
         bufferSafe.get(yBytes);
 
-        final byte[] xBytesPadded = PaddingUtils.addPadding(xBytes, pubKeyXYLen + 1);
-        final byte[] yBytesPadded = PaddingUtils.addPadding(yBytes, pubKeyXYLen + 1);
+        final byte[] xBytesPadded = PaddingUtils.padLeft(xBytes, pubKeyXYLen + 1);
+        final byte[] yBytesPadded = PaddingUtils.padLeft(yBytes, pubKeyXYLen + 1);
 
         BigInteger affineX = new BigInteger(xBytesPadded);
         BigInteger affineY = new BigInteger(yBytesPadded);
@@ -200,8 +221,8 @@ public class EcUtils {
         final byte[] pubY = pubKey.getAffineY().toByteArray();
 
         return ByteBuffer.allocate(dhPubKeyLen)
-            .put(PaddingUtils.alignTo(pubX, dhPubKeyLen / 2))
-            .put(PaddingUtils.alignTo(pubY, dhPubKeyLen / 2))
+            .put(PaddingUtils.alignLeft(pubX, dhPubKeyLen / 2))
+            .put(PaddingUtils.alignLeft(pubY, dhPubKeyLen / 2))
             .array();
     }
 

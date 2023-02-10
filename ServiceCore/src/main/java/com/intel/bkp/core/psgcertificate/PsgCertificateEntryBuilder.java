@@ -33,20 +33,24 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.core.endianess.EndianessStructureFields;
-import com.intel.bkp.core.endianess.EndianessStructureType;
-import com.intel.bkp.core.endianess.maps.PsgCertificateEntryEndianessMapImpl;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.EndiannessBuilder;
+import com.intel.bkp.core.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.EndiannessStructureType;
+import com.intel.bkp.core.endianness.maps.PsgCertificateEntryEndiannessMapImpl;
 import com.intel.bkp.core.interfaces.ISignBytes;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellation;
 import com.intel.bkp.core.psgcertificate.model.PsgPermissions;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.core.utils.ModifyBitsBuilder;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
 import lombok.Getter;
-import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Optional;
 
 /**
  * Certificate entry in PSG format.
@@ -54,7 +58,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * <p>Builder must be initiated in proper order i.e. public key, permissions, cancellation, signature, sign data</p>
  */
 @Getter
-public class PsgCertificateEntryBuilder extends PsgDataBuilder<PsgCertificateEntryBuilder> {
+public class PsgCertificateEntryBuilder extends EndiannessBuilder<PsgCertificateEntryBuilder> {
 
     public static final int PUBLIC_KEY_ENTRY_MAGIC = 0x92540917;
 
@@ -69,24 +73,28 @@ public class PsgCertificateEntryBuilder extends PsgDataBuilder<PsgCertificateEnt
     private int shaLength = 0;
     private int reserved = 0;
     private PsgPublicKeyBuilder psgPublicKeyBuilder = new PsgPublicKeyBuilder();
-    private PsgSignatureBuilder psgSignatureBuilder = new PsgSignatureBuilder();
+    private PsgSignatureBuilder psgSignatureBuilder = PsgSignatureBuilder.empty(PsgSignatureCurveType.SECP384R1);
 
-    @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.PSG_CERT_ENTRY;
+    public PsgCertificateEntryBuilder() {
+        super(EndiannessStructureType.PSG_CERT_ENTRY);
     }
 
     @Override
-    public PsgCertificateEntryBuilder withActor(EndianessActor actor) {
-        changeActor(actor);
-        psgPublicKeyBuilder.withActor(getActor());
-        psgSignatureBuilder.withActor(getActor());
+    public PsgCertificateEntryBuilder withActor(EndiannessActor actor) {
+        super.withActor(actor);
+        Optional.ofNullable(psgPublicKeyBuilder).ifPresent(item -> item.withActor(getActor()));
+        Optional.ofNullable(psgSignatureBuilder).ifPresent(item -> item.withActor(getActor()));
         return this;
     }
 
     @Override
-    protected void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new PsgCertificateEntryEndianessMapImpl(currentActor));
+    protected PsgCertificateEntryBuilder self() {
+        return this;
+    }
+
+    @Override
+    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new PsgCertificateEntryEndiannessMapImpl(currentActor));
     }
 
     private void setLengthOffset() {
@@ -98,7 +106,7 @@ public class PsgCertificateEntryBuilder extends PsgDataBuilder<PsgCertificateEnt
     }
 
     private void setSignatureLength() {
-        signatureLength = (isSignatureEnabled() ? psgSignatureBuilder.totalLen() : 0);
+        signatureLength = (isSignatureEnabled() ? psgSignatureBuilder.getTotalSignatureSize() : 0);
     }
 
     public PsgCertificateEntryBuilder publicKey(PsgPublicKeyBuilder psgPublicKeyBuilder) {
@@ -131,26 +139,26 @@ public class PsgCertificateEntryBuilder extends PsgDataBuilder<PsgCertificateEnt
         return this;
     }
 
-    public PsgCertificateEntryBuilder signData(ISignBytes signBytesCallback) {
-        byte[] signed = signBytesCallback.sign(psgPublicKeyBuilder.withActor(EndianessActor.FIRMWARE).build().array());
-        psgSignatureBuilder.signature(signed);
+    public PsgCertificateEntryBuilder signData(ISignBytes signBytesCallback, PsgSignatureCurveType signatureType) {
+        byte[] signed = signBytesCallback.sign(psgPublicKeyBuilder.withActor(EndiannessActor.FIRMWARE).build().array());
+        psgSignatureBuilder.signature(signed, signatureType);
         return this;
     }
 
     public byte[] getPublicKeyXY() {
-        return ArrayUtils.addAll(psgPublicKeyBuilder.getPointX(), psgPublicKeyBuilder.getPointY());
+        return psgPublicKeyBuilder.getCurvePoint().getAlignedDataToSize();
     }
 
     public PsgCertificateEntry build() throws PsgCertificateException {
         verifyPubKeyAndSignatureEnabled();
 
         PsgCertificateEntry certificateEntry = new PsgCertificateEntry();
-        certificateEntry.setMagic(convert(PUBLIC_KEY_ENTRY_MAGIC, EndianessStructureFields.PSG_CERT_MAGIC));
-        certificateEntry.setLengthOffset(convert(lengthOffset, EndianessStructureFields.PSG_CERT_LENGTH_OFFSET));
-        certificateEntry.setDataLength(convert(dataLength, EndianessStructureFields.PSG_CERT_DATA_LEN));
-        certificateEntry.setSignatureLength(convert(signatureLength, EndianessStructureFields.PSG_CERT_SIG_LEN));
-        certificateEntry.setShaLength(convert(shaLength, EndianessStructureFields.PSG_CERT_SHA_LEN));
-        certificateEntry.setReserved(convert(reserved, EndianessStructureFields.PSG_CERT_RESERVED));
+        certificateEntry.setMagic(convert(PUBLIC_KEY_ENTRY_MAGIC, EndiannessStructureFields.PSG_CERT_MAGIC));
+        certificateEntry.setLengthOffset(convert(lengthOffset, EndiannessStructureFields.PSG_CERT_LENGTH_OFFSET));
+        certificateEntry.setDataLength(convert(dataLength, EndiannessStructureFields.PSG_CERT_DATA_LEN));
+        certificateEntry.setSignatureLength(convert(signatureLength, EndiannessStructureFields.PSG_CERT_SIG_LEN));
+        certificateEntry.setShaLength(convert(shaLength, EndiannessStructureFields.PSG_CERT_SHA_LEN));
+        certificateEntry.setReserved(convert(reserved, EndiannessStructureFields.PSG_CERT_RESERVED));
         certificateEntry.setPsgPublicKey(psgPublicKeyBuilder.withActor(getActor()).build().array());
         certificateEntry.setPsgSignature(psgSignatureBuilder.withActor(getActor()).build().array());
 
@@ -168,20 +176,22 @@ public class PsgCertificateEntryBuilder extends PsgDataBuilder<PsgCertificateEnt
             throw new PsgCertificateException("Invalid buffer during parsing entry", e);
         } catch (PsgInvalidSignatureException e) {
             throw new PsgCertificateException("Invalid signature during parsing entry", e);
+        } catch (PsgPubKeyException e) {
+            throw new PsgCertificateException("Invalid public key magic during parsing entry", e);
         }
     }
 
     private void parsePsgMetadata(ByteBufferSafe buffer) throws PsgCertificateException {
-        PsgCertificateHelper.verifyEntryMagic(convertInt(buffer.getInt(), EndianessStructureFields.PSG_CERT_MAGIC));
+        PsgCertificateHelper.verifyEntryMagic(convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_MAGIC));
 
-        lengthOffset = convertInt(buffer.getInt(), EndianessStructureFields.PSG_CERT_LENGTH_OFFSET);
-        dataLength = convertInt(buffer.getInt(), EndianessStructureFields.PSG_CERT_DATA_LEN);
-        signatureLength = convertInt(buffer.getInt(), EndianessStructureFields.PSG_CERT_SIG_LEN);
-        shaLength = convertInt(buffer.getInt(), EndianessStructureFields.PSG_CERT_SHA_LEN);
-        reserved = convertInt(buffer.getInt(), EndianessStructureFields.PSG_CERT_RESERVED);
+        lengthOffset = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_LENGTH_OFFSET);
+        dataLength = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_DATA_LEN);
+        signatureLength = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_SIG_LEN);
+        shaLength = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_SHA_LEN);
+        reserved = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_RESERVED);
     }
 
-    private void parsePsgPublicKey(ByteBufferSafe buffer) throws PsgCertificateException {
+    private void parsePsgPublicKey(ByteBufferSafe buffer) throws PsgPubKeyException {
         psgPublicKeyBuilder = new PsgPublicKeyBuilder().withActor(getActor()).parse(buffer);
     }
 

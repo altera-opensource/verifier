@@ -33,6 +33,7 @@
 
 package com.intel.bkp.workload;
 
+import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.workload.service.VerifierService;
 import com.intel.bkp.workload.util.AppArgument;
 import com.intel.bkp.workload.util.AppArgumentParser;
@@ -43,14 +44,19 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadApp {
 
     public static void main(String[] args) {
+        int returnCode;
         try {
             final AppArgument appArgs = AppArgumentParser.parseArguments(args);
             log.info("[WORKLOAD] Running using commandline appArgs: {}", appArgs);
             setLogLevel(appArgs.getLogLevel());
-            new VerifierService().callVerifier(appArgs);
+            returnCode = new VerifierService().callVerifier(appArgs);
         } catch (Exception e) {
-            log.error("[WORKLOAD] Exception occurred: ", e);
+            log.error("[WORKLOAD] Exception occurred: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            returnCode = VerifierExchangeResponse.ERROR.getCode();
         }
+
+        System.exit(returnCode);
     }
 
     private static void setLogLevel(String logLevel) {

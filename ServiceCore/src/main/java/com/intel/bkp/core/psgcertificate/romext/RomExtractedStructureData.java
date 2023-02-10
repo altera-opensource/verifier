@@ -40,7 +40,7 @@ import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
 import lombok.Getter;
 
 import static com.intel.bkp.utils.ByteConverter.toBytes;
-import static com.intel.bkp.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
 @Getter
 class RomExtractedStructureData {
@@ -61,6 +61,6 @@ class RomExtractedStructureData {
         } else if (PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC == magic) {
             return RomExtractedStructureStrategy.LEAF;
         }
-        throw new RomExtensionSignatureException("Invalid magic detected: " + toHex(toBytes(magic)));
+        throw new RomExtensionSignatureException("Invalid magic detected: " + toFormattedHex(toBytes(magic)));
     }
 }

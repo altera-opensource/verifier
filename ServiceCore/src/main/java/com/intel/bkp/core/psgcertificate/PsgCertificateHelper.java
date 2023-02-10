@@ -33,40 +33,29 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateChainWrongSizeException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidLeafCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidParentCertificatesException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidRootCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.CertificateEntryWrapper;
 import com.intel.bkp.core.psgcertificate.model.PsgCertificateType;
-import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
-import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
-import com.intel.bkp.core.psgcertificate.model.PsgSignature;
 import com.intel.bkp.crypto.CertificateEncoder;
-import com.intel.bkp.crypto.CryptoUtils;
-import com.intel.bkp.crypto.constants.CryptoConstants;
+import com.intel.bkp.crypto.curve.CurvePoint;
+import com.intel.bkp.crypto.curve.EcSignatureAlgorithm;
+import com.intel.bkp.crypto.exceptions.InvalidSignatureException;
+import com.intel.bkp.crypto.impl.EcUtils;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Encoding;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OutputStream;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -132,7 +121,7 @@ public class PsgCertificateHelper {
     }
 
     public static String generateFingerprint(PsgCertificateRootEntryBuilder psgCertificateBuilder) {
-        return PsgPublicKeyHelper.generateFingerprint(psgCertificateBuilder.getPsgPublicKeyBuilder());
+        return PsgPublicKeyHelper.from(psgCertificateBuilder.getPsgPublicKeyBuilder()).generateFingerprint();
     }
 
     private boolean verifyRootCertificateInternal(
@@ -214,19 +203,15 @@ public class PsgCertificateHelper {
         }
     }
 
-    private PsgSignature parsePsgSignature(IPsgCertificateWithSignature child) throws PsgInvalidSignatureException {
-        return new PsgSignatureBuilder().parse(child.getPsgSignature()).build();
-    }
-
     private boolean isSignatureInCertificate(IPsgCertificateWithSignature child) {
         return child.getPsgSignature().length > 0;
     }
 
     private byte[] getPsgPublicKeyForSignatureVerification(IPsgCertificateWithPubKey child)
-        throws PsgCertificateException {
+        throws PsgPubKeyException {
         return new PsgPublicKeyBuilder()
             .parse(child.getPsgPublicKey())
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .build()
             .array();
     }
@@ -236,82 +221,42 @@ public class PsgCertificateHelper {
         try {
             if (!(parent instanceof IPsgCertificateWithPubKey)
                 || !(child instanceof IPsgCertificateWithPubKey)
-                || !(child instanceof IPsgCertificateWithSignature)) {
+                || !(child instanceof IPsgCertificateWithSignature)
+                || !isSignatureInCertificate((IPsgCertificateWithSignature) child)) {
                 return false;
             }
 
-            Signature signature =
-                Signature.getInstance(getSignatureAlgorithm((IPsgCertificateWithPubKey) child),
-                    CryptoUtils.getBouncyCastleProvider());
-            signature.initVerify(decodeKey((IPsgCertificateWithPubKey) parent));
-            signature.update(getPsgPublicKeyForSignatureVerification((IPsgCertificateWithPubKey) child));
-
-            if (isSignatureInCertificate((IPsgCertificateWithSignature) child)) {
-                PsgSignature psgSignature = parsePsgSignature((IPsgCertificateWithSignature) child);
-                byte[] derSignature = convertToDerSignature(psgSignature.getSignatureR(), psgSignature.getSignatureS());
-                return signature.verify(derSignature);
-            } else {
-                return false;
-            }
-        } catch (NoSuchAlgorithmException | InvalidKeyException | InvalidKeySpecException | SignatureException
-                 | IOException | PsgCertificateException e) {
+            final CurvePoint curvePoint = getCurvePoint((IPsgCertificateWithSignature) child);
+            final EcSignatureAlgorithm signatureAlgorithm = getSignatureAlgorithm((IPsgCertificateWithPubKey) child);
+            final ECPublicKey publicKey = decodeKey((IPsgCertificateWithPubKey) parent);
+            final byte[] data = getPsgPublicKeyForSignatureVerification((IPsgCertificateWithPubKey) child);
+            return sigVerify(signatureAlgorithm, publicKey, data, curvePoint);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | PublicKeyHelperException | PsgPubKeyException e) {
             throw new PsgInvalidSignatureException(FAILED_TO_CHECK_SIGNATURE, e);
         }
     }
 
-    public static boolean sigVerify(String signatureAlgorithm, PublicKey publicKey, byte[] data,
-                                    PsgSignatureBuilder signatureBuilder) throws PsgInvalidSignatureException {
+    public static boolean sigVerify(EcSignatureAlgorithm signatureAlgorithm, PublicKey publicKey, byte[] data,
+                                    CurvePoint signaturePoint) throws PsgInvalidSignatureException {
         try {
-            Signature ecdsaSign = Signature.getInstance(signatureAlgorithm, CryptoUtils.getBouncyCastleProvider());
-            ecdsaSign.initVerify(publicKey);
-            ecdsaSign.update(data);
-            return ecdsaSign.verify(convertToDerSignature(signatureBuilder.getSignatureR(),
-                signatureBuilder.getSignatureS()));
-        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException e) {
+            return EcUtils.sigVerify(publicKey, data, signaturePoint, signatureAlgorithm.getBcAlgName());
+        } catch (InvalidSignatureException e) {
             throw new PsgInvalidSignatureException(FAILED_TO_CHECK_SIGNATURE, e);
         }
     }
 
-    static boolean sigVerify(X509Certificate certificate, byte[] data, byte[] signature)
-        throws PsgInvalidSignatureException {
-        try {
-            Signature ecdsaSign = Signature.getInstance(CryptoConstants.SHA384_WITH_ECDSA,
-                CryptoUtils.getBouncyCastleProvider());
-            ecdsaSign.initVerify(certificate);
-            ecdsaSign.update(data);
-            return ecdsaSign.verify(signature);
-        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-            throw new PsgInvalidSignatureException(FAILED_TO_CHECK_SIGNATURE, e);
-        }
+    private CurvePoint getCurvePoint(IPsgCertificateWithSignature child) throws PsgInvalidSignatureException {
+        return new PsgSignatureBuilder().parse(child.getPsgSignature()).getCurvePoint();
     }
 
-    private String getSignatureAlgorithm(IPsgCertificateWithPubKey entry) throws PsgCertificateException {
-        if (getCurveType(entry) == PsgCurveType.SECP384R1) {
-            return CryptoConstants.SHA384_WITH_ECDSA;
-        } else {
-            return CryptoConstants.SHA256_WITH_ECDSA;
-        }
+    private EcSignatureAlgorithm getSignatureAlgorithm(IPsgCertificateWithPubKey entry) throws PsgPubKeyException {
+        final CurvePoint pubKeyPoint = new PsgPublicKeyBuilder().parse(entry.getPsgPublicKey()).getCurvePoint();
+        return EcSignatureAlgorithm.fromCurveSpec(pubKeyPoint.getCurveSpec());
     }
 
     private ECPublicKey decodeKey(IPsgCertificateWithPubKey parent)
-        throws InvalidKeySpecException, NoSuchAlgorithmException, PsgCertificateException {
-        return (ECPublicKey) PsgPublicKeyHelper.toPublic(parent.getPsgPublicKey());
-    }
-
-    private static PsgCurveType getCurveType(IPsgCertificateWithPubKey entry) throws PsgCertificateException {
-        PsgPublicKey psgPublicKey = new PsgPublicKeyBuilder().parse(entry.getPsgPublicKey()).build();
-        return PsgPublicKeyHelper.parseCurveType(psgPublicKey);
-    }
-
-    private static byte[] convertToDerSignature(byte[] partR, byte[] partS) throws IOException {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            ASN1OutputStream derOutputStream = ASN1OutputStream.create(byteArrayOutputStream, ASN1Encoding.DER);
-            ASN1EncodableVector vector = new ASN1EncodableVector();
-            vector.add(new ASN1Integer(new BigInteger(1, partR)));
-            vector.add(new ASN1Integer(new BigInteger(1, partS)));
-            derOutputStream.writeObject(new DERSequence(vector));
-            return byteArrayOutputStream.toByteArray();
-        }
+        throws InvalidKeySpecException, NoSuchAlgorithmException, PublicKeyHelperException, PsgPubKeyException {
+        return (ECPublicKey) PsgPublicKeyHelper.from(parent.getPsgPublicKey()).toPublic();
     }
 
     public void verifyParentsInChainByPubKey(List<CertificateEntryWrapper> certificateChainList)

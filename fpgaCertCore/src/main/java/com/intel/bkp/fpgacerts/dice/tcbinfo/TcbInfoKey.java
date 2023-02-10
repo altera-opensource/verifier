@@ -44,6 +44,8 @@ import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
 @NoArgsConstructor
 public class TcbInfoKey {
 
+    private static final TcbInfoKey EMPTY = new TcbInfoKey();
+
     private String vendor;
     private String model;
     private Integer layer;
@@ -53,7 +55,6 @@ public class TcbInfoKey {
     private TcbInfoKey(Integer layer) {
         this.layer = layer;
         this.vendor = TcbInfoConstants.VENDOR;
-        this.index = TcbInfoConstants.INDEX;
     }
 
     public static TcbInfoKey from(MeasurementType measurementType) {
@@ -65,6 +66,7 @@ public class TcbInfoKey {
     public static TcbInfoKey from(MeasurementType measurementType, String model) {
         final TcbInfoKey key = new TcbInfoKey(measurementType.getLayer());
         key.setModel(model);
+        key.setIndex(TcbInfoConstants.INDEX);
         return key;
     }
 
@@ -81,7 +83,7 @@ public class TcbInfoKey {
         layerField.ifPresent(key::setLayer);
 
         final Optional<Integer> indexField = tcbInfo.get(TcbInfoField.INDEX);
-        key.setIndex(indexField.orElse(TcbInfoConstants.INDEX));
+        indexField.ifPresent(key::setIndex);
 
         final Optional<String> typeField = tcbInfo.get(TcbInfoField.TYPE);
         typeField.ifPresent(key::setType);
@@ -89,14 +91,18 @@ public class TcbInfoKey {
         return key;
     }
 
+    public boolean isEmpty() {
+        return this.equals(EMPTY);
+    }
+
     @Override
     public String toString() {
         return "TcbInfoKey("
-                + includeIfNonNull("vendor", vendor)
-                + includeIfNonNull("model", model)
-                + includeIfNonNull("layer", layer)
-                + includeIfNonNull("index", index)
-                + includeIfNonNull("type", type)
-                + " )";
+            + includeIfNonNull("vendor", vendor)
+            + includeIfNonNull("model", model)
+            + includeIfNonNull("layer", layer)
+            + includeIfNonNull("index", index)
+            + includeIfNonNull("type", type)
+            + " )";
     }
 }

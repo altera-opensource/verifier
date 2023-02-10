@@ -34,9 +34,10 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
 import com.intel.bkp.core.psgcertificate.model.PsgBlock0Entry;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ class PsgBlock0EntryBuilderTest {
         byte[] signedBytes = TestUtil.signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
 
         PsgBlock0Entry expected = new PsgBlock0EntryBuilder()
-            .signature(signedBytes)
+            .signature(signedBytes, PsgSignatureCurveType.SECP384R1)
             .build();
 
         PsgBlock0Entry result = new PsgBlock0EntryBuilder()
@@ -81,12 +82,12 @@ class PsgBlock0EntryBuilderTest {
         byte[] signedBytes = TestUtil.signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
 
         PsgBlock0Entry expected = new PsgBlock0EntryBuilder()
-            .signature(signedBytes)
-            .withActor(EndianessActor.FIRMWARE)
+            .signature(signedBytes, PsgSignatureCurveType.SECP384R1)
+            .withActor(EndiannessActor.FIRMWARE)
             .build();
 
         PsgBlock0Entry result = new PsgBlock0EntryBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(expected.array())
             .build();
 

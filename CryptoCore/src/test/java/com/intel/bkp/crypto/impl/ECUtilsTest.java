@@ -147,7 +147,7 @@ class ECUtilsTest {
 
         //when-then
         Assertions.assertThrows(KeystoreGenericException.class, () -> EcUtils.genEc(provider,
-            CryptoConstants.ECDSA_KEY, CryptoConstants.EC_CURVE_SPEC_384));
+            CryptoConstants.EC_KEY, CryptoConstants.EC_CURVE_SPEC_384));
     }
 
     @Test
@@ -164,12 +164,12 @@ class ECUtilsTest {
     @Test
     public void genECDSA() throws KeystoreGenericException {
         // when
-        KeyPair result = EcUtils.genEc(CryptoUtils.getBouncyCastleProvider(), CryptoConstants.ECDSA_KEY,
+        KeyPair result = EcUtils.genEc(CryptoUtils.getBouncyCastleProvider(), CryptoConstants.EC_KEY,
             CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDSA_KEY, result.getPrivate().getAlgorithm());
+        Assertions.assertEquals(CryptoConstants.EC_KEY, result.getPrivate().getAlgorithm());
     }
 
     @Test
@@ -199,7 +199,7 @@ class ECUtilsTest {
     @Test
     public void genEcdhSharedSecret_IncorrectAlgorithm_Throws() throws KeystoreGenericException {
         // given
-        final String incorrectAlgorithm = CryptoConstants.ECDSA_ALG_TYPE;
+        final String incorrectAlgorithm = "ECDSA";
 
         final KeyPair firstKeypair = CryptoUtils.genEcdhBC();
         final KeyPair secondKeypair = CryptoUtils.genEcdhBC();
@@ -347,7 +347,7 @@ class ECUtilsTest {
         // given
         KeyPair key = CryptoUtils.genEcdhBC();
         byte[] privateBytes = EcUtils.getBytesFromPrivKey((ECPrivateKey) key.getPrivate());
-        byte[] privateBytesWithoutLeadingZero = PaddingUtils.alignTo(privateBytes, 48);
+        byte[] privateBytesWithoutLeadingZero = PaddingUtils.alignLeft(privateBytes, 48);
 
         // when
         PrivateKey result = EcUtils.toPrivate(privateBytesWithoutLeadingZero, CryptoConstants.ECDH_KEY,

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.exceptions.SectionTypeException;
 import com.intel.bkp.verifier.interfaces.IMeasurementRecordToTcbInfoMapper;
@@ -49,14 +49,14 @@ public class GpMeasurementRecordToTcbInfoMapper
     implements IMeasurementRecordToTcbInfoMapper<GpMeasurementRecordHeader> {
 
     @Override
-    public TcbInfo map(GpMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
+    public TcbInfoMeasurement map(GpMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
         try {
             final SectionType sectionType = SectionType.from(header.getSectionType());
             return mapInternal(header, recordContentBuffer, sectionType);
         } catch (SectionTypeException e) {
             log.warn("Could not parse section - section unknown: {}", header);
             recordContentBuffer.skip(getMeasurementSize(header));
-            return new TcbInfo();
+            return TcbInfoMeasurement.empty();
         }
     }
 

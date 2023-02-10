@@ -33,11 +33,10 @@
 
 package com.intel.bkp.core.security.params.crypto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter

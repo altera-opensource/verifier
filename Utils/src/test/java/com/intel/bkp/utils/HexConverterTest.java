@@ -56,6 +56,18 @@ public class HexConverterTest {
     }
 
     @Test
+    public void fromHex_EmptyString_ReturnsEmptyByteArray() {
+        // given
+        final byte[] expected = new byte[]{};
+
+        // when
+        final byte[] result = fromHex("");
+
+        // then
+        Assertions.assertArrayEquals(expected, result);
+    }
+
+    @Test
     public void fromHex_InvalidData_Throws() {
         // when-then
         Assertions.assertThrows(RuntimeException.class, () -> fromHex("XXXXXXXX"));
@@ -140,6 +152,18 @@ public class HexConverterTest {
 
         // when
         final String result = toFormattedHex((byte) 0x0a);
+
+        // then
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void toFormattedHex_Integer_Success() {
+        // given
+        final String expected = "0x0A";
+
+        // when
+        final String result = toFormattedHex(0x0a);
 
         // then
         Assertions.assertEquals(expected, result);

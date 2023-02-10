@@ -34,9 +34,11 @@
 package com.intel.bkp.verifier.dp;
 
 import com.intel.bkp.fpgacerts.chain.ChainFetcherBase;
+import com.intel.bkp.fpgacerts.chain.DistributionPointCertificate;
 import com.intel.bkp.verifier.exceptions.ChainFetchingException;
 
 import java.security.cert.X509Certificate;
+import java.util.LinkedList;
 import java.util.List;
 
 import static com.intel.bkp.fpgacerts.chain.DistributionPointCertificate.getX509Certificates;
@@ -47,7 +49,14 @@ public class DistributionPointChainFetcher extends ChainFetcherBase {
         super(new DistributionPointCertificateFetcher(connector));
     }
 
-    public List<X509Certificate> downloadCertificateChain(String url) {
+    public List<DistributionPointCertificate> downloadCertificateChain(DistributionPointCertificate cert) {
+        final var certs = new LinkedList<DistributionPointCertificate>();
+        certs.add(cert);
+        certs.addAll(fetchCertificateChain(cert.getX509Cert()));
+        return certs;
+    }
+
+    public List<X509Certificate> downloadCertificateChainAsX509(String url) {
         return getX509Certificates(fetchCertificateChain(url));
     }
 

@@ -33,17 +33,34 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
+import com.intel.bkp.crypto.curve.CurveSpec;
+import com.intel.bkp.crypto.interfaces.ICurveSpec;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
+@Getter
 @AllArgsConstructor
-public enum PsgCurveType {
-    SECP256R1(32, 0x21339360),
-    SECP384R1(48, 0x54326648);
+public enum PsgCurveType implements ICurveSpec {
+    SECP256R1(CurveSpec.C256, 0x21339360),
+    SECP384R1(CurveSpec.C384, 0x54326648);
 
-    @Getter
-    private final int size;
-
-    @Getter
+    private final CurveSpec curveSpec;
     private final int magic;
+
+
+    public static PsgCurveType fromMagic(int magic) {
+        return Arrays.stream(values())
+            .filter(val -> val.getMagic() == magic)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
+    }
+
+    public static PsgCurveType fromCurveSpec(CurveSpec curveSpec) {
+        return Arrays.stream(values())
+            .filter(val -> val.getCurveSpec() == curveSpec)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
+    }
 }

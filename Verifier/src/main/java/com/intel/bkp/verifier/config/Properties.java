@@ -40,7 +40,7 @@ import lombok.NoArgsConstructor;
 public class Properties {
 
     public static final String TRANSPORT_LAYER_TYPE = "transport-layer-type";
-    public static final String ONLY_EFUSE_UDS = "only-efuse-uds";
+    public static final String REQUIRE_IID_UDS = "require-iid-uds";
     public static final String TEST_MODE_SECRETS = "test-mode-secrets";
     public static final String DISTRIBUTION_POINT_GROUP = "distribution-point";
     public static final String TRUSTED_ROOT_HASH_GROUP = "trusted-root-hash";
@@ -67,7 +67,6 @@ public class Properties {
 
     public static final String LIB_SPDM_WRAPPER_LIBRARY_PATH = "wrapper-library-path";
     public static final String LIB_SPDM_CT_EXPONENT = "ct-exponent";
-    public static final String LIB_SPDM_CERTIFICATES_EFUSE_UDS_SLOT_ID = "certificates-efuse-uds-slot-id";
     public static final String LIB_SPDM_MEASUREMENTS_REQUEST_SIGNATURE = "measurements-request-signature";
 
     public static final String RUN_GP_ATTESTATION = "run-gp-att";

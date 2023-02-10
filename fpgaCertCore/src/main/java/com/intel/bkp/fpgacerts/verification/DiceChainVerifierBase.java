@@ -50,7 +50,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Set;
 
-import static com.intel.bkp.crypto.x509.validation.BasicConstraintsVerifier.CA_TRUE_PATHLENGTH_NONE;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
@@ -61,13 +60,12 @@ import static com.intel.bkp.utils.ListUtils.toLinkedList;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public abstract class DiceChainVerifierBase {
 
-    private static final int ROOT_BASIC_CONSTRAINTS = CA_TRUE_PATHLENGTH_NONE;
     private static final Set<String> DICE_EXTENSION_OIDS = Set.of(TCG_DICE_TCB_INFO.getOid(),
         TCG_DICE_MULTI_TCB_INFO.getOid(), TCG_DICE_UEID.getOid());
 
     private final ExtendedKeyUsageVerifier extendedKeyUsageVerifier;
     private final ChainVerifier certificateChainVerifier;
-    private final CrlVerifier crlVerifier;
+    private final DiceCrlVerifier crlVerifier;
     private final RootHashVerifier rootHashVerifier;
     private final UeidVerifier ueidVerifier;
     private final SubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier;
@@ -79,7 +77,8 @@ public abstract class DiceChainVerifierBase {
     private byte[] deviceId;
 
     protected DiceChainVerifierBase(ICrlProvider crlProvider, String trustedRootHash, boolean testModeSecrets) {
-        this(new ExtendedKeyUsageVerifier(), new ChainVerifier(), new CrlVerifier(crlProvider), new RootHashVerifier(),
+        this(new ExtendedKeyUsageVerifier(), new ChainVerifier(), new DiceCrlVerifier(crlProvider),
+            new RootHashVerifier(),
             new UeidVerifier(), new SubjectKeyIdentifierVerifier(), trustedRootHash,
             new TcbInfoVerifier(testModeSecrets), new DiceSubjectVerifier());
     }
@@ -88,14 +87,15 @@ public abstract class DiceChainVerifierBase {
 
     protected abstract void handleVerificationFailure(String failureDetails);
 
-    public void verifyChainWitchTcbInfoValidation(List<X509Certificate> certificates) {
-        verifyChain(certificates);
+    public void verifyChain(List<X509Certificate> certificates) {
+        verifyChainInternal(certificates);
         verifyTcbInfo(certificates);
     }
 
-    public void verifyChain(List<X509Certificate> certs) {
+    private void verifyChainInternal(List<X509Certificate> certs) {
+        log.info("Performing standard X509 validation of certificate chain.");
         final var certificates = toLinkedList(certs);
-        if (!certificateChainVerifier.certificates(certificates).rootBasicConstraints(ROOT_BASIC_CONSTRAINTS)
+        if (!certificateChainVerifier.certificates(certificates)
             .knownExtensionOids(DICE_EXTENSION_OIDS).verify()) {
             handleVerificationFailure("Parent signature verification in X509 attestation chain failed.");
         }
@@ -113,10 +113,6 @@ public abstract class DiceChainVerifierBase {
             handleVerificationFailure("Root hash in X509 DICE chain is different from trusted root hash.");
         }
 
-        if (!crlVerifier.certificates(certificates).doNotRequireCrlForLeafCertificate().verify()) {
-            handleVerificationFailure("One of the certificates in chain is revoked.");
-        }
-
         if (!extendedKeyUsageVerifier.certificate(certificates.getFirst()).verify(getExpectedLeafCertKeyPurposes())) {
             handleVerificationFailure("Leaf certificate has invalid key usages.");
         }
@@ -124,9 +120,14 @@ public abstract class DiceChainVerifierBase {
         if (!diceSubjectVerifier.certificates(certificates).verify()) {
             handleVerificationFailure("DICE subject validation failed.");
         }
+
+        if (!crlVerifier.certificates(certificates).doNotRequireCrlForLeafCertificate().verify()) {
+            handleVerificationFailure("One of the certificates in chain is revoked.");
+        }
     }
 
     private void verifyTcbInfo(List<X509Certificate> certificates) {
+        log.info("Performing DICE validation of certificate chain.");
         if (!tcbInfoVerifier.certificates(certificates).verify()) {
             handleVerificationFailure("TcbInfo validation failed.");
         }

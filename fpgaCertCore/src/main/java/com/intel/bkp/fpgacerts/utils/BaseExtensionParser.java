@@ -40,17 +40,18 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Primitive;
 
 import java.io.IOException;
-import java.security.cert.X509Certificate;
+import java.security.cert.X509Extension;
 import java.util.Optional;
 
-import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.getExtensionBytes;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.getExtensionBytes;
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.getObjDescription;
 
 @Slf4j
 @Getter
 public abstract class BaseExtensionParser<T> {
 
-    private static final String START_LOG_MESSAGE = "Parsing {} extension from certificate: {}";
-    private static final String ERROR_MESSAGE = "Failed to parse %s extension from certificate: %s";
+    private static final String START_LOG_MESSAGE = "Parsing {} extension from {}";
+    private static final String ERROR_MESSAGE = "Failed to parse %s extension from %s";
 
     private final String extensionName;
 
@@ -58,25 +59,25 @@ public abstract class BaseExtensionParser<T> {
         this.extensionName = extensionName;
     }
 
-    public abstract T parse(@NonNull final X509Certificate certificate);
+    protected abstract T parse(@NonNull final X509Extension x509Obj);
 
-    protected void logExtensionParsingStart(final X509Certificate cert, final String extensionName) {
-        log.debug(START_LOG_MESSAGE, extensionName, cert.getSubjectX500Principal());
+    protected void logExtensionParsingStart(final X509Extension x509Obj, final String extensionName) {
+        log.trace(START_LOG_MESSAGE, extensionName, getObjDescription(x509Obj));
     }
 
-    protected Optional<ASN1Encodable> getExtension(@NonNull final X509Certificate certificate,
+    protected Optional<ASN1Encodable> getExtension(@NonNull final X509Extension x509Obj,
                                                    final String extensionOid) {
-        return getExtensionBytes(certificate, extensionOid)
+        return getExtensionBytes(x509Obj, extensionOid)
             .map(bytes -> {
                 try {
                     return ASN1Primitive.fromByteArray(bytes);
                 } catch (IOException e) {
-                    throw new IllegalArgumentException(getExtensionParsingError(certificate));
+                    throw new IllegalArgumentException(getExtensionParsingError(x509Obj));
                 }
             });
     }
 
-    protected String getExtensionParsingError(final X509Certificate certificate) {
-        return String.format(ERROR_MESSAGE, extensionName, certificate.getSubjectX500Principal());
+    protected String getExtensionParsingError(final X509Extension x509Obj) {
+        return String.format(ERROR_MESSAGE, extensionName, getObjDescription(x509Obj));
     }
 }

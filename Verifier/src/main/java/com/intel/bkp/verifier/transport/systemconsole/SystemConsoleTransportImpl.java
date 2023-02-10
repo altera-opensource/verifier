@@ -55,9 +55,9 @@ public class SystemConsoleTransportImpl implements TransportLayer {
     @Override
     public byte[] sendCommand(byte[] command) {
         String formattedHexCommand = SystemConsoleHexConverter.toString(command);
-        log.debug("Sending command: {}", formattedHexCommand);
+        log.trace("Sending command: {}", formattedHexCommand);
         String result = client.sendPacket(TCL_COMMANDS.sendPacket(formattedHexCommand));
-        log.debug("Command result: {}", result);
+        log.trace("Command result: {}", result);
         return SystemConsoleHexConverter.fromString(result);
     }
 

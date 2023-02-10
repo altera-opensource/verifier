@@ -34,6 +34,7 @@
 package com.intel.bkp.verifier.service.sender;
 
 import com.intel.bkp.verifier.command.responses.attestation.SpdmCertificateResponseBuilder;
+import com.intel.bkp.verifier.exceptions.SpdmCommandFailedException;
 import com.intel.bkp.verifier.service.spdm.SpdmCaller;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,11 +43,9 @@ import static com.intel.bkp.utils.HexConverter.fromHex;
 @Slf4j
 public class SpdmGetCertificateMessageSender {
 
-    public byte[] send() {
-        log.info("Preparing SPDM GET_DIGEST and GET_CERTIFICATE ...");
-
+    public byte[] send(int slotId) throws SpdmCommandFailedException {
         return new SpdmCertificateResponseBuilder()
-            .parse(fromHex(SpdmCaller.getInstance().getCerts()))
+            .parse(fromHex(SpdmCaller.getInstance().getCerts(slotId)))
             .build()
             .getCertificateChain();
     }

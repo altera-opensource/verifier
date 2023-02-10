@@ -34,55 +34,22 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
-import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.utils.ModifyBitsBuilder;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.spec.InvalidKeySpecException;
 
 class PsgPublicKeyHelperTest {
 
     private static final PsgCurveType TEST_CURVE_TYPE = PsgCurveType.SECP384R1;
-
-    @Test
-    void generateFingerprint_WithPsgPublicKeyArgument_Success() {
-        // given
-        final PsgPublicKey psgPubKey = generatePsgPublicKey().build();
-
-        // when
-        final String fingerprint = PsgPublicKeyHelper.generateFingerprint(psgPubKey);
-
-        // then
-        Assertions.assertNotNull(fingerprint);
-        Assertions.assertEquals(96, fingerprint.length(), "Fingerprint for sha384 should be equal");
-    }
-
-    @Test
-    void generateFingerprint_WithPsgPublicKeyBytesArgument_Success() throws PsgCertificateException {
-        // given
-        final byte[] psgPubKeyBytes = generatePsgPublicKey()
-            .withActor(EndianessActor.SERVICE)
-            .build()
-            .array();
-
-        // when
-        final String fingerprint = PsgPublicKeyHelper.generateFingerprint(psgPubKeyBytes);
-
-        // then
-        Assertions.assertNotNull(fingerprint);
-        Assertions.assertEquals(96, fingerprint.length(), "Fingerprint for sha384 should be equal");
-    }
 
     @Test
     void generateFingerprint_WithPsgPublicKeyBuilderArgument_Success() {
@@ -90,7 +57,7 @@ class PsgPublicKeyHelperTest {
         final PsgPublicKeyBuilder psgPublicKeyBuilder = generatePsgPublicKey();
 
         // when
-        final String fingerprint = PsgPublicKeyHelper.generateFingerprint(psgPublicKeyBuilder);
+        final String fingerprint = PsgPublicKeyHelper.from(psgPublicKeyBuilder).generateFingerprint();
 
         // then
         Assertions.assertNotNull(fingerprint);
@@ -98,121 +65,21 @@ class PsgPublicKeyHelperTest {
     }
 
     @Test
-    void generateFingerprint_WithEcPublicKey_Success() {
-        // given
-        final KeyPair keyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_384);
-        assert keyPair != null;
-        PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, TEST_CURVE_TYPE);
-        final String expected = PsgPublicKeyHelper.generateFingerprint(psgPublicKeyBuilder);
-
-        // when
-        final String result = PsgPublicKeyHelper.generateFingerprint((ECPublicKey) keyPair.getPublic());
-
-        // then
-        Assertions.assertEquals(expected, result);
-    }
-
-    @Test
-    void parsePublicKeyMagic_WithManifestMagic_Success() throws PsgCertificateException {
-        // given
-        final PsgPublicKeyMagic expected = PsgPublicKeyMagic.MANIFEST_MAGIC;
-
-        // when
-        final PsgPublicKeyMagic actual = PsgPublicKeyHelper.parsePublicKeyMagic(expected.getValue());
-
-        // then
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void parsePublicKeyMagic_WithM1Magic_Success() throws PsgCertificateException {
-        // given
-        final PsgPublicKeyMagic expected = PsgPublicKeyMagic.M1_MAGIC;
-
-        // when
-        final PsgPublicKeyMagic actual = PsgPublicKeyHelper.parsePublicKeyMagic(expected.getValue());
-
-        // then
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void parsePublicKeyMagic_WithWrongPublicKeyMagic_ThrowsException() {
-        Assertions.assertThrows(PsgCertificateException.class, () -> PsgPublicKeyHelper.parsePublicKeyMagic(123));
-    }
-
-    @Test
-    void parseCurveType_WithPublicKeyArgument_Success() throws PsgCertificateException {
-        // given
-        final PsgPublicKey psgPubKey = generatePsgPublicKey()
-            .withActor(EndianessActor.SERVICE)
-            .build();
-
-        // when
-        final PsgCurveType actual = PsgPublicKeyHelper.parseCurveType(psgPubKey);
-
-        // then
-        Assertions.assertEquals(TEST_CURVE_TYPE, actual);
-    }
-
-    @Test
-    void parseCurveType_WithBytesArgument_Success() throws PsgCertificateException {
-        // given
-        final PsgCurveType expected = PsgCurveType.SECP384R1;
-        final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES).putInt(expected.getMagic());
-
-        // when
-        final PsgCurveType actual = PsgPublicKeyHelper.parseCurveType(buffer.array());
-
-        // then
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void parseCurveType_WithIntArgumentAndSecp384r1_Success() throws PsgCertificateException {
-        // given
-        final PsgCurveType expected = PsgCurveType.SECP384R1;
-
-        // when
-        final PsgCurveType actual = PsgPublicKeyHelper.parseCurveType(expected.getMagic());
-
-        // then
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void parseCurveType_WithIntArgumentAndSecp256r1_Success() throws PsgCertificateException {
-        // given
-        final PsgCurveType expected = PsgCurveType.SECP256R1;
-
-        // when
-        final PsgCurveType actual = PsgPublicKeyHelper.parseCurveType(expected.getMagic());
-
-        // then
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void parseCurveType_WithIntArgument_ThrowException() {
-        Assertions.assertThrows(PsgCertificateException.class, () -> PsgPublicKeyHelper.parseCurveType(123));
-    }
-
-    @Test
-    void verifyPoint_Success() throws PsgCertificateException {
+    void verifyPoint_Success() throws PublicKeyHelperException {
         // given
         final PsgPublicKeyBuilder psgPubKey = generatePsgPublicKey();
 
         // when
-        PsgPublicKeyHelper.verifyPoint(psgPubKey);
+        PsgPublicKeyHelper.from(psgPubKey).verifyPoint();
     }
 
     @Test
-    void verifyPoint_WithSecp256_Success() throws PsgCertificateException {
+    void verifyPoint_WithSecp256_Success() throws PublicKeyHelperException {
         // given
         final PsgPublicKeyBuilder psgPubKey = generatePsgPublicKeyForSecp256();
 
         // when
-        PsgPublicKeyHelper.verifyPoint(psgPubKey);
+        PsgPublicKeyHelper.from(psgPubKey).verifyPoint();
     }
 
     @Test
@@ -223,7 +90,7 @@ class PsgPublicKeyHelperTest {
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, TEST_CURVE_TYPE);
 
         // when
-        final boolean result = PsgPublicKeyHelper.areEqual((ECPublicKey) keyPair.getPublic(), psgPublicKeyBuilder);
+        final boolean result = PsgPublicKeyHelper.from(psgPublicKeyBuilder).areEqual((ECPublicKey) keyPair.getPublic());
 
         // then
         Assertions.assertTrue(result);
@@ -239,74 +106,32 @@ class PsgPublicKeyHelperTest {
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, TEST_CURVE_TYPE);
 
         // when
-        final boolean result = PsgPublicKeyHelper.areEqual((ECPublicKey) keyPairOther.getPublic(), psgPublicKeyBuilder);
+        final boolean result =
+            PsgPublicKeyHelper.from(psgPublicKeyBuilder).areEqual((ECPublicKey) keyPairOther.getPublic());
 
         // then
         Assertions.assertFalse(result);
     }
 
     @Test
-    void verifyPoint_ThrowsException() {
-        // when-then
-        Assertions.assertThrows(PsgCertificateException.class,
-            () -> PsgPublicKeyHelper.verifyPoint(new PsgPublicKeyBuilder()));
-    }
-
-    @Test
-    void getTotalPublicKeySize_WithSecp384r1_Success() {
-        // when
-        final int actual = PsgPublicKeyHelper.getTotalPublicKeySize(PsgCurveType.SECP384R1);
-
-        // then
-        Assertions.assertEquals(120, actual, "Expected length for SECP384R1 with metadata");
-    }
-
-    @Test
-    void getTotalPublicKeySize_WithSecp256r1_Success() {
-        // when
-        final int actual = PsgPublicKeyHelper.getTotalPublicKeySize(PsgCurveType.SECP256R1);
-
-        // then
-        Assertions.assertEquals(88, actual, "Expected length for SECP256R1 with metadata");
-    }
-
-    @Test
-    void toPublic_WithPsgPublicKeyBytes_Success()
-        throws NoSuchAlgorithmException, PsgCertificateException, InvalidKeySpecException {
-        // given
-        final byte[] psgPubKey = generatePsgPublicKey()
-            .withActor(EndianessActor.SERVICE)
-            .build()
-            .array();
-
-        // when
-        final PublicKey publicKey = PsgPublicKeyHelper.toPublic(psgPubKey);
-
-        // then
-        Assertions.assertNotNull(publicKey);
-    }
-
-    @Test
-    void toPublic_WithPsgPublicKeyObject_Success()
-        throws NoSuchAlgorithmException, PsgCertificateException, InvalidKeySpecException {
+    void toPublic_WithPsgPublicKeyObject_Success() throws PublicKeyHelperException {
         // given
         final PsgPublicKeyBuilder psgPubKey = generatePsgPublicKey();
 
         // when
-        final PublicKey publicKey = PsgPublicKeyHelper.toPublic(psgPubKey);
+        final PublicKey publicKey = PsgPublicKeyHelper.from(psgPubKey).toPublic();
 
         // then
         Assertions.assertNotNull(publicKey);
     }
 
     @Test
-    void toPublic_WithPsgPublicKeyObjectAndSecp256_Success()
-        throws NoSuchAlgorithmException, PsgCertificateException, InvalidKeySpecException {
+    void toPublic_WithPsgPublicKeyObjectAndSecp256_Success() throws PublicKeyHelperException {
         // given
         final PsgPublicKeyBuilder psgPubKey = generatePsgPublicKeyForSecp256();
 
         // when
-        final PublicKey publicKey = PsgPublicKeyHelper.toPublic(psgPubKey);
+        final PublicKey publicKey = PsgPublicKeyHelper.from(psgPubKey).toPublic();
 
         // then
         Assertions.assertNotNull(publicKey);
@@ -326,10 +151,9 @@ class PsgPublicKeyHelperTest {
 
     private PsgPublicKeyBuilder getPsgPublicKeyBuilder(KeyPair keyPair, PsgCurveType testCurveType) {
         return new PsgPublicKeyBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .magic(PsgPublicKeyMagic.MANIFEST_MAGIC)
-            .curveType(testCurveType)
             .permissions(ModifyBitsBuilder.fromNone().build())
-            .publicKey((ECPublicKey) keyPair.getPublic());
+            .publicKey(keyPair.getPublic(), testCurveType);
     }
 }

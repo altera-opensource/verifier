@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.enumerations.KeyWrappingType;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import org.apache.commons.io.IOUtils;
@@ -56,7 +56,7 @@ class PsgAesKeyBuilderTest {
 
         // when
         PsgAesKeyBuilder builder = new PsgAesKeyBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(aesContent);
 
         // then
@@ -71,7 +71,7 @@ class PsgAesKeyBuilderTest {
 
         // when
         PsgAesKeyBuilder builder = new PsgAesKeyBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(aesContent);
 
         // then
@@ -86,7 +86,7 @@ class PsgAesKeyBuilderTest {
 
         // when
         PsgAesKeyBuilder builder = new PsgAesKeyBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(aesContent);
 
         // then
@@ -101,7 +101,7 @@ class PsgAesKeyBuilderTest {
 
         // when
         PsgAesKeyBuilder builder = new PsgAesKeyBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(aesContent);
 
         // then

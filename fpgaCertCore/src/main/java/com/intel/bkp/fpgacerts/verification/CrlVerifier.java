@@ -41,7 +41,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigInteger;
 import java.security.Principal;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -59,7 +58,7 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class CrlVerifier {
 
-    static final String CHECKING_REVOCATION_LOG_FORMAT = "Checking if certificate is revoked based on CRL: {}";
+    static final String CHECKING_REVOCATION_LOG_FORMAT = "Checking if CRL contains revocation for certificate: {}";
     static final String NO_EXTENSION_WHEN_REQUIRED_LOG_FORMAT =
         "Certificate does not have required CRLDistributionPoints extension: {}";
     static final String NO_EXTENSION_WHEN_NOT_REQUIRED_LOG_FORMAT =
@@ -69,7 +68,8 @@ public class CrlVerifier {
     static final String SIGNATURE_VALIDATION_FAILED_LOG_MSG = "Failed to verify signature of CRL";
     static final String INVALID_NEXT_UPDATE_LOG_MSG =
         "CRL might be invalid! It is either expired, or does not contain mandatory NextUpdate field.";
-    static final String CERT_IS_REVOKED_LOG_FORMAT = "Certificate {} with serial number {} is revoked.";
+    static final String CERT_IS_REVOKED_LOG_FORMAT = "Certificate {} with serial number {} is revoked by {}.";
+    public static final String SERIAL_NUMBER_REVOCATION_REASON = "serial number";
 
     @Getter
     private final SignatureVerifier signatureVerifier;
@@ -128,11 +128,9 @@ public class CrlVerifier {
         verifyCrlSignature(crl, certificateChainIterator.nextIndex());
         verifyNextUpdate(crl);
 
-        final BigInteger serialNumber = certificate.getSerialNumber();
-        return isRevoked(crl, serialNumber)
-               ? handleRevokedCertificate(certificate.getSubjectX500Principal(), serialNumber)
-               : verifyRecursive(certificateChainIterator.next(), certificateChainIterator, true);
-
+        return getRevocationReason(crl, certificate)
+            .map(revocationReason -> handleRevokedCertificate(certificate, revocationReason))
+            .orElseGet(() -> verifyRecursive(certificateChainIterator.next(), certificateChainIterator, true));
     }
 
     private void verifyCrlSignature(final X509CRL crl, final int issuerCertIndex) {
@@ -161,8 +159,19 @@ public class CrlVerifier {
             .orElse(false);
     }
 
-    private boolean handleRevokedCertificate(Principal certificateSubject, BigInteger serial) {
-        log.error(CERT_IS_REVOKED_LOG_FORMAT, certificateSubject, toHex(serial.byteValue()));
+    Optional<String> getRevocationReason(X509CRL crl, X509Certificate cert) {
+        return isRevokedBySerialNumber(crl, cert)
+               ? Optional.of(SERIAL_NUMBER_REVOCATION_REASON)
+               : Optional.empty();
+    }
+
+    boolean isRevokedBySerialNumber(X509CRL crl, X509Certificate cert) {
+        return isRevoked(crl, cert.getSerialNumber());
+    }
+
+    private boolean handleRevokedCertificate(X509Certificate certificate, String revocationReason) {
+        final String snHex = toHex(certificate.getSerialNumber().toByteArray());
+        log.error(CERT_IS_REVOKED_LOG_FORMAT, certificate.getSubjectX500Principal(), snHex, revocationReason);
         return false;
     }
 }

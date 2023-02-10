@@ -58,7 +58,7 @@ public class TeardownMessageSender {
     }
 
     public void send(TransportLayer transportLayer, CommandLayer commandLayer, byte[] sdmSessionId) {
-        log.info("Preparing PSGSIGMA_TEARDOWN ...");
+        log.debug("Preparing PSGSIGMA_TEARDOWN ...");
         final SigmaTeardownMessage sigmaTeardown = sigmaTeardownMessageBuilder
             .sdmSessionId(sdmSessionId)
             .build();

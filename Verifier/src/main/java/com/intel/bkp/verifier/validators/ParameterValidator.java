@@ -49,7 +49,8 @@ public class ParameterValidator {
                 return false;
             }
         } catch (DecoderException e) {
-            log.error("Provided context parameter must be HEX.", e);
+            log.error("Provided context parameter must be HEX: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return false;
         }
         return true;

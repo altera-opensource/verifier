@@ -71,9 +71,11 @@ public class DistributionPointConnector {
                 responseBody = Optional.of(response.body());
             }
         } catch (IOException e) {
-            log.error("Failed to get http response.", e);
+            log.error("Failed to get http response: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
         } catch (InterruptedException e) {
-            log.error("Failed to get http response.", e);
+            log.error("Failed to get http response: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             Thread.currentThread().interrupt();
         }
         return responseBody;
@@ -106,7 +108,7 @@ public class DistributionPointConnector {
     }
 
     private HttpRequest getHttpRequest(String url) {
-        log.info("Performing request to: {}", url);
+        log.debug("Performing request to: {}", url);
         return HttpRequest.newBuilder(URI.create(url))
             .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
             .GET()

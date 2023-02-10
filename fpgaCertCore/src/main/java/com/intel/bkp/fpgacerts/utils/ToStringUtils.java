@@ -42,8 +42,12 @@ import java.util.Optional;
 public class ToStringUtils {
 
     public static String includeIfNonNull(String fieldName, Object field) {
-        return Optional.ofNullable(field)
-                .map(obj -> String.format(" %s=%s", fieldName, field))
-                .orElse("");
+        return includeIfPresent(fieldName, Optional.ofNullable(field));
+    }
+
+    public static <T> String includeIfPresent(String fieldName, Optional<T> field) {
+        return field
+            .map(obj -> String.format(" %s=%s", fieldName, obj))
+            .orElse("");
     }
 }

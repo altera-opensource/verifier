@@ -48,7 +48,9 @@ import org.apache.commons.cli.ParseException;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AppArgumentParser {
 
-    private static final String WORKLOAD_APP_DESC = "WorkloadApp";
+    private static final String WORKLOAD_APP_DESC =
+        "WorkloadApp --command GET --transport-id \"host:127.0.0.1;port:50001\" "
+            + "--ref-measurement /path/to/reference.rim --slot-id 0x02";
 
     public static AppArgument parseArguments(String[] args) {
         Options options = getOptions();
@@ -60,12 +62,13 @@ public class AppArgumentParser {
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
-            log.error("[WORKLOAD] Failed to parse arguments.", e);
+            log.error("[WORKLOAD] Failed to parse arguments: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             formatter.printHelp(WORKLOAD_APP_DESC, options);
             System.exit(1);
         }
 
-        return AppArgumentBuilder.instance()
+        return AppArgument.instance()
             .transportId(cmd.getOptionValue("transport-id").trim())
             .context(cmd.getOptionValue("context"))
             .pufType(cmd.getOptionValue("puf-type"))
@@ -94,7 +97,7 @@ public class AppArgumentParser {
             + "Possible values: IID, INTEL, EFUSE, IIDUSER, INTEL_USER");
         options.addOption(pufType);
 
-        Option refMeasure = new Option(null, "ref-measurement", true, "reference evidence with policy");
+        Option refMeasure = new Option(null, "ref-measurement", true, "Path to Reference Integrity Manifest (RIM)");
         options.addOption(refMeasure);
 
         Option logLevel = new Option(null, "log-level", true, "Logging level. "

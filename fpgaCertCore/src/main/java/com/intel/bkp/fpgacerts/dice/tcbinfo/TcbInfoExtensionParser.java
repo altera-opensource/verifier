@@ -38,11 +38,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.security.cert.X509Extension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.containsExtension;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 
@@ -56,23 +59,37 @@ public class TcbInfoExtensionParser extends BaseExtensionParser<List<TcbInfo>> {
         super(EXTENSION_NAME);
     }
 
-    @Override
+    public static boolean containsTcbInfoExtension(final X509Extension x509Obj) {
+        final var tcbInfoOid = TCG_DICE_TCB_INFO.getOid();
+        final var multiTcbInfoOid = TCG_DICE_MULTI_TCB_INFO.getOid();
+        return containsExtension(x509Obj, tcbInfoOid) || containsExtension(x509Obj, multiTcbInfoOid);
+    }
+
     public List<TcbInfo> parse(@NonNull final X509Certificate certificate) {
-        logExtensionParsingStart(certificate, EXTENSION_NAME);
+        return parse((X509Extension) certificate);
+    }
+
+    public List<TcbInfo> parse(@NonNull final X509CRLEntry crlEntry) {
+        return parse((X509Extension) crlEntry);
+    }
+
+    @Override
+    protected List<TcbInfo> parse(@NonNull final X509Extension x509Obj) {
+        logExtensionParsingStart(x509Obj, EXTENSION_NAME);
 
         final var tcbInfos = new ArrayList<TcbInfo>();
-        parseSingleTcbInfoExtension(certificate).ifPresent(tcbInfos::add);
-        parseMultiTbInfoExtension(certificate).ifPresent(tcbInfos::addAll);
+        parseSingleTcbInfoExtension(x509Obj).ifPresent(tcbInfos::add);
+        parseMultiTbInfoExtension(x509Obj).ifPresent(tcbInfos::addAll);
         return tcbInfos;
     }
 
-    private Optional<List<TcbInfo>> parseMultiTbInfoExtension(final X509Certificate cert) {
-        return getExtension(cert, TCG_DICE_MULTI_TCB_INFO.getOid())
+    private Optional<List<TcbInfo>> parseMultiTbInfoExtension(final X509Extension x509Obj) {
+        return getExtension(x509Obj, TCG_DICE_MULTI_TCB_INFO.getOid())
             .map(TcbInfoParser::parseMultiTcbInfo);
     }
 
-    private Optional<TcbInfo> parseSingleTcbInfoExtension(final X509Certificate cert) {
-        return getExtension(cert, TCG_DICE_TCB_INFO.getOid())
+    private Optional<TcbInfo> parseSingleTcbInfoExtension(final X509Extension x509Obj) {
+        return getExtension(x509Obj, TCG_DICE_TCB_INFO.getOid())
             .map(TcbInfoParser::parseTcbInfo);
     }
 }

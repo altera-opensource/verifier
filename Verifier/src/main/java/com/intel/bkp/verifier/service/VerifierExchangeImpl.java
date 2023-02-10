@@ -47,6 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static com.intel.bkp.verifier.model.VerifierExchangeResponse.ERROR;
+import static com.intel.bkp.verifier.model.VerifierExchangeResponse.OK;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -72,21 +74,28 @@ public class VerifierExchangeImpl implements VerifierExchange {
             appContext.init();
             return createSubKeyInternal(appContext, transportId, context, PufType.valueOf(pufType));
         } catch (Exception e) {
-            log.error("Create attestation subkey failed: ", e);
-            return VerifierExchangeResponse.ERROR.getCode();
+            log.error("Create attestation subkey failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            return ERROR.getCode();
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurement) {
+        var attestationResult = new VerifierExchangeResponseDTO(ERROR.getCode(), "");
+
         try (AppContext appContext = AppContext.instance()) {
             appContext.init();
-            return getAttestationInternal(appContext, transportId, refMeasurement);
+            attestationResult = getAttestationInternal(appContext, transportId, refMeasurement);
         } catch (Exception e) {
-            log.error("Device attestation failed.", e);
-            return new VerifierExchangeResponseDTO(VerifierExchangeResponse.ERROR.getCode(), "");
+            log.error("Device attestation failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
         }
+
+        logAttestationResult(attestationResult);
+
+        return attestationResult;
     }
 
     @Override
@@ -97,17 +106,18 @@ public class VerifierExchangeImpl implements VerifierExchange {
             return healthCheckInternal(appContext, transportId);
         } catch (VerifierKeyNotInitializedException e) {
             log.info(e.getMessage());
-            return VerifierExchangeResponse.ERROR.getCode();
+            return ERROR.getCode();
         } catch (Exception e) {
-            log.error("Health check failed.", e);
-            return VerifierExchangeResponse.ERROR.getCode();
+            log.error("Health check failed: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            return ERROR.getCode();
         }
     }
 
     int createSubKeyInternal(AppContext appContext, String transportId, String context, PufType pufType) {
         // this check is required to prevent SQL Injection
         if (!parameterValidator.validateContext(context)) {
-            return VerifierExchangeResponse.ERROR.getCode();
+            return ERROR.getCode();
         }
 
         final TransportLayer transportLayer = appContext.getTransportLayer();
@@ -118,8 +128,9 @@ public class VerifierExchangeImpl implements VerifierExchange {
 
             return createSubKeyComponent.perform(context, pufType, deviceId).getCode();
         } catch (Exception e) {
-            log.error("Failed to perform creating of attestation subkey.", e);
-            return VerifierExchangeResponse.ERROR.getCode();
+            log.error("Failed to perform creating of attestation subkey: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            return ERROR.getCode();
         } finally {
             transportLayer.disconnect();
         }
@@ -138,8 +149,9 @@ public class VerifierExchangeImpl implements VerifierExchange {
 
             response.setStatus(getAttestationComponent.perform(refMeasurement, deviceId).getCode());
         } catch (Exception e) {
-            log.error("Failed to perform platform attestation.", e);
-            response.setStatus(VerifierExchangeResponse.ERROR.getCode());
+            log.error("Failed to perform platform attestation: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            response.setStatus(ERROR.getCode());
         } finally {
             transportLayer.disconnect();
         }
@@ -151,15 +163,24 @@ public class VerifierExchangeImpl implements VerifierExchange {
         try {
             transportLayer.initialize(transportId);
             final String result = toHex(transportLayer.sendCommand(GET_CHIPID));
-            log.info("Health check result: {}", result);
+            log.info("Health check response: {}", result);
             return StringUtils.isBlank(result)
-                   ? VerifierExchangeResponse.ERROR.getCode()
-                   : VerifierExchangeResponse.OK.getCode();
+                   ? ERROR.getCode()
+                   : OK.getCode();
         } catch (Exception e) {
-            log.error("Failed to perform health check using GET_CHIPID command.", e);
-            return VerifierExchangeResponse.ERROR.getCode();
+            log.error("Failed to perform health check using GET_CHIPID command: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            return ERROR.getCode();
         } finally {
             transportLayer.disconnect();
+        }
+    }
+
+    private static void logAttestationResult(VerifierExchangeResponseDTO attestationResult) {
+        switch (VerifierExchangeResponse.from(attestationResult.getStatus())) {
+            case OK -> log.info("*** ATTESTATION PASSED ***");
+            case FAIL -> log.error("*** ATTESTATION FAILED ***");
+            case ERROR -> log.error("*** ATTESTATION ERROR ***");
         }
     }
 }

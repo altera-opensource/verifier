@@ -36,10 +36,21 @@ package com.intel.bkp.verifier.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @AllArgsConstructor
 public enum VerifierExchangeResponse {
-    OK(0), FAIL(-1), ERROR(1);
+    OK(0),
+    FAIL(-1),
+    ERROR(1);
 
     @Getter
     private final int code;
+
+    public static VerifierExchangeResponse from(int code) {
+        return Arrays.stream(VerifierExchangeResponse.values())
+            .filter(value -> value.getCode() == code)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
+    }
 }

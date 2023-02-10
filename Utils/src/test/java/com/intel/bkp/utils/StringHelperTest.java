@@ -36,32 +36,115 @@ package com.intel.bkp.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 class StringHelperTest {
 
     @Test
     void toFirstLetterCapitalized_MultipleChars_Success() {
-        // when
-        final String result = StringHelper.toFirstLetterCapitalized("agiLEX");
-
-        // then
-        Assertions.assertEquals("Agilex", result);
+        toFirstLetterCapitalized_ReturnsExpected("agiLEX", "Agilex");
     }
 
     @Test
     void toFirstLetterCapitalized_SingleChar_Success() {
-        // when
-        final String result = StringHelper.toFirstLetterCapitalized("a");
-
-        // then
-        Assertions.assertEquals("A", result);
+        toFirstLetterCapitalized_ReturnsExpected("a", "A");
     }
 
     @Test
-    void toFirstLetterCapitalized_EmptyString_Success() {
-        // when
-        final String result = StringHelper.toFirstLetterCapitalized("");
+    void toFirstLetterCapitalized_EmptyString_ReturnsEmptyString() {
+        toFirstLetterCapitalized_ReturnsExpected("", "");
+    }
 
-        // then
-        Assertions.assertEquals("", result);
+    @Test
+    void toFirstLetterCapitalized_Null_ReturnsNull() {
+        toFirstLetterCapitalized_ReturnsExpected(null, null);
+    }
+
+    @Test
+    void zeroExtendEndingToEvenLength_OddLength_AddsZeroAtTheEnd() {
+        zeroExtendEndingToEvenLength_ReturnsExpected("abc", "abc0");
+    }
+
+    @Test
+    void zeroExtendEndingToEvenLength_EvenLength_ReturnsTheSameString() {
+        zeroExtendEndingToEvenLength_ReturnsExpected("ab", "ab");
+    }
+
+    @Test
+    void zeroExtendEndingToEvenLength_EmptyString_ReturnsEmptyString() {
+        zeroExtendEndingToEvenLength_ReturnsExpected("", "");
+    }
+
+    @Test
+    void zeroExtendEndingToEvenLength_Null_ReturnsNull() {
+        zeroExtendEndingToEvenLength_ReturnsExpected(null, null);
+    }
+
+    @Test
+    void zeroExtendEnding_ShorterString_ReturnsExtendedToDesiredLength() {
+        zeroExtendEnding_ReturnsExpected("abc", 5, "abc00");
+    }
+
+    @Test
+    void zeroExtendEnding_LongerString_ReturnsTheSameString() {
+        zeroExtendEnding_ReturnsExpected("abcdef", 5, "abcdef");
+    }
+
+    @Test
+    void zeroExtendEnding_EmptyString_ReturnsStringWithAllZeros() {
+        zeroExtendEnding_ReturnsExpected("", 5, "00000");
+    }
+
+    @Test
+    void zeroExtendEnding_Null_ReturnsNull() {
+        zeroExtendEnding_ReturnsExpected(null, 5, null);
+    }
+
+    @Test
+    void truncateEnding_ShorterString_ReturnsTheSameString() {
+        truncateEnding_ReturnsExpected("abc", 5, "abc");
+    }
+
+    @Test
+    void truncateEnding_LongerString_ReturnsTruncatedToDesiredLength() {
+        truncateEnding_ReturnsExpected("abcdef", 5, "abcde");
+    }
+
+    @Test
+    void truncateEnding_EmptyString_ReturnsEmptyString() {
+        truncateEnding_ReturnsExpected("", 5, "");
+    }
+
+    @Test
+    void truncateEnding_Null_ReturnsNull() {
+        truncateEnding_ReturnsExpected(null, 5, null);
+    }
+
+    private void toFirstLetterCapitalized_ReturnsExpected(String str, String expectedResult) {
+        function_ReturnsExpected(StringHelper::toFirstLetterCapitalized, str, expectedResult);
+    }
+
+    private void zeroExtendEndingToEvenLength_ReturnsExpected(String str, String expectedResult) {
+        function_ReturnsExpected(StringHelper::zeroExtendEndingToEvenLength, str, expectedResult);
+    }
+
+    private void zeroExtendEnding_ReturnsExpected(String str, Integer desiredLength, String expectedResult) {
+        function_ReturnsExpected(StringHelper::zeroExtendEnding, str, desiredLength, expectedResult);
+    }
+
+    private void truncateEnding_ReturnsExpected(String str, Integer desiredLength, String expectedResult) {
+        function_ReturnsExpected(StringHelper::truncateEnding, str, desiredLength, expectedResult);
+    }
+
+    private void function_ReturnsExpected(Function<String, String> function, String str, String expectedResult) {
+        // when-then
+        Assertions.assertEquals(expectedResult, function.apply(str));
+    }
+
+    private void function_ReturnsExpected(BiFunction<String, Integer, String> function, String str,
+                                          Integer desiredLength, String expectedResult) {
+        // when-then
+        Assertions.assertEquals(expectedResult, function.apply(str, desiredLength));
     }
 }

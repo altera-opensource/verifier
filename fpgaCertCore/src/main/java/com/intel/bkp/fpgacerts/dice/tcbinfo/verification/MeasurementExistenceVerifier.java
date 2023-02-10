@@ -66,7 +66,7 @@ public class MeasurementExistenceVerifier {
 
     private Optional<FwIdField> getFwId(TcbInfoKey key) {
         return map.containsKey(key)
-               ? Optional.ofNullable(map.get(key).getFwid())
+               ? map.get(key).getFwid()
                : Optional.empty();
     }
 }

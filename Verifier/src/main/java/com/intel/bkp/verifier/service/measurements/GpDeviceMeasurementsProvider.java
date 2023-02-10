@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.service.measurements;
 
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.GpMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
@@ -74,7 +74,8 @@ public class GpDeviceMeasurementsProvider implements IDeviceMeasurementsProvider
             new GpMeasurementResponseToTcbInfoMapper());
     }
 
-    public List<TcbInfo> getMeasurementsFromDevice(GpDeviceMeasurementsRequest request) {
+    @Override
+    public List<TcbInfoMeasurement> getMeasurementsFromDevice(GpDeviceMeasurementsRequest request) {
         return measurementResponseMapper.map(getMeasurementResponseFromDevice(request));
     }
 

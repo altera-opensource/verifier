@@ -33,14 +33,5 @@
 
 package com.intel.bkp.verifier.service.measurements;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-import java.security.PublicKey;
-
-@Getter
-@AllArgsConstructor
-public class SpdmDeviceMeasurementsRequest {
-
-    private final PublicKey aliasPubKey;
+public record SpdmDeviceMeasurementsRequest(int slotId) {
 }

@@ -35,7 +35,7 @@ package com.intel.bkp.core.psgcertificate.romext;
 
 import com.intel.bkp.core.RomExtensionAuthGeneratorUtil;
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateRootEntryBuilder;
@@ -43,6 +43,7 @@ import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionStrategyExceptio
 import com.intel.bkp.core.psgcertificate.model.CertificateEntryWrapper;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellableBlock0Entry;
 import com.intel.bkp.core.psgcertificate.model.PsgCertificateType;
+import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RomExtractedStructureStrategyTest {
 
-    private static final EndianessActor ACTOR = EndianessActor.SERVICE;
+    private static final EndiannessActor ACTOR = EndiannessActor.SERVICE;
     private static final byte[] DUMMY_DATA = new byte[]{1, 2, 3, 4};
 
     @Mock
@@ -167,7 +168,7 @@ class RomExtractedStructureStrategyTest {
         final byte[] signedData = TestUtil.signEcData(dataToSign, keyPair.getPrivate(),
             CryptoConstants.SHA384_WITH_ECDSA);
         return new PsgCancellableBlock0EntryBuilder()
-            .signature(signedData)
+            .signature(signedData, PsgSignatureCurveType.SECP384R1)
             .withActor(ACTOR)
             .build();
     }

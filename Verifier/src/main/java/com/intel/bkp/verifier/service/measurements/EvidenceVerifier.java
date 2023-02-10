@@ -33,9 +33,9 @@
 
 package com.intel.bkp.verifier.service.measurements;
 
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.model.evidence.Rim;
@@ -55,45 +55,49 @@ import static java.util.stream.Collectors.joining;
 public class EvidenceVerifier {
 
     private RimParser rimParser = new RimParser();
-    private RimToTcbInfoMapper rimMapper = new RimToTcbInfoMapper();
+    private RimToTcbInfoMeasurementsMapper rimMapper = new RimToTcbInfoMeasurementsMapper();
 
-    public VerifierExchangeResponse verify(TcbInfoAggregator tcbInfoAggregator, String refMeasurement) {
+    public VerifierExchangeResponse verify(TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator,
+                                           String refMeasurement) {
+        log.debug("Received TcbInfos from device: {}", mapToString(tcbInfoMeasurementsAggregator.getMap()));
+
         try {
             final Rim referenceMeasurement = rimParser.parse(refMeasurement);
 
             return Optional.of(referenceMeasurement)
                 .map(rimMapper::map)
-                .map(tcbInfos -> verifyInternal(tcbInfos, tcbInfoAggregator))
+                .filter(tcbInfoMeasurements -> !tcbInfoMeasurements.isEmpty())
+                .map(tcbInfoMeasurements -> verifyInternal(tcbInfoMeasurements, tcbInfoMeasurementsAggregator))
                 .orElseGet(this::getResponseForEmptyRim);
         } catch (Exception e) {
-            log.error("Exception occurred: ", e);
+            log.error("Exception occurred: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
             return VerifierExchangeResponse.ERROR;
         }
     }
 
-    private VerifierExchangeResponse verifyInternal(List<TcbInfo> expectedTcbInfos,
-                                                    TcbInfoAggregator tcbInfoAggregator) {
+    private VerifierExchangeResponse verifyInternal(List<TcbInfoMeasurement> expectedTcbInfoMeasurements,
+                                                    TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator) {
 
-        final Map<TcbInfoKey, TcbInfoValue> tcbInfoResponseMap = tcbInfoAggregator.getMap();
+        log.info("*** VERIFYING EVIDENCE AGAINST RIM ***");
 
-        for (TcbInfo tcbInfo : expectedTcbInfos) {
-            final TcbInfoKey key = TcbInfoKey.from(tcbInfo);
-            final TcbInfoValue value = TcbInfoValue.from(tcbInfo);
+        final Map<TcbInfoKey, TcbInfoValue> tcbInfoResponseMap = tcbInfoMeasurementsAggregator.getMap();
 
-            log.info("Verification of measurement: {}", key);
-            log.debug("Expected value: {}", value);
+        for (TcbInfoMeasurement measurement : expectedTcbInfoMeasurements) {
+            log.info("Verification of measurement: {}", measurement.getKey());
+            log.debug("Reference value: {}", measurement.getValue());
 
-            if (!tcbInfoResponseMap.containsKey(key)) {
-                log.error("Evidence verification failed. Response does not contain expected key. "
-                    + "Received TcbInfos from device: {}", mapToString(tcbInfoResponseMap));
+            if (!tcbInfoResponseMap.containsKey(measurement.getKey())) {
+                log.error("Evidence verification failed. Response does not contain expected key.");
                 return VerifierExchangeResponse.FAIL;
             }
 
-            final TcbInfoValue responseValue = tcbInfoResponseMap.get(key);
+            final TcbInfoValue responseValue = tcbInfoResponseMap.get(measurement.getKey());
             log.debug("Received value: {}", responseValue);
 
-            if (!value.equals(responseValue)) {
-                log.error("Evidence verification failed. \nExpected: {}\nActual: {}", value, responseValue);
+            if (!responseValue.matchesReferenceValue(measurement.getValue())) {
+                log.error("Evidence verification failed.\nReference: {}\nActual:    {}",
+                    measurement.getValue(), responseValue);
                 return VerifierExchangeResponse.FAIL;
             }
 

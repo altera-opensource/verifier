@@ -65,8 +65,8 @@ import java.util.Random;
 import static com.intel.bkp.crypto.CryptoUtils.getBouncyCastleProvider;
 import static com.intel.bkp.crypto.constants.CryptoConstants.AES_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.AES_KEY_SIZE;
-import static com.intel.bkp.crypto.constants.CryptoConstants.ECDSA_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
+import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.RSA_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.RSA_KEY_SIZE;
 import static com.intel.bkp.crypto.impl.AesUtils.genAES;
@@ -82,7 +82,7 @@ import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.toX509Crl;
 public class TestUtil {
 
     public static KeyPair genEcKeys() throws KeystoreGenericException {
-        return genEc(getBouncyCastleProvider(), ECDSA_KEY, EC_CURVE_SPEC_384);
+        return genEc(getBouncyCastleProvider(), EC_KEY, EC_CURVE_SPEC_384);
     }
 
     public static KeyPair genRsaKeys() throws KeystoreGenericException {
@@ -115,7 +115,7 @@ public class TestUtil {
 
         byte[] encoded = getBytesFromPemString(privateKeyInPem);
 
-        KeyFactory keyFactory = KeyFactory.getInstance("EC");
+        KeyFactory keyFactory = KeyFactory.getInstance(EC_KEY);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
         return keyFactory.generatePrivate(keySpec);
     }
@@ -125,7 +125,7 @@ public class TestUtil {
 
         byte[] encoded = getBytesFromPemString(publicKeyInPem);
 
-        KeyFactory keyFactory = KeyFactory.getInstance("EC");
+        KeyFactory keyFactory = KeyFactory.getInstance(EC_KEY);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
         return keyFactory.generatePublic(keySpec);
     }

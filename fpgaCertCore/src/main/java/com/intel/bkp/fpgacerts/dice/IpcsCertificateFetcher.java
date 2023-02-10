@@ -72,8 +72,11 @@ public class IpcsCertificateFetcher {
     private Optional<Optional<DistributionPointCertificate>> ipcsIidUdsCert;
 
     public IpcsCertificateFetcher(ICertificateFetcher certificateFetcher, String certificateUrlPrefix) {
-        this(certificateFetcher, new DiceParamsSubjectParser(), new DiceParamsIssuerParser(),
-            new DiceEnrollmentParamsIssuerParser(), new DistributionPointAddressProvider(certificateUrlPrefix));
+        this(certificateFetcher,
+            new DiceParamsSubjectParser(),
+            new DiceParamsIssuerParser(),
+            new DiceEnrollmentParamsIssuerParser(),
+            new DistributionPointAddressProvider(certificateUrlPrefix));
     }
 
     IpcsCertificateFetcher(ICertificateFetcher certificateFetcher,
@@ -146,7 +149,7 @@ public class IpcsCertificateFetcher {
         final var fetchedCert = certificateFetcher.fetchCertificate(url)
             .map(cert -> new DistributionPointCertificate(url, cert));
 
-        log.info((fetchedCert.isPresent() ? "Fetched" : "Failed to fetch") + " certificate: " + url);
+        log.debug((fetchedCert.isPresent() ? "Fetched" : "Failed to fetch") + " certificate: " + url);
 
         return fetchedCert;
     }

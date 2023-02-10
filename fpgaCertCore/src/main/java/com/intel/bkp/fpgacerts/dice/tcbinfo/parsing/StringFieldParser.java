@@ -35,12 +35,12 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
-import static com.intel.bkp.fpgacerts.utils.Asn1ParsingUtils.parseOctetString;
+import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseImplicitlyTaggedOctetString;
 
 public class StringFieldParser implements ITcbInfoFieldParser<String> {
 
     @Override
     public String parse(ASN1TaggedObject object) {
-        return new String(parseOctetString(object));
+        return new String(parseImplicitlyTaggedOctetString(object));
     }
 }

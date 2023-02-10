@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.intel.bkp.crypto.x509.validation.BasicConstraintsVerifier.CA_FALSE;
+import static com.intel.bkp.crypto.x509.validation.BasicConstraintsVerifier.CA_TRUE_PATHLENGTH_NONE;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -106,6 +107,15 @@ class BasicConstraintsVerifierTest {
     void verify_CertHasSufficientBasicConstraintsWithPathLengthLargerThanExpected_CriticalExtension_ReturnsTrue() {
         // given
         mockCertificate(3, true);
+
+        // when-then
+        Assertions.assertTrue(sut.verify(certificate, 2));
+    }
+
+    @Test
+    void verify_CertHasSufficientBasicConstraintsWithUnlimitedPathLength_CriticalExtension_ReturnsTrue() {
+        // given
+        mockCertificate(CA_TRUE_PATHLENGTH_NONE, true);
 
         // when-then
         Assertions.assertTrue(sut.verify(certificate, 2));

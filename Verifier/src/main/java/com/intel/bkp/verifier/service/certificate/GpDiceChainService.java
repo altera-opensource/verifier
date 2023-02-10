@@ -34,8 +34,7 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.core.command.model.CertificateRequestType;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.verifier.dp.DistributionPointIpcsCertificateFetcher;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -48,6 +47,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.intel.bkp.core.command.model.CertificateRequestType.DEVICE_ID_ENROLLMENT;
 import static com.intel.bkp.core.command.model.CertificateRequestType.UDS_EFUSE_ALIAS;
@@ -63,15 +63,16 @@ public class GpDiceChainService {
     private final DistributionPointIpcsCertificateFetcher ipcsCertFetcher =
         new DistributionPointIpcsCertificateFetcher();
     private final IidAliasFlowDetector iidFlowDetector = new IidAliasFlowDetector();
-    private DiceAttestationRevocationService diceAttestationRevocationService = new DiceAttestationRevocationService();
-    private TcbInfoExtensionParser tcbInfoExtensionParser = new TcbInfoExtensionParser();
+    private GpDiceAttestationRevocationService diceAttestationRevocationService =
+        new GpDiceAttestationRevocationService();
     private DiceRevocationCacheService diceRevocationCacheService = new DiceRevocationCacheService();
+    private DiceChainMeasurementsCollector measurementsCollector = new DiceChainMeasurementsCollector();
 
     @Getter
     private PublicKey aliasPublicKey;
 
     @Getter
-    private List<TcbInfo> tcbInfos = new ArrayList<>();
+    private List<TcbInfoMeasurement> tcbInfoMeasurements = new ArrayList<>();
 
     public void fetchAndVerifyDiceChains(byte[] deviceId, byte[] firmwareCertificateResponse) {
         final List<X509Certificate> efuseChain = getEfuseChain(deviceId, firmwareCertificateResponse);
@@ -79,7 +80,7 @@ public class GpDiceChainService {
         final List<X509Certificate> iidChain = getIidChain(aliasX509);
 
         this.aliasPublicKey = aliasX509.getPublicKey();
-        this.tcbInfos = getTcbInfos(efuseChain);
+        this.tcbInfoMeasurements = getTcbInfoMeasurements(efuseChain, iidChain);
 
         diceAttestationRevocationService.verifyChains(deviceId, efuseChain, iidChain);
     }
@@ -122,11 +123,10 @@ public class GpDiceChainService {
         return gpDeviceCertificateProvider.getCertificateFromDevice(certType);
     }
 
-    private List<TcbInfo> getTcbInfos(List<X509Certificate> chain) {
-        return chain.stream()
-            .map(tcbInfoExtensionParser::parse)
-            .flatMap(Collection::stream)
-            .toList();
+    private List<TcbInfoMeasurement> getTcbInfoMeasurements(List<X509Certificate> efuseChain,
+                                                            List<X509Certificate> iidChain) {
+        final var efuseChainMeasurements = measurementsCollector.getMeasurementsFromCertChain(efuseChain);
+        final var iidChainMeasurements = measurementsCollector.getMeasurementsFromCertChain(iidChain);
+        return Stream.concat(efuseChainMeasurements.stream(), iidChainMeasurements.stream()).toList();
     }
-
 }

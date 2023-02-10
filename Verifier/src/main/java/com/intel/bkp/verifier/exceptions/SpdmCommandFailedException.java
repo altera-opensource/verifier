@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.exceptions;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
 
-public class SpdmCommandFailedException extends VerifierRuntimeException {
+public class SpdmCommandFailedException extends Exception {
 
     public SpdmCommandFailedException(Long status) {
         super("SPDM command failed with status: 0x%s".formatted(toHex(status)));

@@ -33,70 +33,58 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianess.EndianessActor;
-import com.intel.bkp.core.endianess.EndianessStructureFields;
-import com.intel.bkp.core.endianess.EndianessStructureType;
-import com.intel.bkp.core.endianess.maps.PsgPublicKeyEndianessMapImpl;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
+import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.EndiannessBuilder;
+import com.intel.bkp.core.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.EndiannessStructureType;
+import com.intel.bkp.core.endianness.maps.PsgPublicKeyEndiannessMapImpl;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgPublicKeyBuilderException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.utils.ModifyBitsBuilder;
-import com.intel.bkp.crypto.CryptoUtils;
-import com.intel.bkp.crypto.constants.SecurityKeyType;
+import com.intel.bkp.crypto.curve.CurvePoint;
 import com.intel.bkp.utils.ByteBufferSafe;
-import com.intel.bkp.utils.PaddingUtils;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.ECPublicKey;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 
 @Getter
-@NoArgsConstructor
-public class PsgPublicKeyBuilder extends PsgDataBuilder<PsgPublicKeyBuilder> {
+public class PsgPublicKeyBuilder extends EndiannessBuilder<PsgPublicKeyBuilder> {
 
     private PsgPublicKeyMagic magic = PsgPublicKeyMagic.M1_MAGIC;
-    private PsgCurveType curveType = PsgCurveType.SECP384R1;
+    private static final int PUBKEY_METADATA_SIZE = 6 * Integer.BYTES;
     private int publicKeyPermissions = ModifyBitsBuilder.fromNone().build();
     private int publicKeyCancellation = ModifyBitsBuilder.fromAll().build();
     private int sizeX = 0;
     private int sizeY = 0;
-    private byte[] pointX = new byte[curveType.getSize()];
-    private byte[] pointY = new byte[curveType.getSize()];
+    private CurvePoint curvePoint;
 
-    @Override
-    public EndianessStructureType currentStructureMap() {
-        return EndianessStructureType.PSG_PUBLIC_KEY;
+    public PsgPublicKeyBuilder() {
+        super(EndiannessStructureType.PSG_PUBLIC_KEY);
     }
 
     @Override
-    public PsgPublicKeyBuilder withActor(EndianessActor actor) {
-        changeActor(actor);
+    protected PsgPublicKeyBuilder self() {
         return this;
     }
 
     @Override
-    protected void initStructureMap(EndianessStructureType currentStructureType, EndianessActor currentActor) {
-        maps.put(currentStructureType, new PsgPublicKeyEndianessMapImpl(currentActor));
+    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
+        maps.put(currentStructureType, new PsgPublicKeyEndiannessMapImpl(currentActor));
     }
 
     public int totalLen() {
-        return PsgPublicKeyHelper.getTotalPublicKeySize(curveType);
+        return (2 * curvePoint.getCurveSpec().getSize()) + PUBKEY_METADATA_SIZE;
     }
 
     public PsgPublicKeyBuilder magic(PsgPublicKeyMagic magic) {
         this.magic = magic;
-        return this;
-    }
-
-    public PsgPublicKeyBuilder curveType(PsgCurveType curveType) {
-        this.curveType = curveType;
-        initializeXY();
         return this;
     }
 
@@ -110,95 +98,63 @@ public class PsgPublicKeyBuilder extends PsgDataBuilder<PsgPublicKeyBuilder> {
         return this;
     }
 
-    public PsgPublicKeyBuilder publicKey(byte[] encodedPublicKey) throws PsgPublicKeyBuilderException {
+    public PsgPublicKeyBuilder publicKey(byte[] encodedPublicKey, PsgCurveType psgCurveType)
+        throws PsgPublicKeyBuilderException {
         try {
-            ECPublicKey publicKey =
-                (ECPublicKey) CryptoUtils.toPublicEncodedBC(encodedPublicKey, SecurityKeyType.EC.name());
-            preparePublicKey(publicKey);
+            this.curvePoint = CurvePoint.fromPubKeyEncoded(encodedPublicKey, psgCurveType.getCurveSpec());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new PsgPublicKeyBuilderException();
         }
         return this;
     }
 
-    public PsgPublicKeyBuilder publicKey(ECPublicKey publicKey) {
-        preparePublicKey(publicKey);
+    public PsgPublicKeyBuilder publicKey(PublicKey publicKey, PsgCurveType psgCurveType) {
+        this.curvePoint = CurvePoint.from(publicKey, psgCurveType.getCurveSpec());
         return this;
     }
 
-    public PsgPublicKeyBuilder publicKeyPointXY(byte[] publicKeyXY) {
-        parsePointXY(publicKeyXY);
+    public PsgPublicKeyBuilder curvePoint(CurvePoint curvePoint) {
+        this.curvePoint = curvePoint;
+        return this;
+    }
+
+    public PsgPublicKeyBuilder publicKeyPointXY(byte[] publicKeyXY, PsgCurveType psgCurveType) {
+        this.curvePoint = CurvePoint.fromPubKey(publicKeyXY, psgCurveType.getCurveSpec());
         return this;
     }
 
     public PsgPublicKey build() {
         PsgPublicKey psgPublicKey = new PsgPublicKey();
-        psgPublicKey.setMagic(convert(magic.getValue(), EndianessStructureFields.PSG_PUB_KEY_MAGIC));
-        psgPublicKey.setSizeX(convert(sizeX, EndianessStructureFields.PSG_PUB_KEY_SIZE_X));
-        psgPublicKey.setSizeY(convert(sizeY, EndianessStructureFields.PSG_PUB_KEY_SIZE_Y));
-        psgPublicKey.setCurveMagic(convert(curveType.getMagic(), EndianessStructureFields.PSG_PUB_KEY_CURVE_MAGIC));
-        psgPublicKey.setPermissions(convert(publicKeyPermissions, EndianessStructureFields.PSG_PUB_KEY_PERMISSIONS));
-        psgPublicKey.setCancellation(convert(publicKeyCancellation, EndianessStructureFields.PSG_PUB_KEY_CANCELLATION));
-        psgPublicKey.setPointX(convert(pointX, EndianessStructureFields.PSG_PUB_KEY_POINT_X));
-        psgPublicKey.setPointY(convert(pointY, EndianessStructureFields.PSG_PUB_KEY_POINT_Y));
+        psgPublicKey.setMagic(convert(magic.getValue(), EndiannessStructureFields.PSG_PUB_KEY_MAGIC));
+        psgPublicKey.setSizeX(convert(sizeX, EndiannessStructureFields.PSG_PUB_KEY_SIZE_X));
+        psgPublicKey.setSizeY(convert(sizeY, EndiannessStructureFields.PSG_PUB_KEY_SIZE_Y));
+        psgPublicKey.setCurveMagic(convert(PsgCurveType.fromCurveSpec(curvePoint.getCurveSpec()).getMagic(),
+            EndiannessStructureFields.PSG_PUB_KEY_CURVE_MAGIC));
+        psgPublicKey.setPermissions(convert(publicKeyPermissions, EndiannessStructureFields.PSG_PUB_KEY_PERMISSIONS));
+        psgPublicKey.setCancellation(
+            convert(publicKeyCancellation, EndiannessStructureFields.PSG_PUB_KEY_CANCELLATION));
+        psgPublicKey.setPointX(curvePoint.getPointA());
+        psgPublicKey.setPointY(curvePoint.getPointB());
         return psgPublicKey;
     }
 
-    public PsgPublicKeyBuilder parse(String data) throws PsgCertificateException {
+    public PsgPublicKeyBuilder parse(String data) throws PsgPubKeyException {
         return parse(fromHex(data));
     }
 
-    public PsgPublicKeyBuilder parse(byte[] data) throws PsgCertificateException {
+    public PsgPublicKeyBuilder parse(byte[] data) throws PsgPubKeyException {
         return parse(ByteBufferSafe.wrap(data));
     }
 
-    public PsgPublicKeyBuilder parse(ByteBufferSafe buffer) throws PsgCertificateException {
-        magic = PsgPublicKeyHelper.parsePublicKeyMagic(convertInt(buffer.getInt(),
-            EndianessStructureFields.PSG_PUB_KEY_MAGIC));
-        sizeX = convertInt(buffer.getInt(), EndianessStructureFields.PSG_PUB_KEY_SIZE_X);
-        sizeY = convertInt(buffer.getInt(), EndianessStructureFields.PSG_PUB_KEY_SIZE_Y);
-        curveType = PsgPublicKeyHelper.parseCurveType(convertInt(buffer.getInt(),
-            EndianessStructureFields.PSG_PUB_KEY_CURVE_MAGIC));
-        publicKeyPermissions = convertInt(buffer.getInt(), EndianessStructureFields.PSG_PUB_KEY_PERMISSIONS);
-        publicKeyCancellation = convertInt(buffer.getInt(), EndianessStructureFields.PSG_PUB_KEY_CANCELLATION);
-
-        pointX = convert(getPointArrayFrom(buffer), EndianessStructureFields.PSG_PUB_KEY_POINT_X);
-        pointY = convert(getPointArrayFrom(buffer), EndianessStructureFields.PSG_PUB_KEY_POINT_Y);
-
+    public PsgPublicKeyBuilder parse(ByteBufferSafe buffer) throws PsgPubKeyException {
+        magic = PsgPublicKeyMagic.from(convertInt(buffer.getInt(), EndiannessStructureFields.PSG_PUB_KEY_MAGIC));
+        sizeX = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_PUB_KEY_SIZE_X);
+        sizeY = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_PUB_KEY_SIZE_Y);
+        final PsgCurveType curveType = PsgCurveType.fromMagic(convertInt(buffer.getInt(),
+            EndiannessStructureFields.PSG_PUB_KEY_CURVE_MAGIC));
+        publicKeyPermissions = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_PUB_KEY_PERMISSIONS);
+        publicKeyCancellation = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_PUB_KEY_CANCELLATION);
+        this.curvePoint = CurvePoint.from(buffer, curveType.getCurveSpec());
         return this;
-    }
-
-    public void verify() throws PsgCertificateException {
-        PsgPublicKeyHelper.verifyPoint(this);
-    }
-
-    private static byte[] removePadding(PsgCurveType curveType, byte[] arr) {
-        return PaddingUtils.alignTo(arr, curveType.getSize());
-    }
-
-    private void initializeXY() {
-        pointX = new byte[curveType.getSize()];
-        pointY = new byte[curveType.getSize()];
-    }
-
-    private void preparePublicKey(ECPublicKey pubKey) {
-        byte[] coordX = pubKey.getW().getAffineX().toByteArray();
-        byte[] coordY = pubKey.getW().getAffineY().toByteArray();
-        parsePointXY(coordX, coordY);
-    }
-
-    private void parsePointXY(byte[] pointX, byte[] pointY) {
-        ByteBufferSafe.wrap(removePadding(curveType, pointX)).getAll(this.pointX);
-        ByteBufferSafe.wrap(removePadding(curveType, pointY)).getAll(this.pointY);
-    }
-
-    private void parsePointXY(byte[] pointXY) {
-        ByteBufferSafe.wrap(pointXY).get(this.pointX).getAll(this.pointY);
-    }
-
-    private byte[] getPointArrayFrom(ByteBufferSafe buffer) {
-        byte[] array = buffer.arrayFromInt(curveType.getSize());
-        buffer.get(array);
-        return array;
     }
 }

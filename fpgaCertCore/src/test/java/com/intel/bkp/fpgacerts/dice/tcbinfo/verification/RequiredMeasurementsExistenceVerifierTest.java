@@ -33,23 +33,23 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
-import com.intel.bkp.fpgacerts.LogUtils;
+import ch.qos.logback.classic.Level;
+import com.intel.bkp.fpgacerts.LoggerTestUtil;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.org.lidalia.slf4jext.Level;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType.CMF;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType.ROM_EXTENSION;
@@ -58,6 +58,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RequiredMeasurementsExistenceVerifierTest {
+
+    private LoggerTestUtil loggerTestUtil;
 
     private static final String FAMILY_NAME = "Family";
     private static final Map<TcbInfoKey, TcbInfoValue> MAP = new HashMap<>();
@@ -72,16 +74,17 @@ class RequiredMeasurementsExistenceVerifierTest {
     @BeforeAll
     static void init() {
         sut.withFamilyName(FAMILY_NAME);
+        measurementExistenceVerifierMockStatic = mockStatic(MeasurementExistenceVerifier.class);
     }
 
-    @BeforeAll
-    static void prepareStaticMock() {
-        measurementExistenceVerifierMockStatic = mockStatic(MeasurementExistenceVerifier.class);
+    @BeforeEach
+    void setup() {
+        loggerTestUtil = LoggerTestUtil.instance(sut.getClass());
     }
 
     @AfterEach
     void clearLogs() {
-        LogUtils.clearLogs(sut.getClass());
+        loggerTestUtil.reset();
     }
 
     @AfterAll
@@ -99,7 +102,7 @@ class RequiredMeasurementsExistenceVerifierTest {
 
         // then
         Assertions.assertTrue(result);
-        Assertions.assertTrue(getErrorLogs().findAny().isEmpty());
+        Assertions.assertEquals(0, loggerTestUtil.getSize());
     }
 
     @Test
@@ -114,7 +117,7 @@ class RequiredMeasurementsExistenceVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
     }
 
     @Test
@@ -129,7 +132,7 @@ class RequiredMeasurementsExistenceVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
     }
 
     @Test
@@ -144,16 +147,12 @@ class RequiredMeasurementsExistenceVerifierTest {
 
         // then
         Assertions.assertFalse(result);
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedMessage)));
+        Assertions.assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
     }
 
     private void mockMeasurementExistenceVerifier(boolean isRomExtPresent, boolean isCmfPresent) {
         when(MeasurementExistenceVerifier.instance(MAP)).thenReturn(existenceVerifier);
         when(existenceVerifier.isMeasurementPresent(FAMILY_NAME, ROM_EXTENSION)).thenReturn(isRomExtPresent);
         when(existenceVerifier.isMeasurementPresent(FAMILY_NAME, CMF)).thenReturn(isCmfPresent);
-    }
-
-    private Stream<String> getErrorLogs() {
-        return LogUtils.getLogs(sut.getClass(), Level.ERROR);
     }
 }

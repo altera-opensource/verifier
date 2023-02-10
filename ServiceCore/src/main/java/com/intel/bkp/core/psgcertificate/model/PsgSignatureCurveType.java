@@ -33,17 +33,37 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
+import com.intel.bkp.crypto.curve.CurveSpec;
+import com.intel.bkp.crypto.interfaces.ICurveSpec;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
+import static com.intel.bkp.crypto.constants.CryptoConstants.SHA256_WITH_ECDSA;
+import static com.intel.bkp.crypto.constants.CryptoConstants.SHA384_WITH_ECDSA;
+
+@Getter
 @AllArgsConstructor
-public enum PsgSignatureCurveType {
-    SECP256R1(32, 0x00113305),
-    SECP384R1(48, 0x30548820);
+public enum PsgSignatureCurveType implements ICurveSpec {
+    SECP256R1(CurveSpec.C256, 0x00113305, SHA256_WITH_ECDSA),
+    SECP384R1(CurveSpec.C384, 0x30548820, SHA384_WITH_ECDSA);
 
-    @Getter
-    private final int size;
-
-    @Getter
+    private final CurveSpec curveSpec;
     private final int magic;
+    private final String bcAlgName;
+
+    public static PsgSignatureCurveType fromMagic(int magic) {
+        return Arrays.stream(values())
+            .filter(val -> val.getMagic() == magic)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
+    }
+
+    public static PsgSignatureCurveType fromCurveSpec(CurveSpec curveSpec) {
+        return Arrays.stream(values())
+            .filter(val -> val.getCurveSpec() == curveSpec)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
+    }
 }

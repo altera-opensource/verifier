@@ -77,7 +77,7 @@ class SpdmGetVersionMessageSenderTest {
     }
 
     @Test
-    void send_returnsSupportedVersion_Success() throws UnsupportedSpdmVersionException {
+    void send_returnsSupportedVersion_Success() throws Exception {
         // given
         doReturn(SPDM_SUPPORTED_VERSION).when(spdmCallerMock).getVersion();
 
@@ -89,7 +89,7 @@ class SpdmGetVersionMessageSenderTest {
     }
 
     @Test
-    void send_returnsLowerVersion_Throws() {
+    void send_returnsLowerVersion_Throws() throws Exception {
         // given
         doReturn("01").when(spdmCallerMock).getVersion();
 
@@ -98,7 +98,7 @@ class SpdmGetVersionMessageSenderTest {
     }
 
     @Test
-    void send_returnsHigherVersion_Throws() {
+    void send_returnsHigherVersion_Throws() throws Exception {
         // given
         doReturn("FF").when(spdmCallerMock).getVersion();
 

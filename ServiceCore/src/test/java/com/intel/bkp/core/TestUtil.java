@@ -49,8 +49,8 @@ import java.security.cert.X509Certificate;
 import java.util.Random;
 
 import static com.intel.bkp.crypto.CryptoUtils.getBouncyCastleProvider;
-import static com.intel.bkp.crypto.constants.CryptoConstants.ECDSA_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
+import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.RSA_KEY;
 import static com.intel.bkp.crypto.constants.CryptoConstants.RSA_KEY_SIZE;
 
@@ -82,7 +82,7 @@ public class TestUtil {
         }
 
         try {
-            return EcUtils.genEc(getBouncyCastleProvider(), ECDSA_KEY, paramSpec);
+            return EcUtils.genEc(getBouncyCastleProvider(), EC_KEY, paramSpec);
         } catch (KeystoreGenericException e) {
             throw new RuntimeException("Failed to generate EC keys", e);
         }

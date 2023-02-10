@@ -54,6 +54,7 @@ import static org.mockito.Mockito.when;
 class SpdmGetMeasurementMessageSenderTest {
 
     private static final byte[] MEASUREMENTS = {1, 2, 3, 4};
+    private static final int SLOT_ID = 2;
 
     private static MockedStatic<SpdmCaller> spdmCallerMockedStatic;
 
@@ -79,15 +80,15 @@ class SpdmGetMeasurementMessageSenderTest {
     }
 
     @Test
-    void send_Success() {
+    void send_Success() throws Exception {
         // given
         final SpdmMeasurementResponseBuilder builder = new SpdmMeasurementResponseBuilder();
         builder.setMeasurementRecord(MEASUREMENTS);
         final String measurementResponse = toHex(builder.build().array());
-        when(spdmCallerMock.getMeasurements()).thenReturn(measurementResponse);
+        when(spdmCallerMock.getMeasurements(SLOT_ID)).thenReturn(measurementResponse);
 
         // when
-        final SpdmMeasurementResponse result = sut.send();
+        final SpdmMeasurementResponse result = sut.send(SLOT_ID);
 
         // then
         assertArrayEquals(builder.getMeasurementRecord(), result.getMeasurementRecord());

@@ -61,8 +61,8 @@ public class CriticalExtensionsVerifier {
     private void logUnrecognizedCriticalExtension(final X509Certificate certificate,
                                                   final Set<String> knownOids,
                                                   final Set<String> unrecognizedOids) {
-        log.error("Certificate has critical extensions that are not recognized: {}%n"
-                + "Known OIDs: {}%nUnrecognized OIDs: {}",
+        log.error("Certificate has critical extensions that are not recognized: {}\n"
+                + "Known OIDs: {}\nUnrecognized OIDs: {}",
             certificate.getIssuerX500Principal(), knownOids, unrecognizedOids);
     }
 }

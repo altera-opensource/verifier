@@ -50,6 +50,60 @@ class MaskedVendorInfoTest {
     private final MaskedVendorInfo sut = new MaskedVendorInfo(VENDOR_INFO, VENDOR_INFO_MASK);
 
     @Test
+    void setMaskBasedOnVendorInfo_VendorInfoSet_SetsMask() {
+        // given
+        final var vendorInfo = "111111";
+        final String expectedMask = "FFFFFF";
+        final var sut = new MaskedVendorInfo(vendorInfo);
+
+        // when
+        sut.setMaskBasedOnVendorInfo();
+
+        // then
+        Assertions.assertEquals(expectedMask, sut.getVendorInfoMask());
+    }
+
+    @Test
+    void setMaskBasedOnVendorInfo_VendorInfoNotSet_DoesNothing() {
+        // given
+        final var sut = new MaskedVendorInfo(null);
+
+        // when
+        sut.setMaskBasedOnVendorInfo();
+
+        // then
+        Assertions.assertNull(sut.getVendorInfoMask());
+    }
+
+    @Test
+    void hasMask_MaskSetInConstructor_ReturnsTrue() {
+        // given
+        final var sut = new MaskedVendorInfo(VENDOR_INFO, VENDOR_INFO_MASK);
+
+        // when-then
+        Assertions.assertTrue(sut.hasMask());
+    }
+
+    @Test
+    void hasMask_MaskSetBasedOnVendorInfo_ReturnsTrue() {
+        // given
+        final var sut = new MaskedVendorInfo(VENDOR_INFO);
+        sut.setMaskBasedOnVendorInfo();
+
+        // when-then
+        Assertions.assertTrue(sut.hasMask());
+    }
+
+    @Test
+    void hasMask_MaskNotSet_ReturnsFalse() {
+        // given
+        final var sut = new MaskedVendorInfo(VENDOR_INFO);
+
+        // when-then
+        Assertions.assertFalse(sut.hasMask());
+    }
+
+    @Test
     void equals_Basics() {
         // then
         Assertions.assertFalse(sut.equals(null));

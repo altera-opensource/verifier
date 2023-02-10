@@ -58,7 +58,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class VerifierExchangeImplTest {
 
-    private static byte[] deviceId = new byte[] { 0x01, 0x02 };
+    private static final byte[] deviceId = new byte[]{0x01, 0x02};
     private static final String TRANSPORT_ID = "abcde";
 
     @Mock

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.fpgacerts.dice.IidFlowDetector;
+import com.intel.bkp.fpgacerts.dice.iidutils.IidFlowDetector;
 
 public class IidAliasFlowDetector extends IidFlowDetector {
 
@@ -43,6 +43,6 @@ public class IidAliasFlowDetector extends IidFlowDetector {
 
     IidAliasFlowDetector(AppContext appContext) {
         super();
-        withOnlyEfuseUds(appContext.getLibConfig().getAttestationCertificateFlow().isOnlyEfuseUds());
+        withRequireIidUds(appContext.getLibConfig().getAttestationCertificateFlow().isRequireIidUds());
     }
 }

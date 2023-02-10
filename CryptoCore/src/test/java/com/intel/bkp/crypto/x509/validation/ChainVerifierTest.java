@@ -145,22 +145,6 @@ class ChainVerifierTest {
     }
 
     @Test
-    void verify_rootBasicConstraints() {
-        // given
-        final int rootBasicConstraints = Integer.MAX_VALUE;
-        addToList(attestationCert, parentCert, rootCert);
-        mockAllChecks();
-
-        // when
-        sut.rootBasicConstraints(rootBasicConstraints).verify();
-
-        // then
-        verify(basicConstraintsVerifier).verify(parentCert, 0);
-        verify(basicConstraintsVerifier).verify(rootCert, rootBasicConstraints);
-        verifyNoMoreInteractions(basicConstraintsVerifier);
-    }
-
-    @Test
     void verify_knownExtensionOids() {
         // given
         final var additionalOids = Set.of("2.23.133.5.4.5", "1.2.3.4");

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.Utils;
 import org.junit.jupiter.api.Assertions;
@@ -159,14 +159,14 @@ class GetMeasurementResponseBuilderTest {
         builder.setMeasurementRecord(randAndReturn(measurementRecord));
         builder.setMac(randAndReturn(mac));
 
-        return builder.withActor(EndianessActor.FIRMWARE).build().array();
+        return builder.withActor(EndiannessActor.FIRMWARE).build().array();
     }
 
     private GetMeasurementResponse buildGetMeasurementResponse(byte[] command) {
         return new GetMeasurementResponseBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(command)
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
     }
 

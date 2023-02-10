@@ -34,12 +34,18 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.DEROctetString;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getAsn1ObjectIdentifier;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getFwIdSequence;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getFwIdsSequence;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getOctetString;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getSequence;
+import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getTaggedSequence;
 
 class FwidFieldParserTest {
 
@@ -48,16 +54,16 @@ class FwidFieldParserTest {
     private static final String DUMMY_DATA = "DEADBEEF";
     private static final FwIdField EXPECTED = new FwIdField(EXPECTED_HASH_ALG, EXPECTED_DIGEST);
 
-    private static final ASN1Primitive HASH_ALG_OBJ = FieldParserTestUtils.getAsn1ObjectIdentifier(EXPECTED_HASH_ALG);
-    private static final ASN1Primitive DIGEST_OBJ = FieldParserTestUtils.getOctetString(EXPECTED_DIGEST);
-    private static final ASN1Primitive DUMMY_OBJ = FieldParserTestUtils.getOctetString(DUMMY_DATA);
+    private static final ASN1ObjectIdentifier HASH_ALG_OBJ = getAsn1ObjectIdentifier(EXPECTED_HASH_ALG);
+    private static final DEROctetString DIGEST_OBJ = getOctetString(EXPECTED_DIGEST);
+    private static final DEROctetString DUMMY_OBJ = getOctetString(DUMMY_DATA);
 
     private final FwidFieldParser sut = new FwidFieldParser();
 
     @Test
     void parse() {
         // given
-        final ASN1TaggedObject taggedObj = FieldParserTestUtils.getSequence(HASH_ALG_OBJ, DIGEST_OBJ);
+        final ASN1TaggedObject taggedObj = getFwIdsSequence(getFwIdSequence(HASH_ALG_OBJ, DIGEST_OBJ));
 
         // when
         final FwIdField result = sut.parse(taggedObj);
@@ -67,13 +73,13 @@ class FwidFieldParserTest {
     }
 
     @Test
-    void parse_WithNestedSequence_ThrowsException() {
+    void parse_WithMultipleFwId_ThrowsException() {
         // given
         final String expectedMessage =
             "FwIds field contains multiple FwId values: [[1.2.3.4, #01020304], [1.2.3.4, #01020304]]";
-        final ASN1TaggedObject taggedObj = FieldParserTestUtils.getSequence(
-            new DLSequence(new ASN1Encodable[]{HASH_ALG_OBJ, DIGEST_OBJ}),
-            new DLSequence(new ASN1Encodable[]{HASH_ALG_OBJ, DIGEST_OBJ})
+        final ASN1TaggedObject taggedObj = getFwIdsSequence(
+            getFwIdSequence(HASH_ALG_OBJ, DIGEST_OBJ),
+            getFwIdSequence(HASH_ALG_OBJ, DIGEST_OBJ)
         );
 
         // when-then
@@ -83,10 +89,26 @@ class FwidFieldParserTest {
     }
 
     @Test
-    void parse_WithTooManyElements_ThrowsException() {
+    void parse_WithNotASequenceElementInFwIds_ThrowsException() {
+        // given
+        final String expectedMessage =
+            "FwIds field contains element that is not an FwId: [[1.2.3.4, #01020304], #01020304]";
+        final ASN1TaggedObject taggedObj = getTaggedSequence(
+            getFwIdSequence(HASH_ALG_OBJ, DIGEST_OBJ),
+            DIGEST_OBJ
+        );
+
+        // when-then
+        final IllegalArgumentException exception =
+            Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        Assertions.assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    void parse_WithTooManyElementsInFwId_ThrowsException() {
         // given
         final String expectedMessage = "FwId contains too many elements: [1.2.3.4, #01020304, #deadbeef]";
-        final ASN1TaggedObject taggedObj = FieldParserTestUtils.getSequence(HASH_ALG_OBJ, DIGEST_OBJ, DUMMY_OBJ);
+        final ASN1TaggedObject taggedObj = getFwIdsSequence(getSequence(HASH_ALG_OBJ, DIGEST_OBJ, DUMMY_OBJ));
 
         // when-then
         final IllegalArgumentException exception =
@@ -98,7 +120,7 @@ class FwidFieldParserTest {
     void parse_HashAlgNotSet() {
         // given
         final String expectedMessage = "FwIds field does not contain hashAlg or digest: [#01020304]";
-        final ASN1TaggedObject taggedObj = FieldParserTestUtils.getSequence(DIGEST_OBJ);
+        final ASN1TaggedObject taggedObj = getFwIdsSequence(getSequence(DIGEST_OBJ));
 
         // when-then
         final IllegalArgumentException exception =
@@ -110,7 +132,7 @@ class FwidFieldParserTest {
     void parse_DigestNotSet() {
         // given
         final String expectedMessage = "FwIds field does not contain hashAlg or digest: [1.2.3.4]";
-        final ASN1TaggedObject taggedObj = FieldParserTestUtils.getSequence(HASH_ALG_OBJ);
+        final ASN1TaggedObject taggedObj = getFwIdsSequence(getSequence(HASH_ALG_OBJ));
 
         // when-then
         final IllegalArgumentException exception =

@@ -35,6 +35,7 @@ package com.intel.bkp.verifier.dp;
 
 import com.intel.bkp.crypto.x509.utils.AuthorityInformationAccessUtils;
 import com.intel.bkp.crypto.x509.utils.X509CertificateUtils;
+import com.intel.bkp.fpgacerts.chain.DistributionPointCertificate;
 import com.intel.bkp.verifier.exceptions.ChainFetchingException;
 import com.intel.bkp.verifier.x509.X509UtilsWrapper;
 import org.apache.commons.lang3.RandomUtils;
@@ -98,38 +99,38 @@ class DistributionPointChainFetcherTest {
     }
 
     @Test
-    void downloadCertificateChain_blankUrl_ReturnsEmptyList() {
+    void downloadCertificateChainAsX509_blankUrl_ReturnsEmptyList() {
         // when
-        final var result = sut.downloadCertificateChain(" ");
+        final var result = sut.downloadCertificateChainAsX509(" ");
 
         // then
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    void downloadCertificateChain_NullUrl_ReturnsEmptyList() {
+    void downloadCertificateChainAsX509_NullUrl_ReturnsEmptyList() {
         // when
-        final var result = sut.downloadCertificateChain(null);
+        final var result = sut.downloadCertificateChainAsX509(null);
 
         // then
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    void downloadCertificateChain_NonExistentUrl_Throws() {
+    void downloadCertificateChainAsX509_NonExistentUrl_Throws() {
         // given
         final String nonExistentUrl = "some not existent url";
 
         // when-then
         final var exception = Assertions.assertThrows(ChainFetchingException.class,
-            () -> sut.downloadCertificateChain(nonExistentUrl));
+            () -> sut.downloadCertificateChainAsX509(nonExistentUrl));
 
         // then
         Assertions.assertTrue(exception.getMessage().contains(nonExistentUrl));
     }
 
     @Test
-    void downloadCertificateChain_FullChainToRoot_ReturnsCorrectList() {
+    void downloadCertificateChainAsX509_FullChainToRoot_ReturnsCorrectList() {
         // given
         mockCertificateDownload(ATTESTATION_CERT_URL, attestationCert);
         mockIssuerUrl(attestationCert, PARENT_CERT_URL);
@@ -140,14 +141,14 @@ class DistributionPointChainFetcherTest {
         mockAsSelfSigned(rootCert);
 
         // when
-        final var result = sut.downloadCertificateChain(ATTESTATION_CERT_URL);
+        final var result = sut.downloadCertificateChainAsX509(ATTESTATION_CERT_URL);
 
         // then
         Assertions.assertIterableEquals(List.of(attestationCert, parentCert, rootCert), result);
     }
 
     @Test
-    void downloadCertificateChain_NotFullChain_Throws() {
+    void downloadCertificateChainAsX509_NotFullChain_Throws() {
         // given
         mockCertificateDownload(ATTESTATION_CERT_URL, attestationCert);
         mockIssuerUrl(attestationCert, PARENT_CERT_URL);
@@ -157,10 +158,30 @@ class DistributionPointChainFetcherTest {
 
         // when-then
         final var exception = Assertions.assertThrows(ChainFetchingException.class,
-            () -> sut.downloadCertificateChain(ATTESTATION_CERT_URL));
+            () -> sut.downloadCertificateChainAsX509(ATTESTATION_CERT_URL));
 
         // then
         Assertions.assertTrue(exception.getMessage().contains(SUBJECT));
+    }
+
+    @Test
+    void downloadCertificateChain_FullChainToRoot_ReturnsCorrectList() {
+        // given
+        final var dpAttestationCert = new DistributionPointCertificate(ATTESTATION_CERT_URL, attestationCert);
+        final var dpParentCert = new DistributionPointCertificate(PARENT_CERT_URL, parentCert);
+        final var dpRootCert = new DistributionPointCertificate(ROOT_CERT_URL, rootCert);
+        mockIssuerUrl(attestationCert, PARENT_CERT_URL);
+        mockCertificateDownload(PARENT_CERT_URL, parentCert);
+        mockIssuerUrl(parentCert, ROOT_CERT_URL);
+        mockCertificateDownload(ROOT_CERT_URL, rootCert);
+        mockNoIssuerUrl(rootCert);
+        mockAsSelfSigned(rootCert);
+
+        // when
+        final var result = sut.downloadCertificateChain(dpAttestationCert);
+
+        // then
+        Assertions.assertIterableEquals(List.of(dpAttestationCert, dpParentCert, dpRootCert), result);
     }
 
     private void mockCertificateDownload(String url, X509Certificate cert) {

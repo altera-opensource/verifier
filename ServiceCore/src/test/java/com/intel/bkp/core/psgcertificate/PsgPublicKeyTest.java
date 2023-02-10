@@ -34,7 +34,7 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
+import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPermissions;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
@@ -44,7 +44,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.security.interfaces.ECPublicKey;
 import java.util.Random;
 
 import static com.intel.bkp.core.AssertArrays.assertThatArrayIsSubarrayOfAnotherArray;
@@ -68,9 +67,8 @@ public class PsgPublicKeyTest {
         byte[] encodedPublicKey = keyPair.getPublic().getEncoded();
         byte[] result = new PsgPublicKeyBuilder()
             .magic(PsgPublicKeyMagic.MANIFEST_MAGIC)
-            .curveType(PsgCurveType.SECP384R1)
             .permissions(permissions)
-            .publicKey(encodedPublicKey)
+            .publicKey(encodedPublicKey, PsgCurveType.SECP384R1)
             .build()
             .array();
 
@@ -78,9 +76,9 @@ public class PsgPublicKeyTest {
 
         // then
         Assertions.assertEquals(magic, parsed.getMagic());
-        Assertions.assertEquals(curveType, parsed.getCurveType());
-        assertThatArrayIsSubarrayOfAnotherArray(encodedPublicKey, parsed.getPointX());
-        assertThatArrayIsSubarrayOfAnotherArray(encodedPublicKey, parsed.getPointY());
+        Assertions.assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
+        assertThatArrayIsSubarrayOfAnotherArray(encodedPublicKey, parsed.getCurvePoint().getPointA());
+        assertThatArrayIsSubarrayOfAnotherArray(encodedPublicKey, parsed.getCurvePoint().getPointB());
         Assertions.assertEquals(toHex(parsed.build().array()), parsed.build().toHex());
     }
 
@@ -98,9 +96,8 @@ public class PsgPublicKeyTest {
         PublicKey publicKey = keyPair.getPublic();
         byte[] result = new PsgPublicKeyBuilder()
             .magic(PsgPublicKeyMagic.MANIFEST_MAGIC)
-            .curveType(PsgCurveType.SECP384R1)
             .permissions(permissions)
-            .publicKey((ECPublicKey) publicKey)
+            .publicKey(publicKey, curveType)
             .build()
             .array();
 
@@ -108,19 +105,19 @@ public class PsgPublicKeyTest {
 
         // then
         Assertions.assertEquals(magic, parsed.getMagic());
-        Assertions.assertEquals(curveType, parsed.getCurveType());
-        assertThatArrayIsSubarrayOfAnotherArray(publicKey.getEncoded(), parsed.getPointX());
-        assertThatArrayIsSubarrayOfAnotherArray(publicKey.getEncoded(), parsed.getPointY());
+        Assertions.assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
+        assertThatArrayIsSubarrayOfAnotherArray(publicKey.getEncoded(), parsed.getCurvePoint().getPointA());
+        assertThatArrayIsSubarrayOfAnotherArray(publicKey.getEncoded(), parsed.getCurvePoint().getPointB());
     }
 
     @Test
-    void build_parse_withPublicKeyXY_Success() throws PsgCertificateException {
+    void build_parse_withPublicKeyXY_Success() throws PsgPubKeyException {
         // given
         PsgPublicKeyMagic magic = PsgPublicKeyMagic.MANIFEST_MAGIC;
         PsgCurveType curveType = PsgCurveType.SECP384R1;
         int permissions = PsgPermissions.SIGN_BKP_DH.getBitPosition();
-        byte[] pubKeyX = new byte[curveType.getSize()];
-        byte[] pubKeyY = new byte[curveType.getSize()];
+        byte[] pubKeyX = new byte[curveType.getCurveSpec().getSize()];
+        byte[] pubKeyY = new byte[curveType.getCurveSpec().getSize()];
         random.nextBytes(pubKeyX);
         random.nextBytes(pubKeyY);
         byte[] pubKeyXY = ByteBuffer.allocate(pubKeyX.length + pubKeyY.length).put(pubKeyX).put(pubKeyY).array();
@@ -128,9 +125,8 @@ public class PsgPublicKeyTest {
         // when
         byte[] result = new PsgPublicKeyBuilder()
             .magic(PsgPublicKeyMagic.MANIFEST_MAGIC)
-            .curveType(PsgCurveType.SECP384R1)
             .permissions(permissions)
-            .publicKeyPointXY(pubKeyXY)
+            .publicKeyPointXY(pubKeyXY, PsgCurveType.SECP384R1)
             .build()
             .array();
 
@@ -138,8 +134,8 @@ public class PsgPublicKeyTest {
 
         // then
         Assertions.assertEquals(magic, parsed.getMagic());
-        Assertions.assertEquals(curveType, parsed.getCurveType());
-        Assertions.assertArrayEquals(pubKeyX, parsed.getPointX());
-        Assertions.assertArrayEquals(pubKeyY, parsed.getPointY());
+        Assertions.assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
+        Assertions.assertArrayEquals(pubKeyX, parsed.getCurvePoint().getPointA());
+        Assertions.assertArrayEquals(pubKeyY, parsed.getCurvePoint().getPointB());
     }
 }

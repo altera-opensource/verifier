@@ -59,23 +59,32 @@ import java.util.stream.Stream;
 public class X509CrlUtils {
 
     public static boolean isRevoked(final X509CRL crl, final BigInteger serialNumber) {
-        return getRevokedSerialNumbers(crl)
-                .anyMatch(x -> x.equals(serialNumber));
+        return isRevoked(getX509CRLEntries(crl), serialNumber);
+    }
+
+    public static boolean isRevoked(final Stream<? extends X509CRLEntry> crlEntries, final BigInteger serialNumber) {
+        return crlEntries
+            .map(X509CRLEntry::getSerialNumber)
+            .anyMatch(sn -> sn.equals(serialNumber));
     }
 
     public static List<String> getRevokedSerialNumbersInHex(final X509CRL crl) {
         return getRevokedSerialNumbers(crl)
-                .map(BigInteger::toByteArray)
-                .map(HexConverter::toHex)
-                .collect(Collectors.toList());
+            .map(BigInteger::toByteArray)
+            .map(HexConverter::toHex)
+            .collect(Collectors.toList());
     }
 
     private static Stream<? extends BigInteger> getRevokedSerialNumbers(final X509CRL crl) {
+        return getX509CRLEntries(crl)
+            .map(X509CRLEntry::getSerialNumber);
+    }
+
+    public static Stream<? extends X509CRLEntry> getX509CRLEntries(X509CRL crl) {
         return Optional
-                .ofNullable(crl.getRevokedCertificates())
-                .orElse(Collections.emptySet())
-                .stream()
-                .map(X509CRLEntry::getSerialNumber);
+            .ofNullable(crl.getRevokedCertificates())
+            .orElse(Collections.emptySet())
+            .stream();
     }
 
     public static BigInteger getCrlNumber(final X509CRL crl) {

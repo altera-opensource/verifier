@@ -33,10 +33,9 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianess.EndianessActor;
+import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.verifier.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,9 +82,9 @@ class GpMeasurementResponseToTcbInfoMapperTest {
     private static GetMeasurementResponse readResponse(String filename) throws Exception {
         final byte[] response = Utils.readFromResources(TEST_FOLDER, filename);
         return new GetMeasurementResponseBuilder()
-            .withActor(EndianessActor.FIRMWARE)
+            .withActor(EndiannessActor.FIRMWARE)
             .parse(response)
-            .withActor(EndianessActor.SERVICE)
+            .withActor(EndiannessActor.SERVICE)
             .build();
     }
 
@@ -99,68 +98,70 @@ class GpMeasurementResponseToTcbInfoMapperTest {
     @Test
     void map_Stratix10() {
         // when
-        final List<TcbInfo> tcbInfos = sut.map(responseS10);
+        final List<TcbInfoMeasurement> measurements = sut.map(responseS10);
 
         // then
-        Assertions.assertEquals(EXPECTED_RECORDS_SIZE_S10, tcbInfos.size());
+        Assertions.assertEquals(EXPECTED_RECORDS_SIZE_S10, measurements.size());
 
-        assertDeviceStateSectionStratix(tcbInfos);
-        assertIoSection(tcbInfos);
-        assertCoreSection(tcbInfos);
-        assertPrSectionStratix(tcbInfos);
+        assertDeviceStateSectionStratix(measurements);
+        assertIoSection(measurements);
+        assertCoreSection(measurements);
+        assertPrSectionStratix(measurements);
     }
 
     @Test
     void map_Agilex() {
         // when
-        final List<TcbInfo> tcbInfos = sut.map(responseAgilex);
+        final List<TcbInfoMeasurement> measurements = sut.map(responseAgilex);
 
         // then
-        Assertions.assertEquals(EXPECTED_RECORDS_SIZE_AGILEX, tcbInfos.size());
+        Assertions.assertEquals(EXPECTED_RECORDS_SIZE_AGILEX, measurements.size());
 
-        assertDeviceStateSectionAgilex(tcbInfos);
-        assertIoSection(tcbInfos);
-        assertCoreSection(tcbInfos);
-        assertPrSectionsAgilex(tcbInfos);
+        assertDeviceStateSectionAgilex(measurements);
+        assertIoSection(measurements);
+        assertCoreSection(measurements);
+        assertPrSectionsAgilex(measurements);
     }
 
-    private void assertDeviceStateSectionStratix(List<TcbInfo> tcbInfos) {
-        final TcbInfo deviceStateSection = tcbInfos.get(0);
-        Assertions.assertEquals(EXPECTED_DEVICE_DATA_STRATIX, deviceStateSection.get(TcbInfoField.VENDOR_INFO).get());
+    private void assertDeviceStateSectionStratix(List<TcbInfoMeasurement> measurements) {
+        final TcbInfoMeasurement deviceStateSection = measurements.get(0);
+        Assertions.assertEquals(EXPECTED_DEVICE_DATA_STRATIX,
+            deviceStateSection.getValue().getMaskedVendorInfo().get().getVendorInfo());
     }
 
-    private void assertDeviceStateSectionAgilex(List<TcbInfo> tcbInfos) {
-        final TcbInfo deviceStateSection = tcbInfos.get(0);
-        Assertions.assertEquals(EXPECTED_DEVICE_DATA_AGILEX, deviceStateSection.get(TcbInfoField.VENDOR_INFO).get());
+    private void assertDeviceStateSectionAgilex(List<TcbInfoMeasurement> measurements) {
+        final TcbInfoMeasurement deviceStateSection = measurements.get(0);
+        Assertions.assertEquals(EXPECTED_DEVICE_DATA_AGILEX,
+            deviceStateSection.getValue().getMaskedVendorInfo().get().getVendorInfo());
     }
 
-    private void assertIoSection(List<TcbInfo> tcbInfos) {
-        final TcbInfo ioSection = tcbInfos.get(1);
+    private void assertIoSection(List<TcbInfoMeasurement> measurements) {
+        final TcbInfoMeasurement ioSection = measurements.get(1);
         Assertions.assertEquals(EXPECTED_IO_DATA, fwIdToHash(ioSection));
     }
 
-    private void assertCoreSection(List<TcbInfo> tcbInfos) {
-        final TcbInfo coreSection = tcbInfos.get(2);
+    private void assertCoreSection(List<TcbInfoMeasurement> measurements) {
+        final TcbInfoMeasurement coreSection = measurements.get(2);
         Assertions.assertEquals(EXPECTED_CORE_DATA, fwIdToHash(coreSection));
     }
 
-    private void assertPrSectionStratix(List<TcbInfo> tcbInfos) {
-        final TcbInfo prSection1 = tcbInfos.get(3);
+    private void assertPrSectionStratix(List<TcbInfoMeasurement> measurements) {
+        final TcbInfoMeasurement prSection1 = measurements.get(3);
         Assertions.assertEquals(EXPECTED_PR1_DATA, fwIdToHash(prSection1));
     }
 
-    private void assertPrSectionsAgilex(List<TcbInfo> tcbInfos) {
-        final TcbInfo prSection1 = tcbInfos.get(3);
+    private void assertPrSectionsAgilex(List<TcbInfoMeasurement> measurements) {
+        final TcbInfoMeasurement prSection1 = measurements.get(3);
         Assertions.assertEquals(EXPECTED_PR1_DATA, fwIdToHash(prSection1));
-        Assertions.assertEquals(SECTION_INDEX_PR1, prSection1.get(TcbInfoField.INDEX).get());
+        Assertions.assertEquals(SECTION_INDEX_PR1, prSection1.getKey().getIndex());
 
-        final TcbInfo prSection2 = tcbInfos.get(4);
+        final TcbInfoMeasurement prSection2 = measurements.get(4);
         Assertions.assertEquals(EXPECTED_PR2_DATA, fwIdToHash(prSection2));
-        Assertions.assertEquals(SECTION_INDEX_PR2, prSection2.get(TcbInfoField.INDEX).get());
+        Assertions.assertEquals(SECTION_INDEX_PR2, prSection2.getKey().getIndex());
     }
 
-    private String fwIdToHash(TcbInfo tcbInfo) {
-        final FwIdField field = (FwIdField) tcbInfo.get(TcbInfoField.FWIDS)
+    private String fwIdToHash(TcbInfoMeasurement measurement) {
+        final FwIdField field = measurement.getValue().getFwid()
             .orElseThrow(() -> new RuntimeException("Expected FwId field in TcbInfo, but it does not exist."));
         return field.getDigest();
     }

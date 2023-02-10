@@ -36,6 +36,7 @@ package com.intel.bkp.utils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -43,5 +44,13 @@ public class ByteConverter {
 
     public static byte[] toBytes(int value) {
         return ByteBuffer.allocate(Integer.BYTES).putInt(value).array();
+    }
+
+    public static byte[] toIntegerBytes(byte value) {
+        return ByteBuffer.allocate(Integer.BYTES).put(value).array();
+    }
+
+    public static Integer toInt(byte[] value) {
+        return new BigInteger(value).intValue();
     }
 }

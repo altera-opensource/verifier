@@ -41,6 +41,5 @@ import lombok.Data;
 public class LibSpdmParams {
     private String wrapperLibraryPath;
     private int ctExponent;
-    private int certificatesEfuseUdsSlotId;
     private boolean measurementsRequestSignature;
 }
