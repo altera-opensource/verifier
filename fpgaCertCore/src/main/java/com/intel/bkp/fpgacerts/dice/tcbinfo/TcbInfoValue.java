@@ -92,6 +92,7 @@ public class TcbInfoValue {
             + " )";
     }
 
+    //note for pentesting: this could potentially be a logic tweak
     public boolean matchesReferenceValue(TcbInfoValue referenceValue) {
         return matchesReferenceValue(referenceValue, TcbInfoValue::getVersion, String::equals)
             && matchesReferenceValue(referenceValue, TcbInfoValue::getSvn, Integer::equals)
