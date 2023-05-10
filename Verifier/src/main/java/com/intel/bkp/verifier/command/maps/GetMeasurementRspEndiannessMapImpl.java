@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,10 +35,22 @@ package com.intel.bkp.verifier.command.maps;
 
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.maps.BaseEndiannessMapImpl;
 
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 import static com.intel.bkp.utils.ByteSwapOrder.NONE;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_DEVICE_DH_PUB_KEY;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_DEVICE_UNIQUE_ID;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_MAC;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_MAGIC;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_RECORD_LEN;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_ROM_VERSION_NUM;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_SDM_FW_BUILD_ID;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_SDM_SESSION_ID;
+import static com.intel.bkp.verifier.endianness.StructureField.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY;
 
 public final class GetMeasurementRspEndiannessMapImpl extends BaseEndiannessMapImpl {
 
@@ -47,19 +59,19 @@ public final class GetMeasurementRspEndiannessMapImpl extends BaseEndiannessMapI
     }
 
     @Override
-    void populateFirmwareMap() {
-        put(EndiannessStructureFields.GET_MEASUREMENT_MAGIC, CONVERT);
-        put(EndiannessStructureFields.GET_MEASUREMENT_SDM_SESSION_ID, CONVERT);
-        put(EndiannessStructureFields.GET_MEASUREMENT_DEVICE_UNIQUE_ID, NONE);
-        put(EndiannessStructureFields.GET_MEASUREMENT_ROM_VERSION_NUM, CONVERT);
-        put(EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_BUILD_ID, NONE);
-        put(EndiannessStructureFields.GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
-        put(EndiannessStructureFields.GET_MEASUREMENT_PUBLIC_EFUSE_VALUES, CONVERT);
-        put(EndiannessStructureFields.GET_MEASUREMENT_DEVICE_DH_PUB_KEY, NONE);
-        put(EndiannessStructureFields.GET_MEASUREMENT_VERIFIER_DH_PUB_KEY, NONE);
-        put(EndiannessStructureFields.GET_MEASUREMENT_CMF_DESCRIPTOR_HASH, NONE);
-        put(EndiannessStructureFields.GET_MEASUREMENT_RECORD_LEN, CONVERT);
-        put(EndiannessStructureFields.GET_MEASUREMENT_MAC, NONE);
+    protected void populateFirmwareMap() {
+        put(GET_MEASUREMENT_MAGIC, CONVERT);
+        put(GET_MEASUREMENT_SDM_SESSION_ID, CONVERT);
+        put(GET_MEASUREMENT_DEVICE_UNIQUE_ID, NONE);
+        put(GET_MEASUREMENT_ROM_VERSION_NUM, CONVERT);
+        put(GET_MEASUREMENT_SDM_FW_BUILD_ID, NONE);
+        put(GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
+        put(GET_MEASUREMENT_PUBLIC_EFUSE_VALUES, CONVERT);
+        put(GET_MEASUREMENT_DEVICE_DH_PUB_KEY, NONE);
+        put(GET_MEASUREMENT_VERIFIER_DH_PUB_KEY, NONE);
+        put(GET_MEASUREMENT_CMF_DESCRIPTOR_HASH, NONE);
+        put(GET_MEASUREMENT_RECORD_LEN, CONVERT);
+        put(GET_MEASUREMENT_MAC, NONE);
     }
 }
 

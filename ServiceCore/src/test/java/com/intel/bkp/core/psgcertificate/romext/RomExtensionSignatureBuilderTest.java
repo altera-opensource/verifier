@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,9 +34,9 @@
 package com.intel.bkp.core.psgcertificate.romext;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
-import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.ByteSwap;
@@ -73,7 +73,7 @@ class RomExtensionSignatureBuilderTest {
         final byte[] signature = ArrayUtils.addAll(builder.getSignature(), new byte[]{1, 2, 3, 4, 5, 6, 7, 8});
 
         // when-then
-        Assertions.assertThrows(RomExtensionSignatureException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance().withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
@@ -86,7 +86,7 @@ class RomExtensionSignatureBuilderTest {
         replaceStructureMagicInSignature(signature, PsgRootCertMagic.MULTI.getValue());
 
         // when-then
-        Assertions.assertThrows(RomExtensionSignatureException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
@@ -100,7 +100,7 @@ class RomExtensionSignatureBuilderTest {
         replaceStructureMagicInSignature(signature, PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC);
 
         // when-then
-        Assertions.assertThrows(RomExtensionSignatureException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
@@ -114,7 +114,7 @@ class RomExtensionSignatureBuilderTest {
         replaceStructureMagicInSignature(signature, PsgCancellableBlock0EntryBuilder.MAGIC);
 
         // when-then
-        Assertions.assertThrows(RomExtensionSignatureException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
@@ -128,7 +128,7 @@ class RomExtensionSignatureBuilderTest {
             PsgCancellableBlock0EntryBuilder.MAGIC);
 
         // when-then
-        Assertions.assertThrows(RomExtensionSignatureException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,54 +33,49 @@
 
 package com.intel.bkp.core.psgcertificate.romext;
 
-import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
+import com.intel.bkp.core.exceptions.ParseStructureException;
+import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
+import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
+import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder.MAGIC;
-import static com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC;
-import static com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic.MULTI;
+import static com.intel.bkp.core.psgcertificate.romext.RomExtensionSignatureStructureType.BLOCK0;
+import static com.intel.bkp.core.psgcertificate.romext.RomExtensionSignatureStructureType.LEAF;
+import static com.intel.bkp.core.psgcertificate.romext.RomExtensionSignatureStructureType.ROOT;
 
 class RomExtractedStructureDataTest {
 
     private static final byte[] SAMPLE_DATA = {1, 2, 3, 4};
 
     @Test
-    void constructor_WithBlock0EntryMagic_Success() throws Exception {
-        // when
-        final var actual = new RomExtractedStructureData(MAGIC, SAMPLE_DATA);
-
-        // then
-        assertions(RomExtractedStructureStrategy.BLOCK0, actual);
+    void from_WithBlock0EntryMagic_Success() {
+        from_ReturnsExpected(PsgCancellableBlock0EntryBuilder.MAGIC, BLOCK0);
     }
 
     @Test
-    void constructor_WithRootCertMagicMulti_Success() throws Exception {
-        // when
-        final var actual = new RomExtractedStructureData(MULTI.getValue(), SAMPLE_DATA);
-
-        // then
-        assertions(RomExtractedStructureStrategy.ROOT, actual);
+    void from_WithRootCertMagicMulti_Success() {
+        from_ReturnsExpected(PsgRootCertMagic.MULTI.getValue(), ROOT);
     }
 
     @Test
-    void constructor_WithCertEntryMagic_Success() throws Exception {
-        // when
-        final var actual = new RomExtractedStructureData(PUBLIC_KEY_ENTRY_MAGIC, SAMPLE_DATA);
-
-        // then
-        assertions(RomExtractedStructureStrategy.LEAF, actual);
+    void from_WithCertEntryMagic_Success() {
+        from_ReturnsExpected(PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC, LEAF);
     }
 
     @Test
-    void constructor_WithInvalidMagic_ThrowsException() {
+    void from_WithInvalidMagic_ThrowsException() {
         // when-then
-        Assertions.assertThrows(RomExtensionSignatureException.class,
-            () -> new RomExtractedStructureData(123, SAMPLE_DATA));
+        Assertions.assertThrows(ParseStructureException.class,
+            () -> RomExtractedStructureData.from(123, SAMPLE_DATA));
     }
 
-    private static void assertions(RomExtractedStructureStrategy strategy, RomExtractedStructureData data) {
-        Assertions.assertEquals(strategy, data.getType());
-        Assertions.assertArrayEquals(SAMPLE_DATA, data.getData());
+    private static void from_ReturnsExpected(int magic, RomExtensionSignatureStructureType expectedType) {
+        // when
+        final var result = RomExtractedStructureData.from(magic, SAMPLE_DATA);
+
+        // then
+        Assertions.assertEquals(expectedType, result.type());
+        Assertions.assertArrayEquals(SAMPLE_DATA, result.data());
     }
 }

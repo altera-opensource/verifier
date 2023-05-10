@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -54,11 +54,11 @@ class DiceCertificateSubjectTest {
         final var parsedSubject = DiceCertificateSubject.parse(deviceIdSubject);
 
         // then
-        Assertions.assertEquals("Intel", parsedSubject.getCompanyName());
-        Assertions.assertEquals("Agilex", parsedSubject.getFamilyName());
-        Assertions.assertEquals("L0", parsedSubject.getLevel());
-        Assertions.assertEquals("H-e6TM4R12mufV0Z", parsedSubject.getAdditionalData());
-        Assertions.assertEquals("0123456789abcdef", parsedSubject.getDeviceId());
+        Assertions.assertEquals("Intel", parsedSubject.companyName());
+        Assertions.assertEquals("Agilex", parsedSubject.familyName());
+        Assertions.assertEquals("L0", parsedSubject.level());
+        Assertions.assertEquals("H-e6TM4R12mufV0Z", parsedSubject.additionalData());
+        Assertions.assertEquals("0123456789abcdef", parsedSubject.deviceId());
     }
 
     @Test
@@ -71,11 +71,11 @@ class DiceCertificateSubjectTest {
         final var parsedSubject = DiceCertificateSubject.parse(enrollmentSubject);
 
         // then
-        Assertions.assertEquals("Intel", parsedSubject.getCompanyName());
-        Assertions.assertEquals("Agilex", parsedSubject.getFamilyName());
-        Assertions.assertEquals("ER", parsedSubject.getLevel());
-        Assertions.assertEquals("00", parsedSubject.getAdditionalData());
-        Assertions.assertEquals("0123456789abcdef", parsedSubject.getDeviceId());
+        Assertions.assertEquals("Intel", parsedSubject.companyName());
+        Assertions.assertEquals("Agilex", parsedSubject.familyName());
+        Assertions.assertEquals("ER", parsedSubject.level());
+        Assertions.assertEquals("00", parsedSubject.additionalData());
+        Assertions.assertEquals("0123456789abcdef", parsedSubject.deviceId());
     }
 
     @Test
@@ -88,11 +88,11 @@ class DiceCertificateSubjectTest {
         final var parsedSubject = DiceCertificateSubject.parse(iidUdsSubject);
 
         // then
-        Assertions.assertEquals("Intel", parsedSubject.getCompanyName());
-        Assertions.assertEquals("Agilex", parsedSubject.getFamilyName());
-        Assertions.assertEquals("PU", parsedSubject.getLevel());
-        Assertions.assertEquals("DW43eBZHek7h0vG3", parsedSubject.getAdditionalData());
-        Assertions.assertEquals("0123456789abcdef", parsedSubject.getDeviceId());
+        Assertions.assertEquals("Intel", parsedSubject.companyName());
+        Assertions.assertEquals("Agilex", parsedSubject.familyName());
+        Assertions.assertEquals("PU", parsedSubject.level());
+        Assertions.assertEquals("DW43eBZHek7h0vG3", parsedSubject.additionalData());
+        Assertions.assertEquals("0123456789abcdef", parsedSubject.deviceId());
     }
 
     @Test

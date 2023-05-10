@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,25 +31,49 @@
  *
  */
 
-package com.intel.bkp.core.endianness;
+package com.intel.bkp.core.helper;
 
-public enum EndiannessStructureType {
-    PSG_BLOCK_0_ENTRY,
-    PSG_CANCELLABLE_BLOCK0_ENTRY,
-    PSG_SIGNATURE,
-    PSG_PUBLIC_KEY,
-    PUF_MANIFEST,
-    PUF_MANIFEST_REG_STRUCTURE,
-    PSG_CERT_ROOT_ENTRY,
-    PSG_CERT_ENTRY,
-    PSG_AES_KEY_ENTRY,
-    SIGMA_M2,
-    SIGMA_GET_CHIP_ID_RESP,
-    SIGMA_ENC_RESP,
-    SIGMA_M3_RESP,
-    CERTIFICATE_RESP,
-    SIGMA_TEARDOWN_RESP,
-    ATT_MANIFEST,
-    ROM_EXT,
-    NIC_MANIFEST
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
+import static com.intel.bkp.utils.FirstIntegerByteParser.toSingleByte;
+import static java.lang.Byte.toUnsignedInt;
+
+@Getter
+@ToString
+@EqualsAndHashCode
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+public class ManifestUniqueId {
+
+    private static final ManifestUniqueId EMPTY = new ManifestUniqueId(null, null);
+
+    private final String deviceId;
+    private final Integer familyId;
+
+    @JsonCreator
+    public static ManifestUniqueId from(@JsonProperty("deviceId") String deviceId,
+                                        @JsonProperty("familyId") Integer familyId) {
+        return new ManifestUniqueId(deviceId, familyId);
+    }
+
+    public static ManifestUniqueId from(String deviceId, byte familyId) {
+        return ManifestUniqueId.from(deviceId, toUnsignedInt(familyId));
+    }
+
+    public static ManifestUniqueId from(String deviceId, byte[] familyId) {
+        return ManifestUniqueId.from(deviceId, toSingleByte(familyId));
+    }
+
+    public static ManifestUniqueId from(String deviceId) {
+        return ManifestUniqueId.from(deviceId, (Integer) null);
+    }
+
+    public static ManifestUniqueId empty() {
+        return EMPTY;
+    }
 }

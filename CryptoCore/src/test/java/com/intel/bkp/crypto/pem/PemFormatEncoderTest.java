@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,14 @@
 
 package com.intel.bkp.crypto.pem;
 
+import com.intel.bkp.crypto.CryptoUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.crypto.pem.PemFormatHeader.CRL;
 import static com.intel.bkp.crypto.pem.PemFormatHeader.CSR;
 import static com.intel.bkp.crypto.pem.PemFormatHeader.PUBLIC_KEY;
@@ -43,6 +48,19 @@ import static com.intel.bkp.crypto.pem.PemFormatHeader.PUBLIC_KEY;
 class PemFormatEncoderTest {
 
     private static final byte[] EXPECTED_BYTES = new byte[]{0, 1, 2, 3, 4};
+
+    private static final String PUBLIC_KEY_PEM =
+        "-----BEGIN PUBLIC KEY-----\n"
+            + "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEnfZwXOcDJkzAIneeSWLE4fw0ItHswu1K\n"
+            + "ytIRBJxTr6HoZQEgRx+QCDlrlphcAengLery3XKP0iGt/W6Pe1kcPKEJmkQvZul8\n"
+            + "Qpxba17YIpAuSyNGyTythnjAs7i1SHSa\n"
+            + "-----END PUBLIC KEY-----";
+    private static final String PUBLIC_KEY_PEM_INVALID_HEADER = "-----BEGIN INVALID PEM-----";
+    private static final String PUBLIC_KEY_PEM_EMPTY = "";
+    private static final String PUBLIC_KEY_PEM_INVALID_CONTENT =
+        "-----BEGIN PUBLIC KEY-----\n"
+            + "ytIRBJxTr6HoZQEgRx\n"
+            + "-----END PUBLIC KEY-----";
 
     @Test
     public void encodeCertificateRequest_ShouldEncodeCertificateRequest() {
@@ -80,6 +98,36 @@ class PemFormatEncoderTest {
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.contains(PUBLIC_KEY.getBegin()));
         Assertions.assertTrue(result.contains(PUBLIC_KEY.getEnd()));
+    }
+
+    @Test
+    void decode_ValidPem_SuccessfullyRecoversKey() throws IOException {
+        // when
+        final byte[] result = PemFormatEncoder.decode(PUBLIC_KEY_PEM.getBytes(StandardCharsets.UTF_8));
+
+        // then
+        Assertions.assertDoesNotThrow(() -> CryptoUtils.toPublicEncodedBC(result, EC_KEY));
+    }
+
+    @Test
+    void decode_InvalidPemHeader_ThrowsIllegalArgumentException() {
+        // when-then
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> PemFormatEncoder.decode(PUBLIC_KEY_PEM_INVALID_HEADER.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void decode_EmptyPemContent_ThrowsIllegalArgumentException() {
+        // when-then
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> PemFormatEncoder.decode(PUBLIC_KEY_PEM_EMPTY.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void decode_InvalidPemContent_ThrowsIllegalArgumentException() {
+        // when-then
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> PemFormatEncoder.decode(PUBLIC_KEY_PEM_INVALID_CONTENT.getBytes(StandardCharsets.UTF_8)));
     }
 
 }

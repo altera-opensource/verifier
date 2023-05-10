@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,7 +43,7 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 class ByteConverterTest {
 
     @Test
-    void toBytes_Success() {
+    void toBytes_WithInt_Success() {
         // given
         int data = 1;
         String expected = "00000001";
@@ -66,6 +66,32 @@ class ByteConverterTest {
 
         // then
         Assertions.assertEquals(expected, toHex(result));
+    }
+
+    @Test
+    void toBytes_WithLong_Success() {
+        // given
+        long value = 1;
+        final String expected = "0000000000000001";
+
+        // when
+        final byte[] actual = toBytes(value);
+
+        // then
+        Assertions.assertEquals(expected, toHex(actual));
+    }
+
+    @Test
+    void toBytes_WithShortValue_Success() {
+        // given
+        final short value = 1;
+        final String expected = "0001";
+
+        // when
+        final byte[] actual = toBytes(value);
+
+        // then
+        Assertions.assertEquals(expected, toHex(actual));
     }
 
     @Test

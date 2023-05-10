@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,6 +44,14 @@ public class ByteConverter {
 
     public static byte[] toBytes(int value) {
         return ByteBuffer.allocate(Integer.BYTES).putInt(value).array();
+    }
+
+    public static byte[] toBytes(short value) {
+        return ByteBuffer.allocate(Short.BYTES).putShort(value).array();
+    }
+
+    public static byte[] toBytes(long value) {
+        return ByteBuffer.allocate(Long.BYTES).putLong(value).array();
     }
 
     public static byte[] toIntegerBytes(byte value) {

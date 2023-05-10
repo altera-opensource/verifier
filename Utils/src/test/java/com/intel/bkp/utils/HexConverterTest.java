@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,15 +33,33 @@
 
 package com.intel.bkp.utils;
 
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.junit.FuzzTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static com.intel.bkp.utils.HexConverter.toLowerCaseHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class HexConverterTest {
+
+    @Tag("Fuzz")
+    @FuzzTest
+    void fromHex_Fuzz(FuzzedDataProvider data) {
+        // given
+        final int maxLength = data.consumeInt(0, 100000);
+        final byte[] expected = data.consumeBytes(maxLength);
+
+        // when
+        final byte[] result = fromHex(toHex(expected));
+
+        // then
+        assertArrayEquals(expected, result);
+    }
 
     @Test
     public void fromHex_Success() {

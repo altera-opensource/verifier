@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,13 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_ROOT_HASH_TYPE;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SIG_LEN;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 public final class PsgCertificateRootEntryEndiannessMapImpl extends BaseEndiannessMapImpl {
@@ -46,12 +51,12 @@ public final class PsgCertificateRootEntryEndiannessMapImpl extends BaseEndianne
 
     @Override
     protected void populateFirmwareMap() {
-        put(EndiannessStructureFields.PSG_CERT_ROOT_MAGIC, CONVERT);
-        put(EndiannessStructureFields.PSG_CERT_ROOT_LENGTH_OFFSET, CONVERT);
-        put(EndiannessStructureFields.PSG_CERT_ROOT_DATA_LEN, CONVERT);
-        put(EndiannessStructureFields.PSG_CERT_ROOT_SIG_LEN, CONVERT);
-        put(EndiannessStructureFields.PSG_CERT_ROOT_SHA_LEN, CONVERT);
-        put(EndiannessStructureFields.PSG_CERT_ROOT_ROOT_HASH_TYPE, CONVERT);
+        put(PSG_CERT_ROOT_MAGIC, CONVERT);
+        put(PSG_CERT_ROOT_LENGTH_OFFSET, CONVERT);
+        put(PSG_CERT_ROOT_DATA_LEN, CONVERT);
+        put(PSG_CERT_ROOT_SIG_LEN, CONVERT);
+        put(PSG_CERT_ROOT_SHA_LEN, CONVERT);
+        put(PSG_CERT_ROOT_ROOT_HASH_TYPE, CONVERT);
     }
 
 }

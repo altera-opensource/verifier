@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,12 +35,14 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
+import java.nio.charset.StandardCharsets;
+
 import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.parseImplicitlyTaggedOctetString;
 
 public class StringFieldParser implements ITcbInfoFieldParser<String> {
 
     @Override
     public String parse(ASN1TaggedObject object) {
-        return new String(parseImplicitlyTaggedOctetString(object));
+        return new String(parseImplicitlyTaggedOctetString(object), StandardCharsets.UTF_8);
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,33 +31,11 @@
  *
  */
 
-package com.intel.bkp.fpgacerts.url.params.parsing;
+package com.intel.bkp.core.endianness;
 
-import com.intel.bkp.fpgacerts.exceptions.X509Exception;
-import com.intel.bkp.utils.Base64Url;
-import com.intel.bkp.utils.ByteBufferSafe;
+import com.intel.bkp.core.interfaces.IEndiannessMap;
 
-import java.security.cert.X509Certificate;
-import java.util.Optional;
-import java.util.function.Function;
+public interface IStructureType {
 
-public class KeyIdentifierProvider {
-
-    private static final int SKI_BYTES_FOR_URL = 20;
-
-    public String getKeyIdentifierInBase64Url(X509Certificate certificate,
-                                              Function<X509Certificate, byte[]> mappingFunc) {
-
-        final byte[] keyIdentifier = getKeyIdentifierBytes(certificate, mappingFunc);
-        byte[] shortenKeyIdentifier = new byte[SKI_BYTES_FOR_URL];
-        ByteBufferSafe.wrap(keyIdentifier).get(shortenKeyIdentifier);
-        return Base64Url.encodeWithoutPadding(shortenKeyIdentifier);
-    }
-
-    private byte[] getKeyIdentifierBytes(X509Certificate certificate, Function<X509Certificate, byte[]> mappingFunc) {
-        return Optional.ofNullable(certificate)
-                .map(mappingFunc)
-                .orElseThrow(() ->
-                        new X509Exception("Certificate does not contain required key identifier extension."));
-    }
+    IEndiannessMap getEndiannessMap(EndiannessActor actor);
 }

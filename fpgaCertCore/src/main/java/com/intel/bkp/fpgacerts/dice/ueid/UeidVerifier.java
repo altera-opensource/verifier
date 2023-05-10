@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -112,7 +112,7 @@ public class UeidVerifier {
     }
 
     private boolean verifyMatchesSubject(final byte[] uid, final DiceCertificateSubject diceSubject) {
-        final byte[] uidBasedOnSubject = fromHex(DeviceIdUtil.getReversed(diceSubject.getDeviceId()));
+        final byte[] uidBasedOnSubject = fromHex(DeviceIdUtil.getReversed(diceSubject.deviceId()));
         final boolean match = Arrays.equals(uidBasedOnSubject, uid);
         if (!match) {
             log.error("Certificate has UEID extension with uid that does not match uid based on subject: {}"
@@ -142,7 +142,7 @@ public class UeidVerifier {
 
     private Optional<AttFamily> getFamilyBasedOnSubject(final DiceCertificateSubject subject) {
         try {
-            return Optional.of(AttFamily.from(subject.getFamilyName()));
+            return Optional.of(AttFamily.from(subject.familyName()));
         } catch (Exception ex) {
             log.error("Failed to recognize family name from subject of certificate: {}\nDetails: {}",
                 subject, ex.getMessage());

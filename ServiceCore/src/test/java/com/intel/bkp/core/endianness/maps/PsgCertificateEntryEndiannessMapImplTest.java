@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,17 +34,23 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.utils.ByteSwapOrder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_SIG_LEN;
+import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 class PsgCertificateEntryEndiannessMapImplTest {
 
     @Test
     void populateServiceMap_Success() {
         // when
-        PsgCertificateEntryEndiannessMapImpl sut = new PsgCertificateEntryEndiannessMapImpl(EndiannessActor.SERVICE);
+        PsgCertificateEntryEndiannessMapImpl sut =
+            new PsgCertificateEntryEndiannessMapImpl(EndiannessActor.SERVICE);
 
         // then
         Assertions.assertEquals(0, sut.getSize());
@@ -53,14 +59,15 @@ class PsgCertificateEntryEndiannessMapImplTest {
     @Test
     void populateFirmwareMap_Success() {
         // when
-        PsgCertificateEntryEndiannessMapImpl sut = new PsgCertificateEntryEndiannessMapImpl(EndiannessActor.FIRMWARE);
+        PsgCertificateEntryEndiannessMapImpl sut =
+            new PsgCertificateEntryEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_MAGIC));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_LENGTH_OFFSET));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_DATA_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_SIG_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_SHA_LEN));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_MAGIC));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_LENGTH_OFFSET));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_DATA_LEN));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_SIG_LEN));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_SHA_LEN));
         Assertions.assertEquals(5, sut.getSize());
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
@@ -666,7 +667,7 @@ public class ByteBufferSafeTest {
 
     public static byte[] generateDeviceId() {
         byte[] deviceIdBytes = new byte[Long.BYTES];
-        new Random().nextBytes(deviceIdBytes);
+        ThreadLocalRandom.current().nextBytes(deviceIdBytes);
         System.out.println(toHex(deviceIdBytes));
         return deviceIdBytes;
     }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,9 +31,11 @@
  *
  */
 
-package com.intel.bkp.core.interfaces;
+package com.intel.bkp.fpgacerts.interfaces;
 
-public interface IPsgFormat {
+public interface IFamily {
 
-    byte[] array();
+    String getFamilyName();
+
+    byte getFamilyId();
 }

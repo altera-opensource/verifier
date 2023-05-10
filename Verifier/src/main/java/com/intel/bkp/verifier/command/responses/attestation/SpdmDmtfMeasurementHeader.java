@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,12 +33,13 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
+import com.intel.bkp.core.interfaces.IStructure;
 import lombok.Data;
 
 import java.nio.ByteBuffer;
 
 @Data
-public class SpdmDmtfMeasurementHeader {
+public class SpdmDmtfMeasurementHeader implements IStructure {
 
     private byte type = 0;
     private short size = 0;

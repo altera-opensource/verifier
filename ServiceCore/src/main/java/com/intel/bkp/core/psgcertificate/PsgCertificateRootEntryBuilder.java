@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,10 +34,9 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessBuilder;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.core.endianness.EndiannessStructureType;
-import com.intel.bkp.core.endianness.maps.PsgCertificateRootEntryEndiannessMapImpl;
+import com.intel.bkp.core.endianness.StructureBuilder;
+import com.intel.bkp.core.endianness.StructureType;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
@@ -51,13 +50,23 @@ import lombok.Getter;
 
 import java.util.Optional;
 
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_MSB_OF_PUB_KEY;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_RESERVED;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_ROOT_HASH_TYPE;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SIG_LEN;
+
 /**
  * Root certificate entry in PSG format.
  *
  * <p>Builder must be initiated in proper order i.e. public key, permissions, cancellation</p>
  */
 @Getter
-public class PsgCertificateRootEntryBuilder extends EndiannessBuilder<PsgCertificateRootEntryBuilder> {
+public class PsgCertificateRootEntryBuilder extends StructureBuilder<PsgCertificateRootEntryBuilder,
+    PsgCertificateRootEntry> {
 
     private static final int ENTRY_BASIC_SIZE = 8 * Integer.BYTES; // 8 fields
 
@@ -72,7 +81,7 @@ public class PsgCertificateRootEntryBuilder extends EndiannessBuilder<PsgCertifi
     private PsgPublicKeyBuilder psgPublicKeyBuilder = new PsgPublicKeyBuilder();
 
     public PsgCertificateRootEntryBuilder() {
-        super(EndiannessStructureType.PSG_CERT_ROOT_ENTRY);
+        super(StructureType.PSG_CERT_ROOT_ENTRY);
     }
 
     @Override
@@ -83,13 +92,8 @@ public class PsgCertificateRootEntryBuilder extends EndiannessBuilder<PsgCertifi
     }
 
     @Override
-    protected PsgCertificateRootEntryBuilder self() {
+    public PsgCertificateRootEntryBuilder self() {
         return this;
-    }
-
-    @Override
-    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        maps.put(currentStructureType, new PsgCertificateRootEntryEndiannessMapImpl(currentActor));
     }
 
     private void setLengthOffset() {
@@ -122,19 +126,19 @@ public class PsgCertificateRootEntryBuilder extends EndiannessBuilder<PsgCertifi
         return this;
     }
 
-    public PsgCertificateRootEntry build() throws PsgCertificateException {
+    @Override
+    public PsgCertificateRootEntry build() throws ParseStructureException {
         verifyPubKeyEnabled();
 
         PsgCertificateRootEntry certificateEntry = new PsgCertificateRootEntry();
-        certificateEntry.setMagic(convert(magic, EndiannessStructureFields.PSG_CERT_ROOT_MAGIC));
-        certificateEntry.setLengthOffset(convert(lengthOffset, EndiannessStructureFields.PSG_CERT_ROOT_LENGTH_OFFSET));
-        certificateEntry.setDataLength(convert(dataLength, EndiannessStructureFields.PSG_CERT_ROOT_DATA_LEN));
-        certificateEntry.setSignatureLength(convert(signatureLength, EndiannessStructureFields.PSG_CERT_ROOT_SIG_LEN));
-        certificateEntry.setShaLength(convert(shaLength, EndiannessStructureFields.PSG_CERT_ROOT_SHA_LEN));
-        certificateEntry.setRootHashType(convert(rootHashType.ordinal(),
-            EndiannessStructureFields.PSG_CERT_ROOT_ROOT_HASH_TYPE));
-        certificateEntry.setMsbOfPubKey(convert(msbOfPubKey, EndiannessStructureFields.PSG_CERT_ROOT_MSB_OF_PUB_KEY));
-        certificateEntry.setReserved(convert(reserved, EndiannessStructureFields.PSG_CERT_ROOT_RESERVED));
+        certificateEntry.setMagic(convert(magic, PSG_CERT_ROOT_MAGIC));
+        certificateEntry.setLengthOffset(convert(lengthOffset, PSG_CERT_ROOT_LENGTH_OFFSET));
+        certificateEntry.setDataLength(convert(dataLength, PSG_CERT_ROOT_DATA_LEN));
+        certificateEntry.setSignatureLength(convert(signatureLength, PSG_CERT_ROOT_SIG_LEN));
+        certificateEntry.setShaLength(convert(shaLength, PSG_CERT_ROOT_SHA_LEN));
+        certificateEntry.setRootHashType(convert(rootHashType.ordinal(), PSG_CERT_ROOT_ROOT_HASH_TYPE));
+        certificateEntry.setMsbOfPubKey(convert(msbOfPubKey, PSG_CERT_ROOT_MSB_OF_PUB_KEY));
+        certificateEntry.setReserved(convert(reserved, PSG_CERT_ROOT_RESERVED));
         certificateEntry.setPsgPublicKey(psgPublicKeyBuilder.withActor(getActor()).build().array());
 
         return certificateEntry;
@@ -151,39 +155,38 @@ public class PsgCertificateRootEntryBuilder extends EndiannessBuilder<PsgCertifi
         };
     }
 
-    public PsgCertificateRootEntryBuilder parse(byte[] certificateContent) throws PsgCertificateException {
-        ByteBufferSafe buffer = ByteBufferSafe.wrap(certificateContent);
+    public PsgCertificateRootEntryBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
         try {
             parsePsgMetadata(buffer);
             parsePsgPublicKey(buffer);
             return this;
-        } catch (ByteBufferSafeException | PsgPubKeyException e) {
-            throw new PsgCertificateException("Invalid buffer during parsing entry", e);
+        } catch (ByteBufferSafeException | PsgPubKeyException | PsgCertificateException e) {
+            throw new ParseStructureException("Invalid buffer during parsing entry", e);
         }
     }
 
     private void parsePsgMetadata(ByteBufferSafe buffer) throws PsgCertificateException {
-        final int magicTmp = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_MAGIC);
+        final int magicTmp = convertInt(buffer.getInt(), PSG_CERT_ROOT_MAGIC);
         PsgCertificateHelper.verifyRootEntryMagic(magicTmp);
 
         magic = magicTmp;
-        lengthOffset = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_LENGTH_OFFSET);
-        dataLength = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_DATA_LEN);
-        signatureLength = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_SIG_LEN);
-        shaLength = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_SHA_LEN);
+        lengthOffset = convertInt(buffer.getInt(), PSG_CERT_ROOT_LENGTH_OFFSET);
+        dataLength = convertInt(buffer.getInt(), PSG_CERT_ROOT_DATA_LEN);
+        signatureLength = convertInt(buffer.getInt(), PSG_CERT_ROOT_SIG_LEN);
+        shaLength = convertInt(buffer.getInt(), PSG_CERT_ROOT_SHA_LEN);
         rootHashType = PsgRootHashType.fromOrdinal(convertInt(buffer.getInt(),
-            EndiannessStructureFields.PSG_CERT_ROOT_ROOT_HASH_TYPE));
-        msbOfPubKey = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_MSB_OF_PUB_KEY);
-        reserved = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_CERT_ROOT_RESERVED);
+            PSG_CERT_ROOT_ROOT_HASH_TYPE));
+        msbOfPubKey = convertInt(buffer.getInt(), PSG_CERT_ROOT_MSB_OF_PUB_KEY);
+        reserved = convertInt(buffer.getInt(), PSG_CERT_ROOT_RESERVED);
     }
 
     private void parsePsgPublicKey(ByteBufferSafe buffer) throws PsgPubKeyException {
         psgPublicKeyBuilder = new PsgPublicKeyBuilder().withActor(getActor()).parse(buffer);
     }
 
-    private void verifyPubKeyEnabled() throws PsgCertificateException {
+    private void verifyPubKeyEnabled() throws ParseStructureException {
         if (!isPublicKeyEnabled()) {
-            throw new PsgCertificateException("PsgPublicKey is not set");
+            throw new ParseStructureException("PsgPublicKey is not set");
         }
     }
 }

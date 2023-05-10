@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,12 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 
+import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_CERT_DATA_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_CERT_TYPE;
+import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_CERT_VERSION;
+import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_USER_AES_CERT_MAGIC;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 public final class PsgAesKeyEndiannessMapImpl extends BaseEndiannessMapImpl {
@@ -46,11 +50,11 @@ public final class PsgAesKeyEndiannessMapImpl extends BaseEndiannessMapImpl {
 
     @Override
     protected void populateFirmwareMap() {
-        put(EndiannessStructureFields.PSG_AES_KEY_MAGIC, CONVERT);
-        put(EndiannessStructureFields.PSG_AES_KEY_CERT_DATA_LENGTH, CONVERT);
-        put(EndiannessStructureFields.PSG_AES_KEY_CERT_VERSION, CONVERT);
-        put(EndiannessStructureFields.PSG_AES_KEY_CERT_TYPE, CONVERT);
-        put(EndiannessStructureFields.PSG_AES_KEY_USER_AES_CERT_MAGIC, CONVERT);
+        put(PSG_AES_KEY_MAGIC, CONVERT);
+        put(PSG_AES_KEY_CERT_DATA_LENGTH, CONVERT);
+        put(PSG_AES_KEY_CERT_VERSION, CONVERT);
+        put(PSG_AES_KEY_CERT_TYPE, CONVERT);
+        put(PSG_AES_KEY_USER_AES_CERT_MAGIC, CONVERT);
     }
 
 }

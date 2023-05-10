@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,18 +33,24 @@
 
 package com.intel.bkp.fpgacerts.url;
 
+import com.intel.bkp.fpgacerts.model.SmartNicFamily;
 import com.intel.bkp.fpgacerts.url.filename.DeviceIdCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.EnrollmentCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.ICertificateFileNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.IidUdsCertificateNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.NicDeviceIdCertificateNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.NicMevDeviceIdCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.S10CertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
+import com.intel.bkp.fpgacerts.url.params.NicDiceParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
 import com.intel.bkp.utils.PathUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.function.Function;
 
 @Slf4j
 @Getter
@@ -59,6 +65,14 @@ public class DistributionPointAddressProvider {
 
     public String getDeviceIdCertUrl(DiceParams diceParams) {
         return getUrl(new DeviceIdCertificateNameProvider(diceParams));
+    }
+
+    public String getNicDeviceIdCertUrl(NicDiceParams params) {
+        final Function<NicDiceParams, ICertificateFileNameProvider> nameProviderCtr =
+            SmartNicFamily.MEV.equals(params.getFamily())
+            ? NicMevDeviceIdCertificateNameProvider::new
+            : NicDeviceIdCertificateNameProvider::new;
+        return getUrl(nameProviderCtr.apply(params));
     }
 
     public String getEnrollmentCertUrl(DiceEnrollmentParams diceEnrollmentParams) {

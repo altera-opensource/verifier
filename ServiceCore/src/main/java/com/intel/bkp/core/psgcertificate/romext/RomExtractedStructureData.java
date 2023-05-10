@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,34 +33,25 @@
 
 package com.intel.bkp.core.psgcertificate.romext;
 
-import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
-import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
-import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
-import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
-import lombok.Getter;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 
-import static com.intel.bkp.utils.ByteConverter.toBytes;
+import java.util.function.Supplier;
+
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
-@Getter
-class RomExtractedStructureData {
+record RomExtractedStructureData(RomExtensionSignatureStructureType type, byte[] data) {
 
-    private final RomExtractedStructureStrategy type;
-    private final byte[] data;
-
-    protected RomExtractedStructureData(int magic, byte[] data) throws RomExtensionSignatureException {
-        this.type = getType(magic);
-        this.data = data;
+    public static RomExtractedStructureData from(int magic, byte[] data) {
+        return new RomExtractedStructureData(getType(magic), data);
     }
 
-    private RomExtractedStructureStrategy getType(int magic) throws RomExtensionSignatureException {
-        if (PsgCancellableBlock0EntryBuilder.MAGIC == magic) {
-            return RomExtractedStructureStrategy.BLOCK0;
-        } else if (PsgRootCertMagic.isValid(magic)) {
-            return RomExtractedStructureStrategy.ROOT;
-        } else if (PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC == magic) {
-            return RomExtractedStructureStrategy.LEAF;
-        }
-        throw new RomExtensionSignatureException("Invalid magic detected: " + toFormattedHex(toBytes(magic)));
+    private static RomExtensionSignatureStructureType getType(int magic) {
+        return RomExtensionSignatureStructureType.findByMagic(magic)
+            .orElseThrow(getParsingException(magic));
+    }
+
+    private static Supplier<ParseStructureException> getParsingException(int magic) {
+        return () -> new ParseStructureException(
+            "Rom extension signature contains invalid magic: " + toFormattedHex(magic));
     }
 }

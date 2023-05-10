@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,7 @@ package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
@@ -117,9 +118,8 @@ public class PsgCertificateRootEntryTest {
             + "5532AE948A4045AE0348DD46867197560A2E8453FB31ECE94FC3BC283B449FC45CC39600CDF194B96EE2FF62D14B24D63CF46A"
             + "4AAB090587A7397E8A568AFF603E10B0ACC987E2EBF25D4E7758FCECF11AEECFBB");
 
-        Assertions.assertThrows(PsgCertificateException.class, () -> {
-            new PsgCertificateRootEntryBuilder().parse(invalidCert);
-        });
+        Assertions.assertThrows(ParseStructureException.class,
+            () -> new PsgCertificateRootEntryBuilder().parse(invalidCert));
     }
 
     @Test
@@ -130,9 +130,8 @@ public class PsgCertificateRootEntryTest {
             + "05532AE948A4045AE0348DD46867197560A2E8453FB31ECE94FC3BC283B449FC45CC39600CDF194B96EE2FF62D14B24D63CF46A"
             + "4AAB090587A7397E8A568AFF603E10B0ACC987E2EBF25D4E7758FCECF11AEECFBB");
 
-        Assertions.assertThrows(PsgCertificateException.class, () -> {
-            new PsgCertificateRootEntryBuilder().parse(invalidCert);
-        });
+        Assertions.assertThrows(ParseStructureException.class,
+            () -> new PsgCertificateRootEntryBuilder().parse(invalidCert));
     }
 
     private void verifyCommonParsedAsserts(PsgCertificateRootEntryBuilder instance,

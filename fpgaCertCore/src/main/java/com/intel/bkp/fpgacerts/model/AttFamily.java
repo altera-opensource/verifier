@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,7 @@
 package com.intel.bkp.fpgacerts.model;
 
 import com.intel.bkp.fpgacerts.exceptions.UnknownFamilyIdException;
+import com.intel.bkp.fpgacerts.interfaces.IFamily;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +43,7 @@ import java.util.Arrays;
 
 @AllArgsConstructor
 @Getter
-public enum AttFamily {
+public enum AttFamily implements IFamily {
     AGILEX("agilex", (byte) 0x34),
     EASIC_N5X("easic_n5x", (byte) 0x35);
 

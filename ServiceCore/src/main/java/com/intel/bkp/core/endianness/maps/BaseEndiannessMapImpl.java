@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,18 +34,19 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.IStructureField;
 import com.intel.bkp.core.interfaces.IEndiannessMap;
 import com.intel.bkp.utils.ByteSwapOrder;
 
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.intel.bkp.utils.ByteSwapOrder.NONE;
 
 public abstract class BaseEndiannessMapImpl implements IEndiannessMap {
 
-    private final EnumMap<EndiannessStructureFields, ByteSwapOrder> map =
-        new EnumMap<>(EndiannessStructureFields.class);
+    private final Map<IStructureField, ByteSwapOrder> map =
+        new HashMap<>();
 
     protected abstract void populateFirmwareMap();
 
@@ -55,7 +56,7 @@ public abstract class BaseEndiannessMapImpl implements IEndiannessMap {
         }
     }
 
-    public void put(EndiannessStructureFields key, ByteSwapOrder value) {
+    public void put(IStructureField key, ByteSwapOrder value) {
         map.put(key, value);
     }
 
@@ -64,7 +65,7 @@ public abstract class BaseEndiannessMapImpl implements IEndiannessMap {
     }
 
     @Override
-    public ByteSwapOrder get(EndiannessStructureFields key) {
+    public ByteSwapOrder get(IStructureField key) {
         return map.getOrDefault(key, NONE);
     }
 }

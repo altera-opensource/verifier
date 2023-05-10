@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -114,7 +114,7 @@ public class TcbInfoVerifier {
     }
 
     private String getFamilyName(X509Certificate certificate) {
-        return DiceCertificateSubject.parse(certificate.getSubjectX500Principal().getName()).getFamilyName();
+        return DiceCertificateSubject.parse(certificate.getSubjectX500Principal().getName()).familyName();
     }
 
     private boolean verifyAllTcbInfosAreValid() {

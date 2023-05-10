@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,12 +31,7 @@
  *
  */
 
-package com.intel.bkp.verifier.interfaces;
+package com.intel.bkp.core.endianness;
 
-import com.intel.bkp.utils.ByteSwapOrder;
-import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
-
-public interface IEndiannessMap {
-
-    ByteSwapOrder get(EndiannessStructureFields key);
+public interface IStructureField {
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ public class TcbInfoMeasurementsAggregator {
 
         if (!map.get(key).equals(value)) {
             throw new IllegalArgumentException(String.format("TcbInfo measurement already exists but values mismatch."
-                + "\n TcbInfo measurement key: %s\nExisting value: %s\nNew value: %s", key, map.get(key), value));
+                + "%n TcbInfo measurement key: %s%nExisting value: %s%nNew value: %s", key, map.get(key), value));
         }
     }
 }

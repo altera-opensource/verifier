@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,18 @@
 
 package com.intel.bkp.core.endianness.maps;
 
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 import com.intel.bkp.utils.ByteSwapOrder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.endianness.EndiannessActor.FIRMWARE;
 import static com.intel.bkp.core.endianness.EndiannessActor.SERVICE;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_ROOT_HASH_TYPE;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SIG_LEN;
 
 class PsgCertificateRootEntryEndiannessMapImplTest {
 
@@ -58,12 +63,12 @@ class PsgCertificateRootEntryEndiannessMapImplTest {
         PsgCertificateRootEntryEndiannessMapImpl sut = new PsgCertificateRootEntryEndiannessMapImpl(FIRMWARE);
 
         // then
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_ROOT_MAGIC));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_ROOT_LENGTH_OFFSET));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_ROOT_DATA_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_ROOT_SIG_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_ROOT_SHA_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_CERT_ROOT_ROOT_HASH_TYPE));
+        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_MAGIC));
+        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_LENGTH_OFFSET));
+        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_DATA_LEN));
+        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_SIG_LEN));
+        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_SHA_LEN));
+        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_ROOT_HASH_TYPE));
         Assertions.assertEquals(6, sut.getSize());
     }
 }

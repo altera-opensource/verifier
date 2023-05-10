@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,9 @@ package com.intel.bkp.verifier.interfaces;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 
+import java.util.Optional;
+
 public interface IMeasurementRecordToTcbInfoMapper<T> {
 
-    TcbInfoMeasurement map(T header, ByteBufferSafe recordContentBuffer);
+    Optional<TcbInfoMeasurement> map(T header, ByteBufferSafe recordContentBuffer);
 }

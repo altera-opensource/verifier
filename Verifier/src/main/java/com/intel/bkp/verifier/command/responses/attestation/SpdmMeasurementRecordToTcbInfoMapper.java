@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,27 +39,27 @@ import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.utils.ByteSwapOrder;
 import com.intel.bkp.verifier.exceptions.SectionTypeException;
-import com.intel.bkp.verifier.interfaces.IMeasurementRecordToTcbInfoMapper;
 import com.intel.bkp.verifier.model.evidence.SectionType;
 import com.intel.bkp.verifier.model.evidence.SpdmMeasurementRecordHeader;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
 @Slf4j
 public class SpdmMeasurementRecordToTcbInfoMapper
-    extends BaseMeasurementRecordToTcbInfoMapper<SpdmMeasurementRecordHeader>
-    implements IMeasurementRecordToTcbInfoMapper<SpdmMeasurementRecordHeader> {
+    extends BaseMeasurementRecordToTcbInfoMapper<SpdmMeasurementRecordHeader> {
 
     static final int PR_SECTION_INDEX_SHIFT = 0x40;
     public static final int DMTF_MEASUREMENT_FLAG = 1;
 
     @Override
-    public TcbInfoMeasurement map(SpdmMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
+    public Optional<TcbInfoMeasurement> map(SpdmMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
         log.debug("Parsing measurement: {}", header);
         if (isDmtfMeasurement(header)) {
             final var dmtfHeader = parseDmtfHeader(recordContentBuffer);
             try {
                 final SectionType sectionType = SectionType.fromSpdmParameters(header.getIndex(), dmtfHeader.getType());
-                return mapInternal(header, recordContentBuffer, sectionType);
+                return Optional.of(mapInternal(header, recordContentBuffer, sectionType));
             } catch (SectionTypeException e) {
                 log.warn("Could not parse section - section unknown: {}", header);
             }
@@ -68,7 +68,7 @@ public class SpdmMeasurementRecordToTcbInfoMapper
         }
 
         recordContentBuffer.skip(getMeasurementSize(header));
-        return TcbInfoMeasurement.empty();
+        return Optional.empty();
     }
 
     @Override

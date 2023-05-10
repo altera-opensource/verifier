@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,9 +32,11 @@
  */
 
 plugins {
+    alias(libs.plugins.lombok)
+    alias(libs.plugins.gradle.versions)
+    alias(libs.plugins.modernizer)
     id 'java-library'
     id 'idea'
-    id 'java'
 }
 
 
@@ -70,17 +72,14 @@ dependencies {
     implementation project(':CryptoCore')
     implementation project(':Utils')
 
-    implementation "org.apache.commons:commons-lang3:${commons_lang3_version}"
-    implementation "org.slf4j:slf4j-api:${slf4j_version}"
-    implementation "org.bouncycastle:bcpkix-jdk15on:${bouncycastle_version}"
+    implementation libs.bouncycastle
+    implementation libs.slf4j.api
 
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junit5_version}"
-    testImplementation "org.mockito:mockito-inline:${mockito_version}"
-    testImplementation "org.mockito:mockito-junit-jupiter:${mockito_version}"
-    testImplementation "org.junit.platform:junit-platform-launcher:${junit5_platform_version}"
-    testImplementation "ch.qos.logback:logback-classic:${logback_version}"
-    testImplementation "ch.qos.logback:logback-core:${logback_version}"
-    testImplementation "com.github.valfirst:slf4j-test:${slf4j_test_version}"
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+    testImplementation libs.bundles.mockito
+    testImplementation libs.bundles.slf4j.test
+    testImplementation libs.jazzer.junit
 }
 
 def getBuildVersion() {

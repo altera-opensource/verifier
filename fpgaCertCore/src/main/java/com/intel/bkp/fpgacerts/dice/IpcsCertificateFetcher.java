@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -212,7 +212,7 @@ public class IpcsCertificateFetcher {
         private boolean isDeviceIdEnrollmentCert(X509Certificate cert) {
             final String issuer = cert.getIssuerX500Principal().getName();
             return DiceCertificateSubject.tryParse(issuer)
-                .map(DiceCertificateSubject::getLevel)
+                .map(DiceCertificateSubject::level)
                 .map(level -> level.equals(DiceCertificateLevel.ENROLLMENT.getCode()))
                 .orElse(false);
         }

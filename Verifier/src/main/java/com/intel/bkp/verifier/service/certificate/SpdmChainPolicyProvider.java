@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,7 @@ import com.intel.bkp.fpgacerts.dice.iidutils.IidFlowDetector;
 import com.intel.bkp.utils.ListUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
@@ -45,6 +46,7 @@ import java.util.Optional;
 import static com.intel.bkp.verifier.service.certificate.DiceChainType.ATTESTATION;
 import static com.intel.bkp.verifier.service.certificate.DiceChainType.IID;
 
+@Slf4j
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class SpdmChainPolicyProvider {
 
@@ -60,10 +62,13 @@ public class SpdmChainPolicyProvider {
 
     public boolean equivalentChainValidated(SpdmValidChains chains,
                                             SpdmCertificateChainHolder chainHolder) {
-        return switch (chainHolder.chainType()) {
+        final boolean result = switch (chainHolder.chainType()) {
             case ATTESTATION -> attestationChainValidated(chains);
             case IID -> iidChainValidated(chains);
         };
+
+        log.debug("Equivalent {} chain {} validated.", chainHolder.chainType(), result ? "already" : "not yet");
+        return result;
     }
 
     private boolean attestationChainValidated(SpdmValidChains chains) {

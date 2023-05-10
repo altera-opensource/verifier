@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -120,7 +120,26 @@ class X509CertificateParserTest {
     }
 
     @Test
-    void tryToX509_DerCert_Success() {
+    void tryToX509_WithString_PemCert_Success() {
+        // when
+        final Optional<X509Certificate> result = X509CertificateParser.tryToX509(certPemString);
+
+        // then
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(PEM_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
+    }
+
+    @Test
+    void tryToX509_WithString_InvalidInput_ReturnsEmpty() {
+        // when
+        final Optional<X509Certificate> result = X509CertificateParser.tryToX509("not a valid cert");
+
+        // then
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void tryToX509_WithBytes_DerCert_Success() {
         // when
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509(certDerEncoded);
 
@@ -130,7 +149,17 @@ class X509CertificateParserTest {
     }
 
     @Test
-    void tryToX509_InvalidInput_ReturnsEmptyOptional() {
+    void tryToX509_WithBytes_PemCert_Success() {
+        // when
+        final Optional<X509Certificate> result = X509CertificateParser.tryToX509(certPemEncoded);
+
+        // then
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(PEM_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
+    }
+
+    @Test
+    void tryToX509_WithBytes_InvalidInput_ReturnsEmptyOptional() {
         // when
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509(new byte[]{0x01, 0x02});
 

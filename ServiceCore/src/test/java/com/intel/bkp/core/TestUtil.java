@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,6 +47,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.intel.bkp.crypto.CryptoUtils.getBouncyCastleProvider;
 import static com.intel.bkp.crypto.constants.CryptoConstants.EC_CURVE_SPEC_384;
@@ -106,7 +107,7 @@ public class TestUtil {
 
     public static byte[] generateRandomData(int length) {
         final byte[] data = new byte[length];
-        new Random().nextBytes(data);
+        ThreadLocalRandom.current().nextBytes(data);
         return data;
     }
 }

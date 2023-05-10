@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,8 +33,10 @@
 
 package com.intel.bkp.fpgacerts.url;
 
+import com.intel.bkp.fpgacerts.model.SmartNicFamily;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
+import com.intel.bkp.fpgacerts.url.params.NicDiceParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,16 +49,22 @@ class DistributionPointAddressProviderTest {
     private static final S10Params S10_PARAMS = new S10Params("deviceId", "pufType");
     private static final DiceParams DICE_PARAMS = new DiceParams("skiInBase64", "UID");
     private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS =
-            new DiceEnrollmentParams("skiERinBase64", "SVN", "UID");
+        new DiceEnrollmentParams("skiERinBase64", "SVN", "UID");
 
+    private static final NicDiceParams NIC_PARAMS_FOR_MEV = new NicDiceParams("skiInBase64", "UID", SmartNicFamily.MEV);
+    private static final NicDiceParams NIC_PARAMS_FOR_LKV = new NicDiceParams("skiInBase64", "UID", SmartNicFamily.LKV);
+    private static final NicDiceParams NIC_PARAMS_FOR_CNV = new NicDiceParams("skiInBase64", "UID", SmartNicFamily.CNV);
     private static final String EXPECTED_ATTESTATION_PATH = PATH_CER_WITH_SLASH + "attestation_DEVICEID_PUFTYPE.cer";
     private static final String EXPECTED_DEVICE_ID_PATH = PATH_CER_WITH_SLASH + "deviceid_uid_skiInBase64.cer";
     private static final String EXPECTED_ENROLLMENT_PATH = PATH_CER_WITH_SLASH + "enrollment_uid_svn_skiERinBase64.cer";
     private static final String EXPECTED_IID_UDS_PATH = PATH_CER_WITH_SLASH + "iiduds_uid_skiInBase64.cer";
+    private static final String EXPECTED_NIC_MEV_PATH = PATH_CER_WITH_SLASH + "01_uid.cer";
+    private static final String EXPECTED_NIC_LKV_PATH = PATH_CER_WITH_SLASH + "02_uid_skiInBase64.cer";
+    private static final String EXPECTED_NIC_CNV_PATH = PATH_CER_WITH_SLASH + "03_uid_skiInBase64.cer";
 
     private final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_CER_WITH_SLASH);
     private final DistributionPointAddressProvider sutWithoutSlash =
-            new DistributionPointAddressProvider(PATH_CER_WITHOUT_SLASH);
+        new DistributionPointAddressProvider(PATH_CER_WITHOUT_SLASH);
 
     @Test
     void getAttestationCertUrl() {
@@ -128,5 +136,32 @@ class DistributionPointAddressProviderTest {
 
         // then
         Assertions.assertEquals(EXPECTED_IID_UDS_PATH, result);
+    }
+
+    @Test
+    void getNicDeviceIdCertUrl_ForMev_WithoutSkiInFileName() {
+        // when
+        final String result = sut.getNicDeviceIdCertUrl(NIC_PARAMS_FOR_MEV);
+
+        // then
+        Assertions.assertEquals(EXPECTED_NIC_MEV_PATH, result);
+    }
+
+    @Test
+    void getNicDeviceIdCertUrl_ForLkv_WithSkiInFileName() {
+        // when
+        final String result = sut.getNicDeviceIdCertUrl(NIC_PARAMS_FOR_LKV);
+
+        // then
+        Assertions.assertEquals(EXPECTED_NIC_LKV_PATH, result);
+    }
+
+    @Test
+    void getNicDeviceIdCertUrl_ForCnv_WithSkiInFileName() {
+        // when
+        final String result = sut.getNicDeviceIdCertUrl(NIC_PARAMS_FOR_CNV);
+
+        // then
+        Assertions.assertEquals(EXPECTED_NIC_CNV_PATH, result);
     }
 }

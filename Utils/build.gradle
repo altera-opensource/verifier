@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,14 +40,15 @@ buildscript {
 }
 
 plugins {
+    alias(libs.plugins.lombok)
+    alias(libs.plugins.gradle.versions)
+    alias(libs.plugins.modernizer)
     id 'java-library'
     id 'idea'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
-
-ext['junit-jupiter.version'] = "${junit5_version}"
 
 jar {
     archiveBaseName.set('Utils')
@@ -75,17 +76,13 @@ repositories {
 }
 
 dependencies {
-    api "org.apache.commons:commons-lang3:${commons_lang3_version}"
-    api "commons-codec:commons-codec:${commons_codec_version}"
-    api "commons-io:commons-io:${commons_io_version}"
+    api libs.bundles.apache.commons
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5_version}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5_version}"
-    testImplementation "org.junit.platform:junit-platform-launcher:${junit5_platform_version}"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:${junit5_version}"
-    testImplementation "org.junit.platform:junit-platform-runner:${junit5_platform_version}"
-    testImplementation "org.mockito:mockito-inline:${mockito_version}"
-    testImplementation "org.mockito:mockito-junit-jupiter:${mockito_version}"
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+    testImplementation libs.bundles.mockito
+
+    testImplementation libs.jazzer.junit
 }
 
 def getBuildVersion() {

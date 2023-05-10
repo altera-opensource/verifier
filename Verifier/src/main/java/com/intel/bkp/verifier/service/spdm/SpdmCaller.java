@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -75,7 +75,7 @@ public class SpdmCaller {
 
     private boolean connectionInitialized = false;
 
-    public static SpdmCaller getInstance() {
+    public static synchronized SpdmCaller getInstance() {
         if (INSTANCE == null) {
             try {
                 INSTANCE = new SpdmCaller(LibSpdmLibraryWrapperImpl.getInstance(), new SpdmParametersSetter());

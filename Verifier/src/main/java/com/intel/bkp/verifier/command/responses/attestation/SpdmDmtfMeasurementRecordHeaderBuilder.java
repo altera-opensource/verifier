@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,52 +33,46 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
-import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.StructureBuilder;
 import com.intel.bkp.utils.ByteBufferSafe;
-import com.intel.bkp.verifier.command.maps.SpdmDmtfMeasurementHeaderEndiannessMapImpl;
-import com.intel.bkp.verifier.command.responses.BaseResponseBuilder;
-import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
-import com.intel.bkp.verifier.endianness.EndiannessStructureType;
+import com.intel.bkp.verifier.endianness.StructureType;
 import lombok.Getter;
 import lombok.Setter;
+
+import static com.intel.bkp.verifier.endianness.StructureField.SPDM_DMTF_MEASUREMENT_HEADER_LEN;
 
 @Setter
 @Getter
 public class SpdmDmtfMeasurementRecordHeaderBuilder
-    extends BaseResponseBuilder<SpdmDmtfMeasurementRecordHeaderBuilder> {
+    extends StructureBuilder<SpdmDmtfMeasurementRecordHeaderBuilder, SpdmDmtfMeasurementHeader> {
 
     public static final int HEADER_SIZE = 3;
     private byte type = 0;
     private short size = 0;
 
-    @Override
-    public EndiannessStructureType currentStructureMap() {
-        return EndiannessStructureType.SPDM_DMTF_MEASUREMENT_HEADER;
+    public SpdmDmtfMeasurementRecordHeaderBuilder() {
+        super(StructureType.SPDM_DMTF_MEASUREMENT_HEADER);
     }
 
     @Override
-    public SpdmDmtfMeasurementRecordHeaderBuilder withActor(EndiannessActor actor) {
-        changeActor(actor);
+    public SpdmDmtfMeasurementRecordHeaderBuilder self() {
         return this;
     }
 
     @Override
-    public void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        maps.put(currentStructureType, new SpdmDmtfMeasurementHeaderEndiannessMapImpl(currentActor));
-    }
-
     public SpdmDmtfMeasurementHeader build() {
         final var header = new SpdmDmtfMeasurementHeader();
         header.setType(type);
-        header.setSize(convertShort(size, EndiannessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN));
+        header.setSize(convertShort(size, SPDM_DMTF_MEASUREMENT_HEADER_LEN));
         return header;
     }
 
+    @Override
     public SpdmDmtfMeasurementRecordHeaderBuilder parse(ByteBufferSafe buffer) {
         type = buffer.getByte();
         size = buffer.getShort();
 
-        size = convertShort(size, EndiannessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN);
+        size = convertShort(size, SPDM_DMTF_MEASUREMENT_HEADER_LEN);
 
         return this;
     }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,11 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.junit.FuzzTest;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.verifier.Utils;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponse;
 import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponseBuilder;
@@ -42,18 +46,26 @@ import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
+import static com.intel.bkp.utils.HexConverter.toHex;
+
 @ExtendWith(MockitoExtension.class)
 public class EvidenceVerifierSpdmTestIT {
 
+    private static final int MAX_FUZZ_STR_LEN = 1000;
     private static final String TEST_FOLDER_INTEGRATION = "integration/spdm/";
 
     private static final String FILENAME_AGILEX_RIM = "hps_fpga_signed_enc_test.rim";
 
     private static final String FILENAME_AGILEX_RIM_WITH_PR_REGION = "ghrd_agfd023r25a2e2vr0_pr.rim";
+
+    private static final String FILENAME_AGILEX_RIM_FUZZ = "hps_fpga_signed_enc_test_fuzz.rim";
 
     private static final String FILENAME_AGILEX_RESPONSE = "measurements_hps_fpga_signed_enc_test.bin";
 
@@ -61,6 +73,7 @@ public class EvidenceVerifierSpdmTestIT {
 
     private static String refMeasurementsAgilex;
     private static String refMeasurementsAgilexWithPrRegion;
+    private static String refMeasurementsAgilexFuzz;
     private static SpdmMeasurementResponse responseAgilex;
     private static SpdmMeasurementResponse responseAgilexWithPrRegion;
 
@@ -76,6 +89,7 @@ public class EvidenceVerifierSpdmTestIT {
         responseAgilex = readResponse(FILENAME_AGILEX_RESPONSE);
         refMeasurementsAgilexWithPrRegion = readEvidence(FILENAME_AGILEX_RIM_WITH_PR_REGION);
         responseAgilexWithPrRegion = readResponse(FILENAME_AGILEX_RESPONSE_WITH_PR_REGION);
+        refMeasurementsAgilexFuzz = readEvidence(FILENAME_AGILEX_RIM_FUZZ);
     }
 
     private static String readEvidence(String filename) throws Exception {
@@ -87,6 +101,56 @@ public class EvidenceVerifierSpdmTestIT {
         return new SpdmMeasurementResponseBuilder()
             .parse(response)
             .build();
+    }
+
+    private static String getFuzzHex(FuzzedDataProvider data) {
+        return toHex(data.consumeBytes(MAX_FUZZ_STR_LEN / 2));
+    }
+
+    private static void fuzzRandomTcbInfoMeasurement(FuzzedDataProvider data,
+                                                     List<TcbInfoMeasurement> tcbInfosFromDevice) {
+        final int elemToChange = data.consumeInt(0, tcbInfosFromDevice.size() - 1);
+        System.out.println("Elem to change: " + elemToChange);
+
+        final TcbInfoValue tcbInfoValue = tcbInfosFromDevice.get(elemToChange).getValue();
+        System.out.println("Current tcbInfoValue: " + tcbInfoValue);
+
+        tcbInfoValue.getFwid().ifPresent(fwIdField -> {
+            final String newFieldValue = fuzzFieldValue(data, fwIdField.getDigest());
+            fwIdField.setDigest(newFieldValue);
+        });
+
+        tcbInfoValue.getMaskedVendorInfo().ifPresent(maskedVendorInfo -> {
+            final String newVendorInfo = fuzzFieldValue(data, maskedVendorInfo.getVendorInfo());
+            maskedVendorInfo.setVendorInfo(newVendorInfo);
+        });
+
+        System.out.println("Updated tcbInfoValue: " + tcbInfoValue);
+    }
+
+    private static String fuzzFieldValue(FuzzedDataProvider data, String currentFieldValue) {
+        String newFieldValue;
+        do {
+            newFieldValue = getFuzzHex(data);
+        } while (currentFieldValue.equals(newFieldValue));
+        return newFieldValue;
+    }
+
+    @Tag("Fuzz")
+    @FuzzTest
+    public void verify_Spdm_Agilex_Fuzz(FuzzedDataProvider data) {
+        // given
+        final var tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
+        final List<TcbInfoMeasurement> tcbInfosFromDevice = measurementMapper.map(responseAgilex);
+
+        fuzzRandomTcbInfoMeasurement(data, tcbInfosFromDevice);
+        tcbInfoMeasurementsAggregator.add(tcbInfosFromDevice);
+
+        // when
+        final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilexFuzz);
+
+        // then
+        Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
     }
 
     @Test
