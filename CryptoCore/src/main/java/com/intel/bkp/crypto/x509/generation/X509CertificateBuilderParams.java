@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,8 +39,8 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 
 import java.math.BigInteger;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.util.Date;
-import java.util.Random;
 
 import static com.intel.bkp.utils.X509DateBuilderHelper.notAfter;
 import static com.intel.bkp.utils.X509DateBuilderHelper.notBefore;
@@ -96,7 +96,7 @@ public class X509CertificateBuilderParams {
     }
 
     private BigInteger generateSerialNumber() {
-        return BigInteger.valueOf(new Random().nextInt());
+        return BigInteger.valueOf(new SecureRandom().nextInt());
     }
 
     private X500Name getDefaultDummyX500Name() {

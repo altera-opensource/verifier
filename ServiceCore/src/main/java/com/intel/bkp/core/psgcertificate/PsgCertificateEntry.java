@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.interfaces.IPsgFormat;
+import com.intel.bkp.core.interfaces.IStructure;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,7 +41,7 @@ import java.nio.ByteBuffer;
 
 @Getter
 @Setter
-public class PsgCertificateEntry implements IPsgFormat, IPsgCertificateWithPubKey, PsgCertificateCommon,
+public class PsgCertificateEntry implements IStructure, IPsgCertificateWithPubKey, PsgCertificateCommon,
     IPsgCertificateWithSignature {
 
     private byte[] magic = new byte[0];

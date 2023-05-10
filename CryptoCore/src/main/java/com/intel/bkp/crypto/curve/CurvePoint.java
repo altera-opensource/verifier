@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,6 @@
 package com.intel.bkp.crypto.curve;
 
 import com.intel.bkp.crypto.CryptoUtils;
-import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.interfaces.ICurveSpec;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.PaddingUtils;
@@ -51,6 +50,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.extractR;
 import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.extractS;
+import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
 
@@ -107,9 +107,14 @@ public class CurvePoint implements ICurveSpec {
         return from(pointX, pointY, curveSpec);
     }
 
+    public static CurvePoint fromPubKeyEncoded(byte[] encodedPublicKey)
+        throws NoSuchAlgorithmException, InvalidKeySpecException {
+        return from(CryptoUtils.toPublicEncodedBC(encodedPublicKey, EC_KEY));
+    }
+
     public static CurvePoint fromPubKeyEncoded(byte[] encodedPublicKey, CurveSpec pointSpec)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
-        return from(CryptoUtils.toPublicEncodedBC(encodedPublicKey, CryptoConstants.EC_KEY), pointSpec);
+        return from(CryptoUtils.toPublicEncodedBC(encodedPublicKey, EC_KEY), pointSpec);
     }
 
     public static CurvePoint fromSignature(byte[] signature, ICurveSpec spec) {

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,20 +44,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+
+/**
+ * DICE Certificate Subject.
+ *
+ * @param companyName company name
+ * @param familyName family name
+ * @param level DICE level code
+ * @param additionalData SVN (for enrollment cert) or SKI (for deviceId cert or IID UDS cert)
+ * @param deviceId device id in hex
+ */
 @Slf4j
-@Getter
-@RequiredArgsConstructor
-public class DiceCertificateSubject {
+public record DiceCertificateSubject(String companyName,
+                                     String familyName,
+                                     String level,
+                                     String additionalData,
+                                     String deviceId) {
 
     private static final Character DICE_SUBJECT_DELIMITER = ':';
     private static final int COMPONENTS_COUNT = 5;
     static final String COMPANY_NAME = "Intel";
-
-    private final String companyName;
-    private final String familyName;
-    private final String level;
-    private final String additionalData; // SVN (for enrollment cert) or SKI (for deviceId cert or IID UDS cert)
-    private final String deviceId;
 
     public static String build(String familyName, String levelCode, String additionalData, String deviceId) {
         return build(COMPANY_NAME, familyName, levelCode, additionalData, deviceId);

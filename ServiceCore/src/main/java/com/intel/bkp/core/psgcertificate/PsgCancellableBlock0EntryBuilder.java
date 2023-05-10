@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,11 +34,9 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessBuilder;
-import com.intel.bkp.core.endianness.EndiannessStructureType;
-import com.intel.bkp.core.endianness.maps.PsgCancellableBlock0EntryEndiannessMapImpl;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.endianness.StructureBuilder;
+import com.intel.bkp.core.endianness.StructureType;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellableBlock0Entry;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.utils.ByteBufferSafe;
@@ -50,16 +48,17 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_CANCELLATION_ID;
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_DATA_LEN;
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_ENTRY_MAGIC;
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_LENGTH_OFFSET;
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_META_MAGIC;
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_SHA_LEN;
-import static com.intel.bkp.core.endianness.EndiannessStructureFields.CANCELLABLE_BLOCK0_SIG_LEN;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_CANCELLATION_ID;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_ENTRY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_META_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_SIG_LEN;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
-public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCancellableBlock0EntryBuilder> {
+public class PsgCancellableBlock0EntryBuilder extends StructureBuilder<PsgCancellableBlock0EntryBuilder,
+    PsgCancellableBlock0Entry> {
 
     public static final int MAGIC = 0x65495853;
     public static final int METADATA_MAGIC = 0x71050792;
@@ -80,7 +79,7 @@ public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCance
         .withActor(EndiannessActor.SERVICE);
 
     public PsgCancellableBlock0EntryBuilder() {
-        super(EndiannessStructureType.PSG_CANCELLABLE_BLOCK0_ENTRY);
+        super(StructureType.PSG_CANCELLABLE_BLOCK0_ENTRY);
     }
 
     @Override
@@ -91,13 +90,8 @@ public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCance
     }
 
     @Override
-    protected PsgCancellableBlock0EntryBuilder self() {
+    public PsgCancellableBlock0EntryBuilder self() {
         return this;
-    }
-
-    @Override
-    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        maps.put(currentStructureType, new PsgCancellableBlock0EntryEndiannessMapImpl(currentActor));
     }
 
     public PsgCancellableBlock0EntryBuilder signature(byte[] signedData, PsgSignatureCurveType signatureType) {
@@ -105,6 +99,7 @@ public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCance
         return this;
     }
 
+    @Override
     public PsgCancellableBlock0Entry build() {
         final PsgCancellableBlock0Entry entry = new PsgCancellableBlock0Entry();
         entry.setMagic(convert(MAGIC, CANCELLABLE_BLOCK0_ENTRY_MAGIC));
@@ -119,8 +114,7 @@ public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCance
         return entry;
     }
 
-    public PsgCancellableBlock0EntryBuilder parse(byte[] content) throws PsgBlock0EntryException {
-        final ByteBufferSafe buffer = ByteBufferSafe.wrap(content);
+    public PsgCancellableBlock0EntryBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
         try {
             verifyMagic(buffer);
             lengthOffset = convertInt(buffer.getInt(), CANCELLABLE_BLOCK0_LENGTH_OFFSET);
@@ -132,8 +126,8 @@ public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCance
             cancellationId = convertInt(buffer.getInt(), CANCELLABLE_BLOCK0_CANCELLATION_ID);
             psgSignatureBuilder.withActor(getActor()).parse(buffer);
             return this;
-        } catch (ByteBufferSafeException | PsgInvalidSignatureException e) {
-            throw new PsgBlock0EntryException("Invalid buffer during parsing CancellableBlock0 Entry.", e);
+        } catch (ByteBufferSafeException e) {
+            throw new ParseStructureException("Invalid buffer during parsing CancellableBlock0 Entry.", e);
         }
     }
 
@@ -168,25 +162,21 @@ public class PsgCancellableBlock0EntryBuilder extends EndiannessBuilder<PsgCance
         return buffer.array();
     }
 
-    private void verifyMagic(ByteBufferSafe buffer) throws PsgBlock0EntryException {
+    private void verifyMagic(ByteBufferSafe buffer) throws ParseStructureException {
         final int entryMagic = convertInt(buffer.getInt(), CANCELLABLE_BLOCK0_ENTRY_MAGIC);
         if (MAGIC != entryMagic) {
-            throw new PsgBlock0EntryException(
+            throw new ParseStructureException(
                 String.format("Invalid magic number in CancellableBlock0 Entry. Expected: %s, Actual: %s.",
                     toFormattedHex(MAGIC), toFormattedHex(entryMagic)));
         }
     }
 
-    private void verifyMetadataMagic(ByteBufferSafe buffer) throws PsgBlock0EntryException {
+    private void verifyMetadataMagic(ByteBufferSafe buffer) throws ParseStructureException {
         final int entryMetaDataMagic = convertInt(buffer.getInt(), CANCELLABLE_BLOCK0_META_MAGIC);
         if (METADATA_MAGIC != entryMetaDataMagic) {
-            throw new PsgBlock0EntryException(
+            throw new ParseStructureException(
                 String.format("Invalid meta data magic number in CancellableBlock0 Entry. Expected: %s, Actual: %s.",
                     toFormattedHex(METADATA_MAGIC), toFormattedHex(entryMetaDataMagic)));
         }
-    }
-
-    public PsgCancellableBlock0EntryBuilder withDataToSign(byte[] dataToSign) {
-        return null;
     }
 }

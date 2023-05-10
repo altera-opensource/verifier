@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,36 +31,36 @@
  *
  */
 
-package com.intel.bkp.verifier.command.maps;
+package com.intel.bkp.utils;
 
-import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.utils.ByteSwapOrder;
-import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
-import com.intel.bkp.verifier.interfaces.IEndiannessMap;
+import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.EnumMap;
+import java.util.Arrays;
+import java.util.function.Function;
 
-import static com.intel.bkp.utils.ByteSwapOrder.NONE;
+public class FirstIntegerByteParser {
 
-public abstract class BaseEndiannessMapImpl implements IEndiannessMap {
+    public static <T> T from(byte[] data, T[] values, Function<T, Byte> getId) {
+        final byte firstByte = toSingleByte(data);
+        return Arrays.stream(values)
+            .filter(item -> getId.apply(item).equals(firstByte))
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
+    }
 
-    private final EnumMap<EndiannessStructureFields, ByteSwapOrder> map =
-        new EnumMap<>(EndiannessStructureFields.class);
-
-    abstract void populateFirmwareMap();
-
-    BaseEndiannessMapImpl(EndiannessActor actor) {
-        if (EndiannessActor.FIRMWARE == actor) {
-            populateFirmwareMap();
+    public static byte toSingleByte(byte[] data) {
+        final Byte[] bytes = ArrayUtils.toObject(data);
+        if (hasIncorrectLength(bytes) || hasAnyNotSupportedBytes(bytes)) {
+            throw new IllegalArgumentException();
         }
+        return bytes[0];
     }
 
-    public void put(EndiannessStructureFields key, ByteSwapOrder value) {
-        map.put(key, value);
+    private static boolean hasIncorrectLength(Byte[] data) {
+        return Integer.BYTES != data.length;
     }
 
-    @Override
-    public ByteSwapOrder get(EndiannessStructureFields key) {
-        return map.getOrDefault(key, NONE);
+    private static boolean hasAnyNotSupportedBytes(Byte[] data) {
+        return Arrays.stream(data).skip(1).anyMatch(b -> b != 0x00);
     }
 }

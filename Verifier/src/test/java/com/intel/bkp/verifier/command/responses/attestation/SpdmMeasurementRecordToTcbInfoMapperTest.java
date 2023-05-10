@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -45,7 +45,9 @@ import com.intel.bkp.verifier.model.evidence.SpdmMeasurementRecordHeaderBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
@@ -70,10 +72,11 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final SpdmMeasurementRecordHeader header = new SpdmMeasurementRecordHeaderBuilder().parse(buffer).build();
 
         // when
-        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertIgnoreCase(expectedVendorInfo, result.getValue().getMaskedVendorInfo().get().getVendorInfo());
+        assertTrue(result.isPresent());
+        assertIgnoreCase(expectedVendorInfo, result.get().getValue().getMaskedVendorInfo().get().getVendorInfo());
         assertEquals(0, buffer.remaining());
     }
 
@@ -90,10 +93,11 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
             new SpdmMeasurementRecordHeaderBuilder().parse(buffer).build();
 
         // when
-        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertFwId(expectedHash, result);
+        assertTrue(result.isPresent());
+        assertFwId(expectedHash, result.get());
         assertEquals(0, buffer.remaining());
     }
 
@@ -122,7 +126,7 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
     void map_WithDmtfMeasurement_PrSection_Success() {
         // given
         final byte[] measurementArray = new byte[UserDesignMeasurementRecord.DEFAULT_MEASUREMENT_SIZE];
-        new Random().nextBytes(measurementArray);
+        ThreadLocalRandom.current().nextBytes(measurementArray);
         final String expectedMeasurement = toHex(measurementArray);
 
         final int index = SectionType.MIN_PR_INDEX;
@@ -132,10 +136,11 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final ByteBufferSafe buffer = getBufferWithHeader(dmtfHeader, measurementArray);
 
         // when
-        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertFwId(expectedMeasurement, result);
+        assertTrue(result.isPresent());
+        assertFwId(expectedMeasurement, result.get());
         assertEquals(0, buffer.remaining());
     }
 
@@ -147,11 +152,10 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
         final ByteBufferSafe buffer = getBuffer(measurement);
 
         // when
-        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertTrue(result.getKey().isEmpty());
-        assertTrue(result.getValue().isEmpty());
+        assertTrue(result.isEmpty());
         assertEquals(0, buffer.remaining());
     }
 
@@ -167,11 +171,10 @@ class SpdmMeasurementRecordToTcbInfoMapperTest {
             new SpdmMeasurementRecordHeaderBuilder().parse(buffer).build();
 
         // when
-        final TcbInfoMeasurement result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = new SpdmMeasurementRecordToTcbInfoMapper().map(header, buffer);
 
         // then
-        assertTrue(result.getKey().isEmpty());
-        assertTrue(result.getValue().isEmpty());
+        assertTrue(result.isEmpty());
         assertEquals(0, buffer.remaining());
     }
 

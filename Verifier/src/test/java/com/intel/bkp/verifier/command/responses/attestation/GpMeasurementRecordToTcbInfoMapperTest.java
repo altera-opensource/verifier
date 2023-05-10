@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -63,6 +63,7 @@ import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VENDOR_INFO;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField.VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GpMeasurementRecordToTcbInfoMapperTest {
 
@@ -90,10 +91,11 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         final var notExpectedKeys = List.of(INDEX, FWIDS, SVN, VERSION, FLAGS);
 
         // when
-        final TcbInfoMeasurement result = sut.map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = sut.map(header, buffer);
 
         // then
-        verifyKeys(result, expectedKeys, notExpectedKeys);
+        assertTrue(result.isPresent());
+        verifyKeys(result.get(), expectedKeys, notExpectedKeys);
     }
 
     @Test
@@ -105,10 +107,11 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         final var notExpectedKeys = List.of(VENDOR_INFO, SVN, VERSION, FLAGS);
 
         // when
-        final TcbInfoMeasurement result = sut.map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = sut.map(header, buffer);
 
         // then
-        verifyKeys(result, expectedKeys, notExpectedKeys);
+        assertTrue(result.isPresent());
+        verifyKeys(result.get(), expectedKeys, notExpectedKeys);
     }
 
     @Test
@@ -120,14 +123,15 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         final var notExpectedKeys = List.of(INDEX, VENDOR_INFO, SVN, VERSION, FLAGS);
 
         // when
-        final TcbInfoMeasurement result = sut.map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = sut.map(header, buffer);
 
         // then
-        verifyKeys(result, expectedKeys, notExpectedKeys);
+        assertTrue(result.isPresent());
+        verifyKeys(result.get(), expectedKeys, notExpectedKeys);
     }
 
     @Test
-    void map_WithUnsupportedSection() {
+    void map_WithUnsupportedSection_ReturnsEmpty() {
         // given
         final byte rawMeasurementSize = 10;
         final ByteBufferSafe buffer = ByteBufferSafe.wrap(new byte[rawMeasurementSize]);
@@ -135,10 +139,10 @@ class GpMeasurementRecordToTcbInfoMapperTest {
         header.setMeasurementWithHeaderSize(getMeasurementSizeForUserDesign(rawMeasurementSize));
 
         // when
-        final TcbInfoMeasurement result = sut.map(header, buffer);
+        final Optional<TcbInfoMeasurement> result = sut.map(header, buffer);
 
         // then
-        Assertions.assertTrue(result.getKey().isEmpty() && result.getValue().isEmpty());
+        assertTrue(result.isEmpty());
         assertEquals(0, buffer.remaining());
     }
 
@@ -151,10 +155,10 @@ class GpMeasurementRecordToTcbInfoMapperTest {
     }
 
     private void verifyKeys(TcbInfoMeasurement result, List<TcbInfoField> expectedKeys,
-                            List<TcbInfoField> notExpectedKeys){
+                            List<TcbInfoField> notExpectedKeys) {
 
         final var actualKeys = getFieldsSetInMeasurement(result);
-        expectedKeys.forEach(key -> Assertions.assertTrue(actualKeys.contains(key)));
+        expectedKeys.forEach(key -> assertTrue(actualKeys.contains(key)));
         notExpectedKeys.forEach(key -> Assertions.assertFalse(actualKeys.contains(key)));
 
         Assertions.assertEquals(EXPECTED_VENDOR, result.getKey().getVendor());

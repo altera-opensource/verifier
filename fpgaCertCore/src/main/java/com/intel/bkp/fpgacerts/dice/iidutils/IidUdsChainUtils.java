@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ public class IidUdsChainUtils {
         final var leafCertificate = chain.getFirst();
         final String issuer = leafCertificate.getIssuerX500Principal().getName();
         return DiceCertificateSubject.tryParse(issuer)
-            .map(DiceCertificateSubject::getLevel)
+            .map(DiceCertificateSubject::level)
             .map(DiceCertificateLevel::findByCode)
             .map(c -> c.equals(IID_UDS))
             .orElse(false);

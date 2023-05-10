@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ public class AppArgumentParser {
 
     private static final String WORKLOAD_APP_DESC =
         "WorkloadApp --command GET --transport-id \"host:127.0.0.1;port:50001\" "
-            + "--ref-measurement /path/to/reference.rim --slot-id 0x02";
+            + "--ref-measurement /path/to/reference.rim";
 
     public static AppArgument parseArguments(String[] args) {
         Options options = getOptions();
@@ -90,7 +90,8 @@ public class AppArgumentParser {
         command.setRequired(true);
         options.addOption(command);
 
-        Option context = new Option(null, "context", true, "Random value provided as seed");
+        Option context = new Option(null, "context", true, "Random HEX value provided as seed, max 28 bytes. "
+            + "Example: 0102AABB");
         options.addOption(context);
 
         Option pufType = new Option(null, "puf-type", true, "Puf type enum value. "

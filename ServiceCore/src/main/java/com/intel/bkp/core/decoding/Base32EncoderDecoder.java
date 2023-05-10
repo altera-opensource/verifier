@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,41 +31,39 @@
  *
  */
 
-package com.intel.bkp.verifier.endianness;
+package com.intel.bkp.core.decoding;
 
-public enum EndiannessStructureFields {
-    /* =========== CreateAttestationSubKey Response =========== */
-    SUBKEY_RESERVED_HEADER,
-    SUBKEY_MAGIC,
-    SUBKEY_SDM_SESSION_ID,
-    SUBKEY_DEVICE_UNIQUE_ID,
-    SUBKEY_ROM_VERSION_NUM,
-    SUBKEY_SDM_FW_BUILD_ID,
-    SUBKEY_SDM_FW_SECURITY_VERSION_NUM,
-    SUBKEY_RESERVED,
-    SUBKEY_PUBLIC_EFUSE_VALUES,
-    SUBKEY_DEVICE_DH_PUB_KEY,
-    SUBKEY_VERIFIER_DH_PUB_KEY,
-    SUBKEY_CONTEXT,
-    SUBKEY_COUNTER,
-    SUBKEY_MAC,
+import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.lang3.StringUtils;
 
-    /* =========== GetMeasurement Response =========== */
-    GET_MEASUREMENT_MAGIC,
-    GET_MEASUREMENT_SDM_SESSION_ID,
-    GET_MEASUREMENT_DEVICE_UNIQUE_ID,
-    GET_MEASUREMENT_ROM_VERSION_NUM,
-    GET_MEASUREMENT_SDM_FW_BUILD_ID,
-    GET_MEASUREMENT_SDM_FW_SECURITY_VERSION_NUM,
-    GET_MEASUREMENT_PUBLIC_EFUSE_VALUES,
-    GET_MEASUREMENT_DEVICE_DH_PUB_KEY,
-    GET_MEASUREMENT_VERIFIER_DH_PUB_KEY,
-    GET_MEASUREMENT_CMF_DESCRIPTOR_HASH,
-    GET_MEASUREMENT_RECORD_LEN,
-    GET_MEASUREMENT_MAC,
+import java.util.regex.Pattern;
 
-    /* =========== SpdmMeasurementBlock =========== */
-    SPDM_DMTF_MEASUREMENT_HEADER_LEN
+public final class Base32EncoderDecoder implements IEncoderDecoder {
 
+    private static final Pattern BASE32_PATTERN
+        = Pattern.compile("^(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}={6}|[A-Z2-7]{4}={4}|[A-Z2-7]{5}={3}|[A-Z2-7]{7}=)?$");
 
+    private static final int BASE32_OCTET = 8;
+
+    private final Base32 base32 = new Base32();
+
+    @Override
+    public byte[] decode(String data) {
+        return base32.decode(data);
+    }
+
+    @Override
+    public String encode(byte[] data) {
+        return base32.encodeToString(data);
+    }
+
+    @Override
+    public boolean isValid(String data) {
+        final int modulo = data.length() % BASE32_OCTET;
+        if (modulo != 0) {
+            final int missingPadding = BASE32_OCTET - modulo;
+            data = StringUtils.rightPad(data, data.length() + missingPadding, "=");
+        }
+        return BASE32_PATTERN.matcher(data).matches();
+    }
 }

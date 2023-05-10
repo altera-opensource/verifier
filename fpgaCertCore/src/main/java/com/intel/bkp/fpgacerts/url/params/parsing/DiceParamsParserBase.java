@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,36 +34,69 @@
 package com.intel.bkp.fpgacerts.url.params.parsing;
 
 import com.intel.bkp.fpgacerts.dice.subject.DiceCertificateSubject;
+import com.intel.bkp.fpgacerts.exceptions.X509Exception;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
-import lombok.AllArgsConstructor;
+import com.intel.bkp.utils.Base64Url;
+import com.intel.bkp.utils.ByteBufferSafe;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.Principal;
 import java.security.cert.X509Certificate;
-import java.util.function.Function;
+import java.util.Optional;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public abstract class DiceParamsParserBase<T extends DiceParams> {
 
+    private final ICertificateMapper certificateMapper;
     private final KeyIdentifierProvider keyIdentifierProvider = new KeyIdentifierProvider();
     private final DomainNameParser domainNameParser = new DomainNameParser();
 
-    private final Function<X509Certificate, byte[]> keyIdentifierMappingFunc;
-    private final Function<X509Certificate, Principal> domainNameMappingFunc;
 
     protected abstract T getDiceParams(String ski, DiceCertificateSubject subject);
 
-    public T parse(@NonNull X509Certificate certificate) {
+    public final T parse(@NonNull X509Certificate certificate) {
         log.debug("Parsing Dice URL params from certificate: {}", certificate.getSubjectX500Principal());
 
-        final String ski = keyIdentifierProvider.getKeyIdentifierInBase64Url(certificate, keyIdentifierMappingFunc);
-        final DiceCertificateSubject subject = domainNameParser.parse(certificate, domainNameMappingFunc);
+        final String ski = keyIdentifierProvider.getKeyIdentifierInBase64Url(certificate);
+        final DiceCertificateSubject subject = domainNameParser.parse(certificate);
         final T diceParams = getDiceParams(ski, subject);
 
         log.debug("Parsed from certificate: {}", diceParams);
 
         return diceParams;
+    }
+
+    private class KeyIdentifierProvider {
+
+        private static final int SKI_BYTES_FOR_URL = 20;
+
+        public String getKeyIdentifierInBase64Url(X509Certificate certificate) {
+            final byte[] keyIdentifier = getKeyIdentifierBytes(certificate);
+            byte[] shortenKeyIdentifier = new byte[SKI_BYTES_FOR_URL];
+            ByteBufferSafe.wrap(keyIdentifier).get(shortenKeyIdentifier);
+            return Base64Url.encodeWithoutPadding(shortenKeyIdentifier);
+        }
+
+        private byte[] getKeyIdentifierBytes(X509Certificate certificate) {
+            return Optional.ofNullable(certificate)
+                .map(certificateMapper.getKeyIdentifierMappingFunc())
+                .orElseThrow(() ->
+                    new X509Exception("Certificate does not contain required key identifier extension."));
+        }
+    }
+
+    private class DomainNameParser {
+
+        DiceCertificateSubject parse(X509Certificate certificate) {
+            final String domainName = Optional.ofNullable(certificate)
+                .map(certificateMapper.getDomainNameMappingFunc())
+                .map(Principal::getName)
+                .orElse("");
+
+            return DiceCertificateSubject.parse(domainName);
+        }
     }
 }

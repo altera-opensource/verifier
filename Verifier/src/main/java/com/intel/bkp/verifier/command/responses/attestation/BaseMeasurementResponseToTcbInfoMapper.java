@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,13 +37,16 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.interfaces.IMeasurementProvider;
 import com.intel.bkp.verifier.interfaces.IMeasurementRecordToTcbInfoMapper;
+import com.intel.bkp.verifier.interfaces.IMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.model.evidence.IMeasurementRecordHeaderBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseMeasurementResponseToTcbInfoMapper<T, R extends IMeasurementProvider> {
+public abstract class BaseMeasurementResponseToTcbInfoMapper<T, R extends IMeasurementProvider>
+    implements IMeasurementResponseToTcbInfoMapper<R> {
 
+    @Override
     public List<TcbInfoMeasurement> map(R response) {
         final List<TcbInfoMeasurement> tcbInfoMeasurements = new ArrayList<>();
 
@@ -51,7 +54,7 @@ public abstract class BaseMeasurementResponseToTcbInfoMapper<T, R extends IMeasu
         final var builder = getBuilder();
         while (builder.canBeParsed(buffer)) {
             final var header = builder.parse(buffer).build();
-            tcbInfoMeasurements.add(getMapper().map(header, buffer));
+            getMapper().map(header, buffer).ifPresent(tcbInfoMeasurements::add);
         }
 
         return tcbInfoMeasurements;

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,10 +34,15 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_CANCELLATION;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_CURVE_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_PERMISSIONS;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_X;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_Y;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 class PsgPublicKeyEndiannessMapImplTest {
@@ -57,12 +62,12 @@ class PsgPublicKeyEndiannessMapImplTest {
         PsgPublicKeyEndiannessMapImpl sut = new PsgPublicKeyEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(CONVERT, sut.get(EndiannessStructureFields.PSG_PUB_KEY_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(EndiannessStructureFields.PSG_PUB_KEY_SIZE_X));
-        Assertions.assertEquals(CONVERT, sut.get(EndiannessStructureFields.PSG_PUB_KEY_SIZE_Y));
-        Assertions.assertEquals(CONVERT, sut.get(EndiannessStructureFields.PSG_PUB_KEY_CURVE_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(EndiannessStructureFields.PSG_PUB_KEY_PERMISSIONS));
-        Assertions.assertEquals(CONVERT, sut.get(EndiannessStructureFields.PSG_PUB_KEY_CANCELLATION));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_MAGIC));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_SIZE_X));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_SIZE_Y));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_CURVE_MAGIC));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_PERMISSIONS));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_CANCELLATION));
         Assertions.assertEquals(6, sut.getSize());
     }
 }

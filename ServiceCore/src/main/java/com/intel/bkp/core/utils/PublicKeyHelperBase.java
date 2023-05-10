@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,8 @@ import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.curve.CurvePoint;
 import com.intel.bkp.crypto.curve.EcSignatureAlgorithm;
+import com.intel.bkp.crypto.pem.PemFormatEncoder;
+import com.intel.bkp.crypto.pem.PemFormatHeader;
 import lombok.Getter;
 import org.bouncycastle.math.ec.ECCurve;
 
@@ -91,6 +93,10 @@ public class PublicKeyHelperBase {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new PublicKeyHelperException("Failed to convert data to public key", e);
         }
+    }
+
+    public String toPublicPem() throws PublicKeyHelperException {
+        return PemFormatEncoder.encode(PemFormatHeader.PUBLIC_KEY, toPublic().getEncoded());
     }
 
     private BigInteger ensurePositivePointValue(Function<CurvePoint, byte[]> getBytes) {

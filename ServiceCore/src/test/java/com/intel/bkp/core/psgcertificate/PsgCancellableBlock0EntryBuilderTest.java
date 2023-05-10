@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,7 @@ package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellableBlock0Entry;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
@@ -83,7 +84,7 @@ class PsgCancellableBlock0EntryBuilderTest {
     @Test
     void parse_WithWrongMagic_ThrowsException() {
         // when-then
-        Assertions.assertThrows(PsgBlock0EntryException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCancellableBlock0EntryBuilder().parse("none".getBytes())
         );
     }
@@ -95,7 +96,7 @@ class PsgCancellableBlock0EntryBuilderTest {
         expected.setBlock0MetaMagic(ByteSwap.getSwappedArray(0x99999999, ByteSwapOrder.CONVERT));
 
         // when-then
-        Assertions.assertThrows(PsgBlock0EntryException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCancellableBlock0EntryBuilder().parse(expected.array())
         );
     }
@@ -109,7 +110,7 @@ class PsgCancellableBlock0EntryBuilderTest {
         buffer.putInt(1);
 
         // when-then
-        Assertions.assertThrows(PsgBlock0EntryException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCancellableBlock0EntryBuilder().parse(buffer.array())
         );
     }

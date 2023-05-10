@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,7 +39,9 @@ public enum IpcsIssuedCertificateType {
     S10("attestation_%s_%s.cer"), // attestation_<deviceid>_<puftype_hex>.cer
     DEVICE_ID("deviceid_%s_%s.cer"), // deviceid_<uid>_<ski>.cer
     IID_UDS("iiduds_%s_%s.cer"), // iiduds_<uid>_<ski>.cer
-    ENROLLMENT("enrollment_%s_%s_%s.cer"); // enrollment_<uid>_<svn>_<skiER>.cer
+    ENROLLMENT("enrollment_%s_%s_%s.cer"), // enrollment_<uid>_<svn>_<skiER>.cer
+    NIC_MEV_DEVICE_ID("%s_%s.cer"), //<familyId>_<uid>.cer
+    NIC_DEVICE_ID("%s_%s_%s.cer"); //<familyId>_<uid>_<ski>.cer
 
     @Getter
     private final String fileName;

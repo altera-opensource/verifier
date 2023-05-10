@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,10 +34,15 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.utils.ByteSwapOrder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_ENTRY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SIG_LEN;
+import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 class PsgBlock0EntryEndiannessMapImplTest {
 
@@ -56,11 +61,11 @@ class PsgBlock0EntryEndiannessMapImplTest {
         PsgBlock0EntryEndiannessMapImpl sut = new PsgBlock0EntryEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.BLOCK0_ENTRY_MAGIC));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.BLOCK0_LENGTH_OFFSET));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.BLOCK0_DATA_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.BLOCK0_SIG_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.BLOCK0_SHA_LEN));
+        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_ENTRY_MAGIC));
+        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_LENGTH_OFFSET));
+        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_DATA_LEN));
+        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_SIG_LEN));
+        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_SHA_LEN));
         Assertions.assertEquals(5, sut.getSize());
     }
 }

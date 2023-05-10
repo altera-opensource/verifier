@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -64,6 +64,6 @@ class PsgSignatureMagicTest {
 
     @Test
     void from_WithInvalidMagic_Throws() {
-        Assertions.assertThrows(PsgInvalidSignatureException.class, () -> PsgSignatureMagic.from(0));
+        Assertions.assertThrows(ParseStructureException.class, () -> PsgSignatureMagic.from(0));
     }
 }

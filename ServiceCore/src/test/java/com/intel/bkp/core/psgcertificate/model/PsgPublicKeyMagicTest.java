@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +72,7 @@ class PsgPublicKeyMagicTest {
     @Test
     void from_WithWrongMagic_ThrowsException() {
         // when-then
-        final PsgPubKeyException exception = Assertions.assertThrows(PsgPubKeyException.class,
+        final ParseStructureException exception = Assertions.assertThrows(ParseStructureException.class,
             () -> PsgPublicKeyMagic.from(PsgSignatureMagic.STANDARD.getValue()));
 
         // then

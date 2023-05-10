@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,10 +37,11 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
-import com.intel.bkp.fpgacerts.exceptions.FwidHashAlgNotSupported;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.exceptions.FwidHashAlgNotSupported;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
+import com.intel.bkp.verifier.interfaces.IMeasurementRecordToTcbInfoMapper;
 import com.intel.bkp.verifier.model.evidence.SectionType;
 
 import java.util.EnumMap;
@@ -49,11 +50,10 @@ import java.util.Map;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
 import static com.intel.bkp.fpgacerts.model.Oid.MEASUREMENT_TYPES;
 
-public abstract class BaseMeasurementRecordToTcbInfoMapper<T> {
+public abstract class BaseMeasurementRecordToTcbInfoMapper<T>
+    implements IMeasurementRecordToTcbInfoMapper<T> {
 
     private static final int LAYER = 2;
-
-    public abstract TcbInfoMeasurement map(T header, ByteBufferSafe recordContentBuffer);
 
     protected abstract int getPrSectionIndex(T header);
 

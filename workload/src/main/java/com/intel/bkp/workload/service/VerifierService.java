@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@ public class VerifierService {
     private static final String INVALID_REF_MEASUREMENT
         = "Provide valid --ref-measurement parameter to invoke GET command.";
     private static final String INVALID_CONTEXT = "Provide valid --context parameter to invoke CREATE command.";
+    private static final String INVALID_PUF_TYPE = "Provide valid --puf-type parameter to invoke CREATE command.";
 
     public int callVerifier(AppArgument appArgs) {
         return perform(appArgs, getVerifierExchange());
@@ -98,7 +99,8 @@ public class VerifierService {
     }
 
     private int performCreate(AppArgument appArgs, VerifierExchange verifierExchange) {
-        verifyGetParams(appArgs.getContext() != null && appArgs.getPufType() != null, INVALID_CONTEXT);
+        verifyGetParams(appArgs.getContext() != null, INVALID_CONTEXT);
+        verifyGetParams(appArgs.getPufType() != null, INVALID_PUF_TYPE);
 
         final int returnCode = verifierExchange.createDeviceAttestationSubKey(
             appArgs.getTransportId(), appArgs.getContext(), appArgs.getPufType());

@@ -1,0 +1,154 @@
+[versions]
+apache-commons-cli = "1.5.0"
+apache-commons-codec = "1.15"
+apache-commons-csv = "1.10.0"
+apache-commons-dbutils = "1.7"
+apache-commons-io = "2.11.0"
+apache-commons-lang = "3.12.0"
+apache-commons-text = "1.10.0"
+apache-httpclient5 = "5.2.1"
+asciidoctor = "3.3.2"
+awssdk = "2.20.60"
+bouncycastle = "1.72"
+failsafe = "3.3.1"
+google-jib = "3.3.1"
+gradle-versions = "0.46.0"
+hamcrest-library = "2.2"
+hazelcast = "5.2.3"
+hibernate = "6.2.2.Final"
+jackson = "2.14.2" # TODO 2.15.0 Fails with swagger documentation
+jakarta-validation-api = "3.0.2"
+jaxb-api = "2.3.1"
+jaxb-impl = "4.0.2"
+jazzer = "0.16.1"
+jna = "5.13.0"
+junit = "5.9.3"
+logback = "1.4.7"
+logstash-logback-encoder = "7.3"
+lombok-plugin = "6.6.3"
+lombok-mapstruct-binding = "0.2.0"
+mapstruct = "1.5.5.Final"
+mockito = "5.3.1"
+modernizer = "1.7.0"
+openapi-generator-plugin = "5.4.0"
+pitest = "1.7.4"
+plantuml-plugin = "6.6.3"
+shedlock = "5.2.0"
+slf4j-api = "2.0.7"
+slf4j-test = "2.9.0"
+sonar-plugin = "3.3"
+spring-boot = "3.0.6"
+spring-dependency-management = "1.1.0"
+spring-restdocs = "3.0.0"
+springdoc-openapi = "2.1.0"
+sqlite-plugin = "0.2"
+sqlite-jdbc = "3.41.2.1"
+swagger-annotations = "2.2.9"
+testcontainers = "1.18.0"
+webjars-bootstrap = "5.2.3"
+webjars-client = "1.5.1"
+webjars-jquery = "3.6.4"
+webjars-locator = "0.46"
+webjars-websocket = "2.3.4"
+
+[libraries]
+apache-commons-cli = { module = "commons-cli:commons-cli", version.ref = "apache-commons-cli" }
+apache-commons-codec = { module = "commons-codec:commons-codec", version.ref = "apache-commons-codec" }
+apache-commons-csv = { module = "org.apache.commons:commons-csv", version.ref = "apache-commons-csv" }
+apache-commons-dbutils = { module = "commons-dbutils:commons-dbutils", version.ref = "apache-commons-dbutils" }
+apache-commons-io = { module = "commons-io:commons-io", version.ref = "apache-commons-io" }
+apache-commons-lang = { module = "org.apache.commons:commons-lang3", version.ref = "apache-commons-lang" }
+apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "apache-commons-text" }
+apache-httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "apache-httpclient5" }
+awssdk-apache-client = { module = "software.amazon.awssdk:apache-client" }
+awssdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "awssdk" }
+awssdk-s3 = { module = "software.amazon.awssdk:s3" }
+awssdk-sts = { module = "software.amazon.awssdk:sts" }
+bouncycastle = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+failsafe = { module = "dev.failsafe:failsafe", version.ref = "failsafe" }
+h2 = { module = "com.h2database:h2" }
+hamcrest-library = { module = "org.hamcrest:hamcrest-library", version.ref = "hamcrest-library" }
+hazelcast = { module = "com.hazelcast:hazelcast", version.ref = "hazelcast" }
+hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hibernate" }
+hibernate-jpamodelgen = { module = "org.hibernate:hibernate-jpamodelgen", version.ref = "hibernate" }
+hibernate-validator = { module = "org.hibernate.validator:hibernate-validator" }
+hikari = { module = "com.zaxxer:HikariCP" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation-api" }
+jaxb-api = { module = 'javax.xml.bind:jaxb-api', version.ref = "jaxb-api" }
+jaxb-impl = { module = 'com.sun.xml.bind:jaxb-impl', version.ref = "jaxb-impl" }
+jazzer-junit = { module = 'com.code-intelligence:jazzer-junit', version.ref = "jazzer" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+json-path = { module = "com.jayway.jsonpath:json-path" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+liquibase-core = { module = "org.liquibase:liquibase-core" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback-encoder" }
+lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+postgresql = { module = "org.postgresql:postgresql" }
+shedlock-provider-jdbc-template = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
+shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-api" }
+slf4j-test = { module = "com.github.valfirst:slf4j-test", version.ref = "slf4j-test" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
+spring-boot-loader-tools = { module = "org.springframework.boot:spring-boot-loader-tools" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-jersey = { module = "org.springframework.boot:spring-boot-starter-jersey" }
+spring-boot-starter-logging = { module = "org.springframework.boot:spring-boot-starter-logging" }
+spring-boot-starter-mail = { module = "org.springframework.boot:spring-boot-starter-mail" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
+spring-boot-starter-undertow = { module = "org.springframework.boot:spring-boot-starter-undertow" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-websocket = { module = "org.springframework.boot:spring-boot-starter-websocket" }
+spring-boot-test = { module = "org.springframework.boot:spring-boot-test" }
+spring-restdocs-core = { module = "org.springframework.restdocs:spring-restdocs-core", version.ref = "spring-restdocs" }
+spring-restdocs-mockmvc = { module = "org.springframework.restdocs:spring-restdocs-mockmvc", version.ref = "spring-restdocs" }
+spring-retry = { module = "org.springframework.retry:spring-retry" }
+spring-security-config = { module = "org.springframework.security:spring-security-config" }
+spring-security-data = { module = "org.springframework.security:spring-security-data" }
+spring-security-test = { module = "org.springframework.security:spring-security-test" }
+spring-security-web = { module = "org.springframework.security:spring-security-web" }
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc-openapi" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+webjars-bootstrap = { module = "org.webjars:bootstrap", version.ref = "webjars-bootstrap" }
+webjars-client = { module = "org.webjars:sockjs-client", version.ref = "webjars-client" }
+webjars-jquery = { module = "org.webjars:jquery", version.ref = "webjars-jquery" }
+webjars-locator = { module = "org.webjars:webjars-locator", version.ref = "webjars-locator" }
+webjars-websocket = { module = "org.webjars:stomp-websocket", version.ref = "webjars-websocket" }
+
+[bundles]
+apache-commons = ["apache-commons-lang", "apache-commons-io", "apache-commons-codec"]
+jackson = ["jackson-annotations", "jackson-databind"]
+logback = ["logback-classic", "logback-core"]
+slf4j-test = ["logback-classic", "logback-core", "slf4j-test"] # order matters
+mockito = ["mockito-core", "mockito-junit"]
+shedlock = ["shedlock-spring", "shedlock-provider-jdbc-template"]
+spring-restdocs = ["spring-restdocs-mockmvc", "spring-restdocs-core"]
+webjars = ["webjars-locator", "webjars-client", "webjars-websocket", "webjars-bootstrap", "webjars-jquery"]
+
+[plugins]
+asciidoctor-convert = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }
+asciidoctor-pdf = { id = "org.asciidoctor.jvm.pdf", version.ref = "asciidoctor" }
+google-jib = { id = "com.google.cloud.tools.jib", version.ref = "google-jib" }
+gradle-versions = { id = "com.github.ben-manes.versions", version.ref = "gradle-versions" }
+lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
+modernizer = { id = "com.github.andygoossens.modernizer", version.ref = "modernizer" }
+pitest = { id = "info.solidsoft.pitest", version.ref = "pitest" }
+plantuml = { id = "io.freefair.plantuml", version.ref = "plantuml-plugin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+sqlite = { id = "com.github.gmazzo.sqlite", version.ref = "sqlite-plugin" }

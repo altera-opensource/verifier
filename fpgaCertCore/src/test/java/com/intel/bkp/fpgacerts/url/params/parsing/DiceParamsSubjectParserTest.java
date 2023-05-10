@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -53,7 +53,7 @@ class DiceParamsSubjectParserTest {
     void getDiceParams_Success() {
         // given
         final String expectedSKI = "test";
-        when(subject.getDeviceId()).thenReturn("0102030405060708");
+        when(subject.deviceId()).thenReturn("0102030405060708");
 
         // when
         final DiceParamsSubjectParser instance = new DiceParamsSubjectParser();

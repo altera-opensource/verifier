@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,6 +36,7 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 public class TcbInfoMeasurement {
@@ -46,10 +47,6 @@ public class TcbInfoMeasurement {
     public TcbInfoMeasurement(TcbInfo tcbInfo) {
         key = TcbInfoKey.from(tcbInfo);
         value = TcbInfoValue.from(tcbInfo);
-    }
-
-    public static TcbInfoMeasurement empty() {
-        return new TcbInfoMeasurement(new TcbInfo());
     }
 
     public static List<TcbInfoMeasurement> asMeasurements(List<TcbInfo> tcbInfos) {
@@ -90,6 +87,11 @@ public class TcbInfoMeasurement {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value);
     }
 
     @Override

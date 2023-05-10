@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
@@ -52,7 +52,7 @@ import static com.intel.bkp.utils.HexConverter.fromHex;
 class PsgCertificateEntryBuilderTest {
 
     @Test
-    void build_returnsSuccess() throws PsgCertificateException {
+    void build_returnsSuccess() {
         // given
         KeyPair keyPair = genEcKeys(null);
         assert keyPair != null;
@@ -82,7 +82,7 @@ class PsgCertificateEntryBuilderTest {
     }
 
     @Test
-    void build_withEcTypeSecp256r1_returnsSuccess() throws PsgCertificateException {
+    void build_withEcTypeSecp256r1_returnsSuccess() {
         // given
         KeyPair keyPair = genEcKeys(CryptoConstants.EC_CURVE_SPEC_256);
         assert keyPair != null;
@@ -115,20 +115,6 @@ class PsgCertificateEntryBuilderTest {
     }
 
     @Test
-    void build_NoPubKeyBuilder_Throws() {
-        // then
-        Assertions.assertThrows(PsgCertificateException.class,
-            () -> new PsgCertificateEntryBuilder().publicKey(null).build(), "PsgPublicKey is not set");
-    }
-
-    @Test
-    void build_NoSignatureBuilder_Throws() {
-        // then
-        Assertions.assertThrows(PsgCertificateException.class,
-            () -> new PsgCertificateEntryBuilder().withSignature(null).build(), "PsgSignature is not set");
-    }
-
-    @Test
     void parse_withInvalidPublicKeyEntryMagic_throwsException() {
         // given
         String invalidCert = "92541917000001020000007A0000007000000000000000004065664300000062000000005432664800000000"
@@ -138,7 +124,7 @@ class PsgCertificateEntryBuilderTest {
             + "2256E41C0A3A969EFC29A72397441B273998CB3F5A80D10314A3BD1D26E970FF8378987E02B3FAD5EA375CA6BED31DD5737D697"
             + "5CBA816C4D29B0B7";
 
-        Assertions.assertThrows(PsgCertificateException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCertificateEntryBuilder().parse(fromHex(invalidCert))
         );
     }
@@ -153,7 +139,7 @@ class PsgCertificateEntryBuilderTest {
             + "2256E41C0A3A969EFC29A72397441B273998CB3F5A80D10314A3BD1D26E970FF8378987E02B3FAD5EA375CA6BED31DD5737D697"
             + "5CBA816C4DB0B7";
 
-        Assertions.assertThrows(PsgCertificateException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCertificateEntryBuilder().parse(fromHex(invalidCert))
         );
     }
@@ -168,7 +154,7 @@ class PsgCertificateEntryBuilderTest {
             + "2256E41C0A3A969EFC29A72397441B273998CB3F5A80D10314A3BD1D26E970FF8378987E02B3FAD5EA375CA6BED31DD5737D697"
             + "5CBA816C4D29B0B7";
 
-        Assertions.assertThrows(PsgCertificateException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCertificateEntryBuilder().parse(fromHex(invalidCert))
         );
     }
@@ -183,7 +169,7 @@ class PsgCertificateEntryBuilderTest {
             + "2256E41C0A3A969EFC29A72397441B273998CB3F5A80D10314A3BD1D26E970FF8378987E02B3FAD5EA375CA6BED31DD5737D697"
             + "5CBA816C4D29B0B7";
 
-        Assertions.assertThrows(PsgCertificateException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCertificateEntryBuilder().parse(fromHex(invalidCert))
         );
     }
@@ -198,13 +184,13 @@ class PsgCertificateEntryBuilderTest {
             + "E41C0A3A969EFC29A72397441B273998CB3F5A80D10314A3BD1D26E970FF8378987E02B3FAD5EA375CA6BED31DD5737D6975CBA8"
             + "16C4D29B0B7";
 
-        Assertions.assertThrows(PsgCertificateException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCertificateEntryBuilder().parse(fromHex(invalidCert))
         );
     }
 
     @Test
-    void parse_withNoSignature_ReturnsSuccess() throws PsgCertificateException {
+    void parse_withNoSignature_ReturnsSuccess() {
         // given
         String invalidCert = "92540917000001020000007A0000000000000000000000004065664300000062000000005432664800000000"
             + "0000000000BD09B73529E82F22523C1081ABA188C32093A8713859E22E6468F151E7BEEB799732AAF8D366137B4728993AED3D0"
@@ -225,7 +211,7 @@ class PsgCertificateEntryBuilderTest {
             + "0000000000BD09B73529E82F22523C1081ABA188C32093A8713859E22E6468F151E7BEEB799732AAF8D366137B4728993AED3D0"
             + "20F00110714A840D71608161753FF037D2D8A45C4896E29841FF0C7A209DF9A4562CF4C4A856E39D064ECD749AFD59DFB93";
 
-        Assertions.assertThrows(PsgCertificateException.class,
+        Assertions.assertThrows(ParseStructureException.class,
             () -> new PsgCertificateEntryBuilder().parse(fromHex(invalidCert)),
             "Invalid buffer during parsing entry"
         );

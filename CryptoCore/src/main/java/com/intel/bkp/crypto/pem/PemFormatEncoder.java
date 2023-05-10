@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,9 +35,19 @@ package com.intel.bkp.crypto.pem;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Base64;
+import java.util.Optional;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PemFormatEncoder {
 
@@ -48,7 +58,7 @@ public class PemFormatEncoder {
     }
 
     public static String encode(PemFormatHeader header, byte[] bytes, String lineSeparator) {
-        StringBuilder stringBuilder = new StringBuilder();
+        final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(header.getBegin());
         stringBuilder.append(lineSeparator);
         stringBuilder.append(Base64.getMimeEncoder(BLOCK_LENGTH, lineSeparator.getBytes())
@@ -56,5 +66,24 @@ public class PemFormatEncoder {
         stringBuilder.append(lineSeparator);
         stringBuilder.append(header.getEnd());
         return stringBuilder.toString();
+    }
+
+    public static byte[] decode(byte[] pubKeyPem) throws IOException {
+        try (InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(pubKeyPem), UTF_8);
+             PemReader pemReader = new PemReader(reader)) {
+            return getReadPemObject(pemReader)
+                .map(PemObject::getContent)
+                .orElseThrow(() -> new IllegalArgumentException("Provided public key is not PEM format."));
+        }
+    }
+
+    private static Optional<PemObject> getReadPemObject(PemReader pemReader) {
+        try {
+            return Optional.ofNullable(pemReader.readPemObject());
+        } catch (Exception e) {
+            log.error("Failed to read PEM data: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+            return Optional.empty();
+        }
     }
 }

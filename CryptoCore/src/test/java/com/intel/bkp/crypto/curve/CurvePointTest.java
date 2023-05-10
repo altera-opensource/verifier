@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,6 +43,8 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -59,18 +61,22 @@ class CurvePointTest {
     private enum TestPublicKey {
         PUB_48X49Y(
             "52A3BF8C3082712E005DDAD688829437AE283F78B42D8DF24157332BDC00D188613A4072E6A49FEADCA4C2B2FD2A8843",
-            "00A4A46CEAA31D2CC6F918C9DBFC0CA70EF7AE3BC458DB458D3DB0223714FD0C6AC7FC54A418187E64F03AAFAC72315042"
+            "00A4A46CEAA31D2CC6F918C9DBFC0CA70EF7AE3BC458DB458D3DB0223714FD0C6AC7FC54A418187E64F03AAFAC72315042",
+            "af12b1943a0ae07eab30ab81fcf11a979181a137391c13971a7bd4236c8d04d524d6dfd1ce2b30c4b20bd25d8e4361f2"
         ),
         PUB_48XY(
             "0CE647F8DBB870A11437FE2780CF8AC8E5E4A21D08970679268CDE7892F06120E321EC2584E04985AE0E7FDCC2C71A32",
-            "7F14B32A7E576F90F46A8BC8601695679E73C7FBE38A735FCAD507B9873C78E9C8CEB025BB15243DCE1D79E369D6DE7A"
+            "7F14B32A7E576F90F46A8BC8601695679E73C7FBE38A735FCAD507B9873C78E9C8CEB025BB15243DCE1D79E369D6DE7A",
+            "c1dd9ee0f26bb5f4c6bbc9ff69339a586fe3c65c64bacbdfd71b3b0f7c0993543f0b2935d13ddf868ad4e0fe9f241248"
         ),
         PUB_49X47Y(
             "00BB828B172E29E2EA2A735D8A7FFF3BF0ECD7AA0D5F08D5A0DA945C4847CD8F8DDAAFD9C3BFC46408F724B8DBA14FA900",
-            "1B99EBA17FD014C98CAA7B99A2685E6439D6D7DF7EF94C27BCFC91759C05334D2338F39D8A6F7B74A145A43B323896"
+            "1B99EBA17FD014C98CAA7B99A2685E6439D6D7DF7EF94C27BCFC91759C05334D2338F39D8A6F7B74A145A43B323896",
+            "b7165c7217d4b65fbc2f4dfb7012174a7cf47cc4191738d1435835972cca69671fa4256b6b995603cb6712193a0b0638"
         );
         private final String pointX;
         private final String pointY;
+        private final String expectedFingerprint;
 
         @SneakyThrows
         public PublicKey getKey() {
@@ -79,6 +85,14 @@ class CurvePointTest {
             );
         }
     }
+
+    private static final String EC_PUB_KEY_ENCODED = "3076301006072A8648CE3D020106052B8104002203620004703D168D760D6D8B60DB1CA4F08A0D0"
+        + "29397C811F9F43AD407F9CC84A77910068B629A7E96E101E0EDEC541DA0A0EEDF156B840395010D7A06FFF37AEE5B226C4EC51E4"
+        + "13E54BA719BB0308A12D4A1885FEE60BE1AD5C26D0417E70D56F25BB4";
+    private static final String EXPECTED_A =
+        "703D168D760D6D8B60DB1CA4F08A0D029397C811F9F43AD407F9CC84A77910068B629A7E96E101E0EDEC541DA0A0EEDF";
+    private static final String EXPECTED_B =
+        "156B840395010D7A06FFF37AEE5B226C4EC51E413E54BA719BB0308A12D4A1885FEE60BE1AD5C26D0417E70D56F25BB4";
 
     @Test
     void from_WithNotEcPubKey_ThrowsException() throws KeystoreGenericException {
@@ -110,55 +124,51 @@ class CurvePointTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> CurvePoint.from(rsaPubKey));
     }
 
-
-    @Test
-    void from_With48XY_WithPubKeyAndSpec_Success() {
-        performTestWithPubKeyAndSpec(TestPublicKey.PUB_48XY);
-    }
-
-    @Test
-    void from_With49X47Y_WithPubKeyAndSpec_Success() {
-        performTestWithPubKeyAndSpec(TestPublicKey.PUB_49X47Y);
-    }
-
-    @Test
-    void from_With48X49Y_WithPubKeyAndSpec_Success() {
-        performTestWithPubKeyAndSpec(TestPublicKey.PUB_48X49Y);
-    }
-
-    @Test
-    void from_With48XY_WithStringPointXAndY_Success() {
-        performTestWithStringPoint(TestPublicKey.PUB_48XY);
-    }
-
-    @Test
-    void from_With49X47Y_WithStringPointXAndY_Success() {
-        performTestWithStringPoint(TestPublicKey.PUB_49X47Y);
-    }
-
-    @Test
-    void from_With48X49Y_WithStringPointXAndY_Success() {
-        performTestWithStringPoint(TestPublicKey.PUB_48X49Y);
-    }
-
-    @Test
-    void from_With48X49Y_WithBytePointXY_ResultsWithSameXY() {
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void from_WithPubKeyAndSpec_Success(TestPublicKey testPublicKey) {
         // given
-        byte[] pointX = fromHex(TestPublicKey.PUB_48X49Y.pointX);
-        byte[] pointY = fromHex(TestPublicKey.PUB_48X49Y.pointY);
+        final PublicKey publicKey = testPublicKey.getKey();
+
+        // when
+        final CurvePoint point = CurvePoint.from(publicKey, CurveSpec.C384);
+
+        // then
+        Assertions.assertEquals(preparePoint(testPublicKey.pointX), toHex(point.getPointA()));
+        Assertions.assertEquals(preparePoint(testPublicKey.pointY), toHex(point.getPointB()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void from_WithStringPointXAndY_Success(TestPublicKey testPublicKey) {
+        // when
+        final CurvePoint point = CurvePoint.from(testPublicKey.pointX, testPublicKey.pointY, CurveSpec.C384);
+
+        // then
+        Assertions.assertEquals(preparePoint(testPublicKey.pointX), toHex(point.getPointA()));
+        Assertions.assertEquals(preparePoint(testPublicKey.pointY), toHex(point.getPointB()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void from_WithBytePointXY_ResultsWithSameXY(TestPublicKey testPublicKey) {
+        // given
+        byte[] pointX = fromHex(testPublicKey.pointX);
+        byte[] pointY = fromHex(testPublicKey.pointY);
 
         // when
         final CurvePoint point = CurvePoint.from(pointX, pointY, CurveSpec.C384);
 
         // then
-        Assertions.assertEquals(preparePoint(TestPublicKey.PUB_48X49Y.pointX), point.getHexPointA());
-        Assertions.assertEquals(preparePoint(TestPublicKey.PUB_48X49Y.pointY), point.getHexPointB());
+        Assertions.assertEquals(preparePoint(testPublicKey.pointX), point.getHexPointA());
+        Assertions.assertEquals(preparePoint(testPublicKey.pointY), point.getHexPointB());
     }
 
-    @Test
-    void from_ByteBuffer_Success() {
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void from_ByteBuffer_Success(TestPublicKey testPublicKey) {
         // given
-        final String expected = prepareConcatenatedXY(TestPublicKey.PUB_49X47Y);
+        final String expected = prepareConcatenatedXY(testPublicKey);
 
         // when
         final CurvePoint point = CurvePoint.from(ByteBufferSafe.wrap(fromHex(expected)), CurveSpec.C384);
@@ -167,10 +177,11 @@ class CurvePointTest {
         Assertions.assertEquals(expected, toHex(point.getAlignedDataToSize()));
     }
 
-    @Test
-    void fromPubKey_PlainXY_Success() {
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void fromPubKey_PlainXY_Success(TestPublicKey testPublicKey) {
         // given
-        final String expected = prepareConcatenatedXY(TestPublicKey.PUB_49X47Y);
+        final String expected = prepareConcatenatedXY(testPublicKey);
 
         // when
         final CurvePoint point = CurvePoint.fromPubKey(fromHex(expected), CurveSpec.C384);
@@ -180,53 +191,52 @@ class CurvePointTest {
     }
 
     @Test
-    void fromPubKey_EncodedPubKey_Success() throws Exception {
-        // given
-        final String ecPubKeyEncoded = "3076301006072A8648CE3D020106052B8104002203620004703D168D760D6D8B60DB1CA4F08A0D0"
-            + "29397C811F9F43AD407F9CC84A77910068B629A7E96E101E0EDEC541DA0A0EEDF156B840395010D7A06FFF37AEE5B226C4EC51E4"
-            + "13E54BA719BB0308A12D4A1885FEE60BE1AD5C26D0417E70D56F25BB4";
-        final String expectedA =
-            "703D168D760D6D8B60DB1CA4F08A0D029397C811F9F43AD407F9CC84A77910068B629A7E96E101E0EDEC541DA0A0EEDF";
-        final String expectedB =
-            "156B840395010D7A06FFF37AEE5B226C4EC51E413E54BA719BB0308A12D4A1885FEE60BE1AD5C26D0417E70D56F25BB4";
-
+    void fromPubKey_EncodedPubKeyWithSpec_Success() throws Exception {
         // when
-        final CurvePoint point = CurvePoint.fromPubKeyEncoded(fromHex(ecPubKeyEncoded), CurveSpec.C384);
+        final CurvePoint point = CurvePoint.fromPubKeyEncoded(fromHex(EC_PUB_KEY_ENCODED), CurveSpec.C384);
 
         // then
-        Assertions.assertEquals(expectedA, point.getHexPointA());
-        Assertions.assertEquals(expectedB, point.getHexPointB());
+        Assertions.assertEquals(EXPECTED_A, point.getHexPointA());
+        Assertions.assertEquals(EXPECTED_B, point.getHexPointB());
     }
 
     @Test
-    void generateFingerprint_Success() {
+    void fromPubKey_EncodedPubKey_Success() throws Exception {
+        // when
+        final CurvePoint point = CurvePoint.fromPubKeyEncoded(fromHex(EC_PUB_KEY_ENCODED));
+
+        // then
+        Assertions.assertEquals(EXPECTED_A, point.getHexPointA());
+        Assertions.assertEquals(EXPECTED_B, point.getHexPointB());
+    }
+
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void generateFingerprint_Success(TestPublicKey testPublicKey) {
         // given
-        final String expected = prepareConcatenatedXY(TestPublicKey.PUB_49X47Y);
+        final String expected = prepareConcatenatedXY(testPublicKey);
         final CurvePoint sut = CurvePoint.fromPubKey(fromHex(expected), CurveSpec.C384);
 
         // when
         final String fingerprint = sut.generateFingerprint();
 
         // then
-        Assertions.assertEquals(
-            "b7165c7217d4b65fbc2f4dfb7012174a7cf47cc4191738d1435835972cca69671fa4256b6b995603cb6712193a0b0638",
-            fingerprint
-        );
+        Assertions.assertEquals(testPublicKey.expectedFingerprint, fingerprint);
     }
 
-    @Test
-    void getAlignedDataToSize_With48XY_WithBytePointXY_ResultsWithAlignedToCurveSizeXY() {
-        performTestAlignedData(TestPublicKey.PUB_48XY);
-    }
+    @ParameterizedTest
+    @EnumSource(TestPublicKey.class)
+    void getAlignedDataToSize_WithBytePointXY_ResultsWithAlignedToCurveSizeXY(TestPublicKey testPublicKey) {
+        // given
+        final PublicKey publicKey = testPublicKey.getKey();
+        final String expected = prepareConcatenatedXY(testPublicKey);
 
-    @Test
-    void getAlignedDataToSize_With49X47Y_WithBytePointXY_ResultsWithAlignedToCurveSizeXY() {
-        performTestAlignedData(TestPublicKey.PUB_49X47Y);
-    }
+        // when
+        final byte[] data = CurvePoint.from(publicKey, CurveSpec.C384).getAlignedDataToSize();
 
-    @Test
-    void getAlignedDataToSize_With48X49Y_WithBytePointXY_ResultsWithAlignedToCurveSizeXY() {
-        performTestAlignedData(TestPublicKey.PUB_48X49Y);
+        // then
+        Assertions.assertEquals(expected, toHex(data));
+        Assertions.assertEquals(CurveSpec.C384.getSize() * 2, data.length);
     }
 
     @Test
@@ -242,41 +252,6 @@ class CurvePointTest {
 
         // Then
         Assertions.assertEquals(CurveSpec.C384, curvePoint.getCurveSpec());
-    }
-
-    @SneakyThrows
-    private void performTestAlignedData(TestPublicKey testData) {
-        // given
-        final PublicKey publicKey = testData.getKey();
-        final String expected = prepareConcatenatedXY(testData);
-
-        // when
-        final byte[] data = CurvePoint.from(publicKey, CurveSpec.C384).getAlignedDataToSize();
-
-        // then
-        Assertions.assertEquals(expected, toHex(data));
-        Assertions.assertEquals(CurveSpec.C384.getSize() * 2, data.length);
-    }
-
-    private void performTestWithPubKeyAndSpec(TestPublicKey testData) {
-        // given
-        final PublicKey publicKey = testData.getKey();
-
-        // when
-        final CurvePoint point = CurvePoint.from(publicKey, CurveSpec.C384);
-
-        // then
-        Assertions.assertEquals(preparePoint(testData.pointX), toHex(point.getPointA()));
-        Assertions.assertEquals(preparePoint(testData.pointY), toHex(point.getPointB()));
-    }
-
-    private void performTestWithStringPoint(TestPublicKey testData) {
-        // when
-        final CurvePoint point = CurvePoint.from(testData.pointX, testData.pointY, CurveSpec.C384);
-
-        // then
-        Assertions.assertEquals(preparePoint(testData.pointX), toHex(point.getPointA()));
-        Assertions.assertEquals(preparePoint(testData.pointY), toHex(point.getPointB()));
     }
 
     private static String preparePoint(String point) {

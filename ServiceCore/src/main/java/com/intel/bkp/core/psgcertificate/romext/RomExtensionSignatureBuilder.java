@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,72 +34,57 @@
 package com.intel.bkp.core.psgcertificate.romext;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessBuilder;
-import com.intel.bkp.core.endianness.EndiannessStructureType;
+import com.intel.bkp.core.endianness.StructureBuilder;
+import com.intel.bkp.core.exceptions.ParseStructureException;
+import com.intel.bkp.core.interfaces.IStructure;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateRootEntryBuilder;
-import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class RomExtensionSignatureBuilder extends EndiannessBuilder<RomExtensionSignatureBuilder> {
+@Getter
+public class RomExtensionSignatureBuilder {
 
-    @Getter
-    @Setter
-    private PsgCertificateRootEntryBuilder psgCertRootBuilder = null;
-    @Getter
     private final List<PsgCertificateEntryBuilder> psgCertEntryBuilders = new ArrayList<>();
-    @Getter
-    @Setter
-    private PsgCancellableBlock0EntryBuilder psgCancellableBlock0EntryBuilder = null;
-
-    private RomExtensionSignatureBuilder() {
-        super(null);
-    }
-
-    @Override
-    protected RomExtensionSignatureBuilder self() {
-        return this;
-    }
-
-    @Override
-    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        // NOTHING TO DO
-    }
+    @Setter(AccessLevel.PRIVATE)
+    private PsgCertificateRootEntryBuilder psgCertRootBuilder;
+    @Setter(AccessLevel.PRIVATE)
+    private PsgCancellableBlock0EntryBuilder psgCancellableBlock0EntryBuilder;
+    private EndiannessActor actor = EndiannessActor.SERVICE;
 
     public static RomExtensionSignatureBuilder instance() {
         return new RomExtensionSignatureBuilder();
     }
 
-    public RomExtensionSignatureBuilder parse(byte[] rawData) throws RomExtensionSignatureException {
-        final ByteBufferSafe buffer = ByteBufferSafe.wrap(rawData);
-        parseInternal(buffer);
+    public RomExtensionSignatureBuilder withActor(EndiannessActor actor) {
+        this.actor = actor;
         return this;
     }
 
-    private void parseInternal(ByteBufferSafe buffer) throws RomExtensionSignatureException {
-        List<RomExtractedStructureData> extractedStructures = new ArrayList<>();
-        while (buffer.remaining() != 0) {
-            extractedStructures.add(extractStructure(buffer));
-        }
-
-        for (RomExtractedStructureData data : extractedStructures) {
-            data.getType().parse(this, getActor(), data.getData());
-        }
-
-        if (psgCertRootBuilder == null || psgCancellableBlock0EntryBuilder == null) {
-            throw new RomExtensionSignatureException("Signature is not valid - missing one of more structures");
-        }
+    public RomExtensionSignatureBuilder parse(byte[] manifestData) throws ParseStructureException {
+        return parse(ByteBufferSafe.wrap(manifestData));
     }
 
-    private RomExtractedStructureData extractStructure(ByteBufferSafe buffer) throws RomExtensionSignatureException {
+    public RomExtensionSignatureBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
+        while (buffer.remaining() != 0) {
+            setStructure(extractStructure(buffer));
+        }
+
+        ensureRequiredStructuresPresent();
+        return this;
+    }
+
+    private RomExtractedStructureData extractStructure(ByteBufferSafe buffer) {
         try {
             buffer.mark();
             int magic = buffer.getInt(ByteOrder.LITTLE_ENDIAN);
@@ -107,9 +92,31 @@ public class RomExtensionSignatureBuilder extends EndiannessBuilder<RomExtension
             buffer.reset();
             final byte[] data = buffer.arrayFromInt(structLength);
             buffer.get(data);
-            return new RomExtractedStructureData(magic, data);
+            return RomExtractedStructureData.from(magic, data);
         } catch (ByteBufferSafeException e) {
-            throw new RomExtensionSignatureException("Invalid data in buffer", e);
+            throw new ParseStructureException("Invalid data in buffer", e);
+        }
+    }
+
+    private void setStructure(RomExtractedStructureData extractedStructure) {
+        final var data = extractedStructure.data();
+        switch (extractedStructure.type()) {
+            case ROOT -> setBuilder(this::setPsgCertRootBuilder, PsgCertificateRootEntryBuilder::new, data);
+            case LEAF -> setBuilder(psgCertEntryBuilders::add, PsgCertificateEntryBuilder::new, data);
+            case BLOCK0 -> setBuilder(this::setPsgCancellableBlock0EntryBuilder, PsgCancellableBlock0EntryBuilder::new,
+                data);
+        }
+    }
+
+    private <T extends StructureBuilder<T, Y>, Y extends IStructure> void setBuilder(Consumer<T> setBuilder,
+                                                                                     Supplier<T> builderSupplier,
+                                                                                     byte[] data) {
+        setBuilder.accept(StructureBuilder.getBuilder(builderSupplier, getActor(), data));
+    }
+
+    private void ensureRequiredStructuresPresent() {
+        if (psgCertRootBuilder == null || psgCancellableBlock0EntryBuilder == null) {
+            throw new ParseStructureException("Signature is not valid - missing one or more required structures");
         }
     }
 }

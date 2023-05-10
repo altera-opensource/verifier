@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,14 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_CANCELLATION_ID;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_ENTRY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_META_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.CANCELLABLE_BLOCK0_SIG_LEN;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 public final class PsgCancellableBlock0EntryEndiannessMapImpl extends BaseEndiannessMapImpl {
@@ -46,13 +52,13 @@ public final class PsgCancellableBlock0EntryEndiannessMapImpl extends BaseEndian
 
     @Override
     protected void populateFirmwareMap() {
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_ENTRY_MAGIC, CONVERT);
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_LENGTH_OFFSET, CONVERT);
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_DATA_LEN, CONVERT);
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_SIG_LEN, CONVERT);
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_SHA_LEN, CONVERT);
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_META_MAGIC, CONVERT);
-        put(EndiannessStructureFields.CANCELLABLE_BLOCK0_CANCELLATION_ID, CONVERT);
+        put(CANCELLABLE_BLOCK0_ENTRY_MAGIC, CONVERT);
+        put(CANCELLABLE_BLOCK0_LENGTH_OFFSET, CONVERT);
+        put(CANCELLABLE_BLOCK0_DATA_LEN, CONVERT);
+        put(CANCELLABLE_BLOCK0_SIG_LEN, CONVERT);
+        put(CANCELLABLE_BLOCK0_SHA_LEN, CONVERT);
+        put(CANCELLABLE_BLOCK0_META_MAGIC, CONVERT);
+        put(CANCELLABLE_BLOCK0_CANCELLATION_ID, CONVERT);
     }
 
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,23 +31,28 @@
  *
  */
 
-package com.intel.bkp.fpgacerts.url.params.parsing;
+package com.intel.bkp.core.psgcertificate.romext;
 
-import com.intel.bkp.fpgacerts.dice.subject.DiceCertificateSubject;
+import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
+import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
+import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
+import lombok.RequiredArgsConstructor;
 
-import java.security.Principal;
-import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class DomainNameParser {
+@RequiredArgsConstructor
+enum RomExtensionSignatureStructureType {
+    ROOT(PsgRootCertMagic::isValid),
+    LEAF(magic -> PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC == magic),
+    BLOCK0(magic -> PsgCancellableBlock0EntryBuilder.MAGIC == magic);
 
-    public DiceCertificateSubject parse(X509Certificate certificate, Function<X509Certificate, Principal> mappingFunc) {
-        final String domainName = Optional.ofNullable(certificate)
-                .map(mappingFunc)
-                .map(Principal::getName)
-                .orElse("");
+    private final Function<Integer, Boolean> isMatchingMagic;
 
-        return DiceCertificateSubject.parse(domainName);
+    public static Optional<RomExtensionSignatureStructureType> findByMagic(int magic) {
+        return Arrays.stream(RomExtensionSignatureStructureType.values())
+            .filter(type -> type.isMatchingMagic.apply(magic))
+            .findFirst();
     }
 }

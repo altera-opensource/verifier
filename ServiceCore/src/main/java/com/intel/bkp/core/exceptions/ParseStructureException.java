@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,25 +31,15 @@
  *
  */
 
-apply plugin: 'checkstyle'
+package com.intel.bkp.core.exceptions;
 
-checkstyle {
-    toolVersion "10.3"
-    configFile  rootProject.file('checkstyle/google_checks.xml')
-    checkstyleTest.enabled = false
-}
+public class ParseStructureException extends RuntimeException {
 
-def checkstyleWarningBuildFailThreshold = 25
+    public ParseStructureException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 
-tasks.withType(Checkstyle).each { checkstyleTask ->
-    checkstyleTask.doLast {
-        reports.xml { report ->
-            def outputFile = report.destination
-            def matcher = (outputFile.text =~ /<error /)
-            if (outputFile.exists() && matcher.count >= checkstyleWarningBuildFailThreshold) {
-                throw new GradleException("There were " + checkstyleWarningBuildFailThreshold
-                    + " or more checkstyle warnings! For more info check $outputFile")
-            }
-        }
+    public ParseStructureException(String message) {
+        super(message);
     }
 }

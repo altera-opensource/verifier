@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,13 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_CANCELLATION;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_CURVE_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_PERMISSIONS;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_X;
+import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_Y;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 public final class PsgPublicKeyEndiannessMapImpl extends BaseEndiannessMapImpl {
@@ -46,12 +51,12 @@ public final class PsgPublicKeyEndiannessMapImpl extends BaseEndiannessMapImpl {
 
     @Override
     protected void populateFirmwareMap() {
-        put(EndiannessStructureFields.PSG_PUB_KEY_MAGIC, CONVERT);
-        put(EndiannessStructureFields.PSG_PUB_KEY_SIZE_X, CONVERT);
-        put(EndiannessStructureFields.PSG_PUB_KEY_SIZE_Y, CONVERT);
-        put(EndiannessStructureFields.PSG_PUB_KEY_CURVE_MAGIC, CONVERT);
-        put(EndiannessStructureFields.PSG_PUB_KEY_PERMISSIONS, CONVERT);
-        put(EndiannessStructureFields.PSG_PUB_KEY_CANCELLATION, CONVERT);
+        put(PSG_PUB_KEY_MAGIC, CONVERT);
+        put(PSG_PUB_KEY_SIZE_X, CONVERT);
+        put(PSG_PUB_KEY_SIZE_Y, CONVERT);
+        put(PSG_PUB_KEY_CURVE_MAGIC, CONVERT);
+        put(PSG_PUB_KEY_PERMISSIONS, CONVERT);
+        put(PSG_PUB_KEY_CANCELLATION, CONVERT);
     }
 
 }

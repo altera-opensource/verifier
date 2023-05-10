@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,11 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 import com.intel.bkp.utils.ByteSwapOrder;
+
+import static com.intel.bkp.core.endianness.StructureField.ROM_EXT_EDI_ID;
+import static com.intel.bkp.core.endianness.StructureField.ROM_EXT_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.ROM_EXT_MAGIC;
 
 public final class RomExtensionStructureEndiannessMapImpl extends BaseEndiannessMapImpl {
 
@@ -45,8 +48,8 @@ public final class RomExtensionStructureEndiannessMapImpl extends BaseEndianness
 
     @Override
     protected void populateFirmwareMap() {
-        put(EndiannessStructureFields.ROM_EXT_MAGIC, ByteSwapOrder.CONVERT);
-        put(EndiannessStructureFields.ROM_EXT_LENGTH, ByteSwapOrder.CONVERT);
-        put(EndiannessStructureFields.ROM_EXT_EDI_ID, ByteSwapOrder.CONVERT);
+        put(ROM_EXT_MAGIC, ByteSwapOrder.CONVERT);
+        put(ROM_EXT_LENGTH, ByteSwapOrder.CONVERT);
+        put(ROM_EXT_EDI_ID, ByteSwapOrder.CONVERT);
     }
 }

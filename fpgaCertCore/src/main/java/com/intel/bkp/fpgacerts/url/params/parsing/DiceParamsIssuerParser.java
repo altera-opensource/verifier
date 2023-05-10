@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,22 +33,19 @@
 
 package com.intel.bkp.fpgacerts.url.params.parsing;
 
-import com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils;
 import com.intel.bkp.fpgacerts.dice.subject.DiceCertificateSubject;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
 import lombok.extern.slf4j.Slf4j;
-
-import java.security.cert.X509Certificate;
 
 @Slf4j
 public class DiceParamsIssuerParser extends DiceParamsParserBase<DiceParams> {
 
     public DiceParamsIssuerParser() {
-        super(KeyIdentifierUtils::getAuthorityKeyIdentifier, X509Certificate::getIssuerX500Principal);
+        super(new CertificateIssuerMapper());
     }
 
     @Override
     protected DiceParams getDiceParams(String ski, DiceCertificateSubject subject) {
-        return new DiceParams(ski, subject.getDeviceId());
+        return new DiceParams(ski, subject.deviceId());
     }
 }

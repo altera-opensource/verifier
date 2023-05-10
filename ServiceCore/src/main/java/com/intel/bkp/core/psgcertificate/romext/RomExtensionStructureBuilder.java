@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,13 +34,10 @@
 package com.intel.bkp.core.psgcertificate.romext;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessBuilder;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.core.endianness.EndiannessStructureType;
-import com.intel.bkp.core.endianness.maps.RomExtensionStructureEndiannessMapImpl;
-import com.intel.bkp.core.exceptions.RomExtensionStructureException;
+import com.intel.bkp.core.endianness.StructureBuilder;
+import com.intel.bkp.core.endianness.StructureType;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.interfaces.ISignBytes;
-import com.intel.bkp.core.psgcertificate.exceptions.RomExtensionSignatureException;
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
@@ -53,6 +50,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import static com.intel.bkp.core.endianness.EndiannessActor.FIRMWARE;
+import static com.intel.bkp.core.endianness.StructureField.ROM_EXT_EDI_ID;
+import static com.intel.bkp.core.endianness.StructureField.ROM_EXT_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.ROM_EXT_MAGIC;
 import static com.intel.bkp.core.psgcertificate.romext.RomExtensionStructure.BUILD_IDENTIFIER_LEN;
 import static com.intel.bkp.core.psgcertificate.romext.RomExtensionStructure.EDI_ID_LEN;
 import static com.intel.bkp.core.psgcertificate.romext.RomExtensionStructure.FAMILY_ID_LEN;
@@ -64,7 +64,8 @@ import static com.intel.bkp.utils.ByteConverter.toBytes;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
 @Getter
-public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtensionStructureBuilder> {
+public class RomExtensionStructureBuilder extends StructureBuilder<RomExtensionStructureBuilder,
+    RomExtensionStructure> {
 
     public static final int MAGIC = 0x70539217;
 
@@ -79,11 +80,11 @@ public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtension
     private RomExtensionSignatureBuilder romExtSigBuilder = null;
 
     public RomExtensionStructureBuilder() {
-        super(EndiannessStructureType.ROM_EXT);
+        super(StructureType.ROM_EXT);
     }
 
     @Override
-    protected RomExtensionStructureBuilder self() {
+    public RomExtensionStructureBuilder self() {
         return this;
     }
 
@@ -126,22 +127,12 @@ public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtension
     }
 
     @Override
-    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        maps.put(currentStructureType, new RomExtensionStructureEndiannessMapImpl(currentActor));
-    }
-
-    public RomExtensionStructureBuilder parse(byte[] romExtStructureData) throws RomExtensionStructureException,
-        RomExtensionSignatureException {
-        return parse(ByteBufferSafe.wrap(romExtStructureData));
-    }
-
-    private RomExtensionStructureBuilder parse(ByteBufferSafe buffer) throws RomExtensionStructureException,
-        RomExtensionSignatureException {
+    public RomExtensionStructureBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
         try {
             verifyMagic(buffer);
-            length = convertInt(buffer.getInt(), EndiannessStructureFields.ROM_EXT_LENGTH);
+            length = convertInt(buffer.getInt(), ROM_EXT_LENGTH);
             buffer.get(unusedFixedSize);
-            ediId = convertInt(buffer.getInt(), EndiannessStructureFields.ROM_EXT_EDI_ID);
+            ediId = convertInt(buffer.getInt(), ROM_EXT_EDI_ID);
             unusedVarySize = new byte[calculateVarySize()];
             buffer.get(unusedVarySize);
             buffer.get(buildIdentifier);
@@ -153,18 +144,18 @@ public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtension
                     .instance().withActor(getActor()).parse(signature);
             }
         } catch (BufferUnderflowException | BufferOverflowException | ByteBufferSafeException e) {
-            throw new RomExtensionStructureException("Failed to parse structure.");
+            throw new ParseStructureException("Failed to parse structure.", e);
         }
-
         return this;
     }
 
-    public RomExtensionStructure build() throws RomExtensionStructureException {
+    @Override
+    public RomExtensionStructure build() {
         final RomExtensionStructure structure = new RomExtensionStructure();
-        structure.setMagic(convert(MAGIC, EndiannessStructureFields.ROM_EXT_MAGIC));
-        structure.setLength(convert(toBytes(this.length), EndiannessStructureFields.ROM_EXT_LENGTH));
+        structure.setMagic(convert(MAGIC, ROM_EXT_MAGIC));
+        structure.setLength(convert(toBytes(this.length), ROM_EXT_LENGTH));
         structure.setUnusedFixedSize(unusedFixedSize);
-        structure.setEdiId(convert(ediId, EndiannessStructureFields.ROM_EXT_EDI_ID));
+        structure.setEdiId(convert(ediId, ROM_EXT_EDI_ID));
         structure.setUnusedVarySize(unusedVarySize);
         structure.setBuildIdentifier(buildIdentifier);
         structure.setFamilyId(new byte[]{familyId});
@@ -192,7 +183,7 @@ public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtension
     }
 
     public String getBuildIdentifierString() {
-        return new String(buildIdentifier).trim();
+        return new String(buildIdentifier, StandardCharsets.UTF_8).trim();
     }
 
     public byte[] getPayloadForSignature() {
@@ -201,10 +192,10 @@ public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtension
 
         final ByteBuffer buffer = ByteBuffer.allocate(countCapacityWithoutSignature());
 
-        buffer.put(convert(MAGIC, EndiannessStructureFields.ROM_EXT_MAGIC));
-        buffer.put(convert(length, EndiannessStructureFields.ROM_EXT_LENGTH));
+        buffer.put(convert(MAGIC, ROM_EXT_MAGIC));
+        buffer.put(convert(length, ROM_EXT_LENGTH));
         buffer.put(unusedFixedSize);
-        buffer.put(convert(ediId, EndiannessStructureFields.ROM_EXT_EDI_ID));
+        buffer.put(convert(ediId, ROM_EXT_EDI_ID));
         buffer.put(unusedVarySize);
         buffer.put(buildIdentifier);
         buffer.put(familyId);
@@ -219,10 +210,10 @@ public class RomExtensionStructureBuilder extends EndiannessBuilder<RomExtension
         return CryptoUtils.generateFingerprint(getPayloadForSignature()).toUpperCase(Locale.ROOT);
     }
 
-    private void verifyMagic(ByteBufferSafe buffer) throws RomExtensionStructureException {
-        final int magic = convertInt(buffer.getInt(), EndiannessStructureFields.ROM_EXT_MAGIC);
+    private void verifyMagic(ByteBufferSafe buffer) throws ParseStructureException {
+        final int magic = convertInt(buffer.getInt(), ROM_EXT_MAGIC);
         if (MAGIC != magic) {
-            throw new RomExtensionStructureException(String.format("Invalid magic number in Rom structure. "
+            throw new ParseStructureException(String.format("Invalid magic number in Rom structure. "
                 + "Expected: %s, Actual: %s.", toFormattedHex(MAGIC), toFormattedHex(magic)));
         }
     }

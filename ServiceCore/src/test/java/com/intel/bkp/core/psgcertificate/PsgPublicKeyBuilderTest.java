@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,6 +50,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
 
@@ -191,8 +192,8 @@ class PsgPublicKeyBuilderTest {
         PsgCurveType curveType = PsgCurveType.SECP384R1;
         byte[] pubKeyX = new byte[curveType.getCurveSpec().getSize()];
         byte[] pubKeyY = new byte[curveType.getCurveSpec().getSize()];
-        new Random().nextBytes(pubKeyX);
-        new Random().nextBytes(pubKeyY);
+        ThreadLocalRandom.current().nextBytes(pubKeyX);
+        ThreadLocalRandom.current().nextBytes(pubKeyY);
         return ByteBuffer.allocate(pubKeyX.length + pubKeyY.length).put(pubKeyX).put(pubKeyY).array();
     }
 

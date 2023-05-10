@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,6 +38,7 @@ import com.intel.bkp.verifier.transport.tcp.TcpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -48,7 +49,7 @@ public class SystemConsoleNioClient extends TcpClient {
      * Sends packet using socket with or without response.
      */
     public String sendPacket(String currentCommand) {
-        final byte[] responseBytes = sendPacket(currentCommand.getBytes());
+        final byte[] responseBytes = sendPacket(currentCommand.getBytes(StandardCharsets.UTF_8));
         final String fullResponse = new String(responseBytes);
         log.trace("Full response: {}", fullResponse);
         final String processedResponse = processResponse(fullResponse);

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -97,9 +97,9 @@ public class DiceSubjectVerifier {
 
     private boolean verifySubjectsInChainAreConsistent(List<DiceCertificateSubject> diceSubjects) {
         final Stream<Function<DiceCertificateSubject, Object>> gettersForComponentsThatMustBeConsistent = Stream.of(
-            DiceCertificateSubject::getFamilyName,
-            DiceCertificateSubject::getCompanyName,
-            DiceCertificateSubject::getDeviceId);
+            DiceCertificateSubject::familyName,
+            DiceCertificateSubject::companyName,
+            DiceCertificateSubject::deviceId);
 
         return gettersForComponentsThatMustBeConsistent
             .allMatch(componentGetter -> verifySubjectComponentIsConsistent(diceSubjects, componentGetter));
@@ -121,8 +121,8 @@ public class DiceSubjectVerifier {
     }
 
     private boolean verifySubjectComponentsValuesAreCorrect(DiceCertificateSubject diceSubject) {
-        return verifyFamilyNameValue(diceSubject.getFamilyName())
-            && verifyCompanyValue(diceSubject.getCompanyName());
+        return verifyFamilyNameValue(diceSubject.familyName())
+            && verifyCompanyValue(diceSubject.companyName());
     }
 
     private boolean verifyFamilyNameValue(String familyName) {

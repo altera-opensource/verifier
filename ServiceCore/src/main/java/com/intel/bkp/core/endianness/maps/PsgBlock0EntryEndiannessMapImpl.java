@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,12 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
 
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_ENTRY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SIG_LEN;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 public final class PsgBlock0EntryEndiannessMapImpl extends BaseEndiannessMapImpl {
@@ -46,11 +50,11 @@ public final class PsgBlock0EntryEndiannessMapImpl extends BaseEndiannessMapImpl
 
     @Override
     protected void populateFirmwareMap() {
-        put(EndiannessStructureFields.BLOCK0_ENTRY_MAGIC, CONVERT);
-        put(EndiannessStructureFields.BLOCK0_LENGTH_OFFSET, CONVERT);
-        put(EndiannessStructureFields.BLOCK0_DATA_LEN, CONVERT);
-        put(EndiannessStructureFields.BLOCK0_SIG_LEN, CONVERT);
-        put(EndiannessStructureFields.BLOCK0_SHA_LEN, CONVERT);
+        put(BLOCK0_ENTRY_MAGIC, CONVERT);
+        put(BLOCK0_LENGTH_OFFSET, CONVERT);
+        put(BLOCK0_DATA_LEN, CONVERT);
+        put(BLOCK0_SIG_LEN, CONVERT);
+        put(BLOCK0_SHA_LEN, CONVERT);
     }
 
 }

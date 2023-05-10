@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,9 +35,15 @@ package com.intel.bkp.verifier.command.maps;
 
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.maps.BaseEndiannessMapImpl;
 
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static com.intel.bkp.verifier.endianness.StructureField.SUBKEY_COUNTER;
+import static com.intel.bkp.verifier.endianness.StructureField.SUBKEY_MAGIC;
+import static com.intel.bkp.verifier.endianness.StructureField.SUBKEY_PUBLIC_EFUSE_VALUES;
+import static com.intel.bkp.verifier.endianness.StructureField.SUBKEY_ROM_VERSION_NUM;
+import static com.intel.bkp.verifier.endianness.StructureField.SUBKEY_SDM_FW_SECURITY_VERSION_NUM;
+import static com.intel.bkp.verifier.endianness.StructureField.SUBKEY_SDM_SESSION_ID;
 
 public final class CreateSubKeyRspEndiannessMapImpl extends BaseEndiannessMapImpl {
 
@@ -46,13 +52,13 @@ public final class CreateSubKeyRspEndiannessMapImpl extends BaseEndiannessMapImp
     }
 
     @Override
-    void populateFirmwareMap() {
-        put(EndiannessStructureFields.SUBKEY_MAGIC, CONVERT);
-        put(EndiannessStructureFields.SUBKEY_SDM_SESSION_ID, CONVERT);
-        put(EndiannessStructureFields.SUBKEY_ROM_VERSION_NUM, CONVERT);
-        put(EndiannessStructureFields.SUBKEY_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
-        put(EndiannessStructureFields.SUBKEY_PUBLIC_EFUSE_VALUES, CONVERT);
-        put(EndiannessStructureFields.SUBKEY_COUNTER, CONVERT);
+    protected void populateFirmwareMap() {
+        put(SUBKEY_MAGIC, CONVERT);
+        put(SUBKEY_SDM_SESSION_ID, CONVERT);
+        put(SUBKEY_ROM_VERSION_NUM, CONVERT);
+        put(SUBKEY_SDM_FW_SECURITY_VERSION_NUM, CONVERT);
+        put(SUBKEY_PUBLIC_EFUSE_VALUES, CONVERT);
+        put(SUBKEY_COUNTER, CONVERT);
     }
 }
 

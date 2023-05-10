@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,10 +34,14 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.utils.ByteSwapOrder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_HASH_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_SIZE_R;
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_SIZE_S;
+import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
 class PsgSignatureEndiannessMapImplTest {
 
@@ -56,10 +60,10 @@ class PsgSignatureEndiannessMapImplTest {
         PsgSignatureEndiannessMapImpl sut = new PsgSignatureEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_SIG_MAGIC));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_SIG_SIZE_R));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_SIG_SIZE_S));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(EndiannessStructureFields.PSG_SIG_HASH_MAGIC));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_MAGIC));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_SIZE_R));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_SIZE_S));
+        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_HASH_MAGIC));
         Assertions.assertEquals(4, sut.getSize());
     }
 }

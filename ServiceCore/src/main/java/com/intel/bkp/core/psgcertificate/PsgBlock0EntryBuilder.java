@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,12 +34,9 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessBuilder;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.core.endianness.EndiannessStructureType;
-import com.intel.bkp.core.endianness.maps.PsgBlock0EntryEndiannessMapImpl;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.endianness.StructureBuilder;
+import com.intel.bkp.core.endianness.StructureType;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.model.PsgBlock0Entry;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.utils.ByteBufferSafe;
@@ -47,11 +44,17 @@ import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
 
 import java.util.Optional;
 
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_DATA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_ENTRY_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_LENGTH_OFFSET;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_RESERVED;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SHA_LEN;
+import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SIG_LEN;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 
-public class PsgBlock0EntryBuilder extends EndiannessBuilder<PsgBlock0EntryBuilder> {
+public class PsgBlock0EntryBuilder extends StructureBuilder<PsgBlock0EntryBuilder, PsgBlock0Entry> {
 
-    public static final int BLOCK0_ENTRY_MAGIC = 0x15364367;
+    public static final int MAGIC = 0x15364367;
 
     private static final int ENTRY_BASIC_SIZE = 6 * Integer.BYTES; // 6 fields with 4 bytes
     private static final PsgSignatureCurveType SIGNATURE_CURVE_TYPE = PsgSignatureCurveType.SECP384R1;
@@ -72,7 +75,7 @@ public class PsgBlock0EntryBuilder extends EndiannessBuilder<PsgBlock0EntryBuild
 
 
     public PsgBlock0EntryBuilder() {
-        super(EndiannessStructureType.PSG_BLOCK_0_ENTRY);
+        super(StructureType.PSG_BLOCK_0_ENTRY);
     }
 
     @Override
@@ -83,13 +86,8 @@ public class PsgBlock0EntryBuilder extends EndiannessBuilder<PsgBlock0EntryBuild
     }
 
     @Override
-    protected PsgBlock0EntryBuilder self() {
+    public PsgBlock0EntryBuilder self() {
         return this;
-    }
-
-    @Override
-    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        maps.put(currentStructureType, new PsgBlock0EntryEndiannessMapImpl(currentActor));
     }
 
     public PsgBlock0EntryBuilder signature(byte[] signedData, PsgSignatureCurveType signatureType) {
@@ -97,38 +95,39 @@ public class PsgBlock0EntryBuilder extends EndiannessBuilder<PsgBlock0EntryBuild
         return this;
     }
 
+    @Override
     public PsgBlock0Entry build() {
         PsgBlock0Entry psgBlock0Entry = new PsgBlock0Entry();
-        psgBlock0Entry.setMagic(convert(BLOCK0_ENTRY_MAGIC, EndiannessStructureFields.BLOCK0_ENTRY_MAGIC));
-        psgBlock0Entry.setLengthOffset(convert(lengthOffset, EndiannessStructureFields.BLOCK0_LENGTH_OFFSET));
-        psgBlock0Entry.setDataLength(convert(dataLength, EndiannessStructureFields.BLOCK0_DATA_LEN));
-        psgBlock0Entry.setSignatureLength(convert(signatureLength, EndiannessStructureFields.BLOCK0_SIG_LEN));
-        psgBlock0Entry.setShaLength(convert(shaLength, EndiannessStructureFields.BLOCK0_SHA_LEN));
-        psgBlock0Entry.setReserved(convert(reserved, EndiannessStructureFields.BLOCK0_RESERVED));
+        psgBlock0Entry.setMagic(convert(MAGIC, BLOCK0_ENTRY_MAGIC));
+        psgBlock0Entry.setLengthOffset(convert(lengthOffset, BLOCK0_LENGTH_OFFSET));
+        psgBlock0Entry.setDataLength(convert(dataLength, BLOCK0_DATA_LEN));
+        psgBlock0Entry.setSignatureLength(convert(signatureLength, BLOCK0_SIG_LEN));
+        psgBlock0Entry.setShaLength(convert(shaLength, BLOCK0_SHA_LEN));
+        psgBlock0Entry.setReserved(convert(reserved, BLOCK0_RESERVED));
         psgBlock0Entry.setPsgSignature(psgSignatureBuilder.withActor(getActor()).build().array());
 
         return psgBlock0Entry;
     }
 
-    public PsgBlock0EntryBuilder parse(byte[] content) throws PsgBlock0EntryException {
-        ByteBufferSafe buffer = ByteBufferSafe.wrap(content);
+    @Override
+    public PsgBlock0EntryBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
         try {
-            int entryMagic = convertInt(buffer.getInt(), EndiannessStructureFields.BLOCK0_ENTRY_MAGIC);
-            if (BLOCK0_ENTRY_MAGIC != entryMagic) {
-                throw new PsgBlock0EntryException(
+            int entryMagic = convertInt(buffer.getInt(), BLOCK0_ENTRY_MAGIC);
+            if (MAGIC != entryMagic) {
+                throw new ParseStructureException(
                     String.format("Invalid magic number in Block0 Entry. Expected: %s, Actual: %s.",
-                        toFormattedHex(BLOCK0_ENTRY_MAGIC), toFormattedHex(entryMagic)));
+                        toFormattedHex(MAGIC), toFormattedHex(entryMagic)));
             }
 
-            lengthOffset = convertInt(buffer.getInt(), EndiannessStructureFields.BLOCK0_LENGTH_OFFSET);
-            dataLength = convertInt(buffer.getInt(), EndiannessStructureFields.BLOCK0_DATA_LEN);
-            signatureLength = convertInt(buffer.getInt(), EndiannessStructureFields.BLOCK0_SIG_LEN);
-            shaLength = convertInt(buffer.getInt(), EndiannessStructureFields.BLOCK0_SHA_LEN);
-            reserved = convertInt(buffer.getInt(), EndiannessStructureFields.BLOCK0_RESERVED);
+            lengthOffset = convertInt(buffer.getInt(), BLOCK0_LENGTH_OFFSET);
+            dataLength = convertInt(buffer.getInt(), BLOCK0_DATA_LEN);
+            signatureLength = convertInt(buffer.getInt(), BLOCK0_SIG_LEN);
+            shaLength = convertInt(buffer.getInt(), BLOCK0_SHA_LEN);
+            reserved = convertInt(buffer.getInt(), BLOCK0_RESERVED);
             psgSignatureBuilder.withActor(getActor()).parse(buffer);
             return this;
-        } catch (ByteBufferSafeException | PsgInvalidSignatureException e) {
-            throw new PsgBlock0EntryException("Invalid buffer during parsing Block0 Entry.", e);
+        } catch (ByteBufferSafeException e) {
+            throw new ParseStructureException("Invalid buffer during parsing Block0 Entry.", e);
         }
     }
 }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,7 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateChainWrongSizeException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
@@ -166,7 +167,7 @@ public class PsgCertificateHelper {
         throws PsgInvalidRootCertificateException {
         try {
             return new PsgCertificateRootEntryBuilder().parse(rootCertificate);
-        } catch (ByteBufferSafeException | PsgCertificateException e) {
+        } catch (ByteBufferSafeException | ParseStructureException e) {
             throw new PsgInvalidRootCertificateException();
         }
     }
@@ -175,7 +176,7 @@ public class PsgCertificateHelper {
         throws PsgInvalidLeafCertificateException {
         try {
             return new PsgCertificateEntryBuilder().parse(certificateContent);
-        } catch (ByteBufferSafeException | PsgCertificateException e) {
+        } catch (ByteBufferSafeException | ParseStructureException e) {
             throw new PsgInvalidLeafCertificateException();
         }
     }

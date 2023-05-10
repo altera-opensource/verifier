@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,27 +36,27 @@ package com.intel.bkp.verifier.command.responses.attestation;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.verifier.exceptions.SectionTypeException;
-import com.intel.bkp.verifier.interfaces.IMeasurementRecordToTcbInfoMapper;
 import com.intel.bkp.verifier.model.evidence.GpMeasurementRecordHeader;
 import com.intel.bkp.verifier.model.evidence.GpMeasurementRecordHeaderBuilder;
 import com.intel.bkp.verifier.model.evidence.SectionType;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
 
 @Slf4j
 public class GpMeasurementRecordToTcbInfoMapper
-    extends BaseMeasurementRecordToTcbInfoMapper<GpMeasurementRecordHeader>
-    implements IMeasurementRecordToTcbInfoMapper<GpMeasurementRecordHeader> {
+    extends BaseMeasurementRecordToTcbInfoMapper<GpMeasurementRecordHeader> {
 
     @Override
-    public TcbInfoMeasurement map(GpMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
+    public Optional<TcbInfoMeasurement> map(GpMeasurementRecordHeader header, ByteBufferSafe recordContentBuffer) {
         try {
             final SectionType sectionType = SectionType.from(header.getSectionType());
-            return mapInternal(header, recordContentBuffer, sectionType);
+            return Optional.of(mapInternal(header, recordContentBuffer, sectionType));
         } catch (SectionTypeException e) {
             log.warn("Could not parse section - section unknown: {}", header);
             recordContentBuffer.skip(getMeasurementSize(header));
-            return TcbInfoMeasurement.empty();
+            return Optional.empty();
         }
     }
 

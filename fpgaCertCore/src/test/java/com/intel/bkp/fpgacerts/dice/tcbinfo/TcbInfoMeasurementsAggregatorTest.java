@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +33,12 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.junit.FuzzTest;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,10 +47,12 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class TcbInfoMeasurementsAggregatorTest {
 
+    private static final int MAX_FUZZ_STR_LEN = 1000;
     private static final String VENDOR = "VENDOR";
     private static final String MODEL = "MODEL";
     private static final String VERSION = "VERSION";
@@ -81,9 +86,72 @@ class TcbInfoMeasurementsAggregatorTest {
         return new TcbInfo(map);
     }
 
+    private static String getFuzzStr(FuzzedDataProvider data) {
+        return data.consumeAsciiString(MAX_FUZZ_STR_LEN);
+    }
+
     @BeforeEach
     void setUp() {
         sut = new TcbInfoMeasurementsAggregator();
+    }
+
+    @Tag("Fuzz")
+    @FuzzTest
+    void add_NewEachTime_ShouldBeAddedProperly_Fuzz(FuzzedDataProvider data) {
+        // given
+        final var sut = new TcbInfoMeasurementsAggregator();
+        final var fwId = new FwIdField(getFuzzStr(data), getFuzzStr(data));
+        final var vendorInfo = new MaskedVendorInfo(getFuzzStr(data));
+
+        final var inputMap = Map.of(
+            TcbInfoField.VENDOR, getFuzzStr(data),
+            TcbInfoField.MODEL, getFuzzStr(data),
+            TcbInfoField.VERSION, getFuzzStr(data),
+            TcbInfoField.LAYER, data.consumeInt(),
+            TcbInfoField.INDEX, data.consumeInt(),
+            TcbInfoField.FWIDS, fwId,
+            TcbInfoField.FLAGS, getFuzzStr(data),
+            TcbInfoField.VENDOR_INFO, vendorInfo,
+            TcbInfoField.TYPE, getFuzzStr(data)
+        );
+        final var tcbInfoMeasurement = new TcbInfoMeasurement(new TcbInfo(inputMap));
+
+        // when
+        sut.add(tcbInfoMeasurement);
+
+        // then
+        final Map<TcbInfoKey, TcbInfoValue> map = sut.getMap();
+        assertEquals(1, map.size());
+        assertTrue(map.containsKey(tcbInfoMeasurement.getKey()));
+        assertEquals(map.get(tcbInfoMeasurement.getKey()), tcbInfoMeasurement.getValue());
+    }
+
+    @Tag("Fuzz")
+    @FuzzTest
+    void add_SameKeyDifferentValue_ShouldThrowException_Fuzz(FuzzedDataProvider data) {
+        // given
+        sut.add(TCB_INFO_MEASUREMENT);
+
+        final var fwId = new FwIdField(getFuzzStr(data), getFuzzStr(data));
+        final var vendorInfo = new MaskedVendorInfo(getFuzzStr(data));
+
+        final var inputMap = Map.of(
+            // key
+            TcbInfoField.VENDOR, VENDOR,
+            TcbInfoField.MODEL, MODEL,
+            TcbInfoField.LAYER, LAYER,
+            TcbInfoField.INDEX, INDEX,
+            TcbInfoField.TYPE, TYPE,
+            // value
+            TcbInfoField.FWIDS, fwId,
+            TcbInfoField.VERSION, getFuzzStr(data),
+            TcbInfoField.FLAGS, getFuzzStr(data),
+            TcbInfoField.VENDOR_INFO, vendorInfo
+        );
+        final var tcbInfoMeasurement = new TcbInfoMeasurement(new TcbInfo(inputMap));
+
+        // when
+        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.add(tcbInfoMeasurement));
     }
 
     @Test
@@ -93,8 +161,8 @@ class TcbInfoMeasurementsAggregatorTest {
 
         // then
         final Map<TcbInfoKey, TcbInfoValue> map = sut.getMap();
-        Assertions.assertEquals(1, map.size());
-        Assertions.assertTrue(map.containsKey(TCB_INFO_MEASUREMENT.getKey()));
+        assertEquals(1, map.size());
+        assertTrue(map.containsKey(TCB_INFO_MEASUREMENT.getKey()));
         assertEquals(map.get(TCB_INFO_MEASUREMENT.getKey()), TCB_INFO_MEASUREMENT.getValue());
     }
 
@@ -108,7 +176,7 @@ class TcbInfoMeasurementsAggregatorTest {
 
         // then
         final Map<TcbInfoKey, TcbInfoValue> map = sut.getMap();
-        Assertions.assertEquals(1, map.size());
+        assertEquals(1, map.size());
     }
 
     @Test
@@ -126,7 +194,7 @@ class TcbInfoMeasurementsAggregatorTest {
         sut.add(measurement);
         Assertions.assertDoesNotThrow(() -> sut.add(modifiedMeasurement));
         final Map<TcbInfoKey, TcbInfoValue> resultMap = sut.getMap();
-        Assertions.assertEquals(1, resultMap.size());
+        assertEquals(1, resultMap.size());
     }
 
     @Test
@@ -160,7 +228,7 @@ class TcbInfoMeasurementsAggregatorTest {
         sut.add(measurement);
         Assertions.assertDoesNotThrow(() -> sut.add(modifiedMeasurement));
         final Map<TcbInfoKey, TcbInfoValue> resultMap = sut.getMap();
-        Assertions.assertEquals(1, resultMap.size());
+        assertEquals(1, resultMap.size());
     }
 
     @Test

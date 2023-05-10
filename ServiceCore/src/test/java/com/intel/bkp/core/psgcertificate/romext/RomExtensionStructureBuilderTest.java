@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@ package com.intel.bkp.core.psgcertificate.romext;
 import com.intel.bkp.core.RomExtensionAuthGeneratorUtil;
 import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.exceptions.RomExtensionStructureException;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,7 +72,7 @@ class RomExtensionStructureBuilderTest {
         "302E69BA6E3FAC340A57561234E88BFEB2FE373BCE4D4A28C244809CB467C31CA39874CD0D3F346FCA2A9AE874A1D66B";
 
     @Test
-    void parse_WithDMStructure_Success() throws Exception {
+    void parse_WithDMStructure_Success() {
         // given
         var builder = new RomExtensionStructureBuilder()
             .withActor(EndiannessActor.FIRMWARE);
@@ -88,7 +88,7 @@ class RomExtensionStructureBuilderTest {
     }
 
     @Test
-    void parse_WithFMStructure_Success() throws Exception {
+    void parse_WithFMStructure_Success() {
         // given
         var builder = new RomExtensionStructureBuilder()
             .withActor(EndiannessActor.FIRMWARE);
@@ -104,7 +104,7 @@ class RomExtensionStructureBuilderTest {
     }
 
     @Test
-    void build_WithDMStructureWithoutSig_BuildsSameHexData() throws Exception {
+    void build_WithDMStructureWithoutSig_BuildsSameHexData() {
         // given
         var builder = new RomExtensionStructureBuilder()
             .withActor(EndiannessActor.FIRMWARE)
@@ -118,7 +118,7 @@ class RomExtensionStructureBuilderTest {
     }
 
     @Test
-    void build_WithFMStructureWithoutSig_BuildsSameHexData() throws Exception {
+    void build_WithFMStructureWithoutSig_BuildsSameHexData() {
         // given
         var builder = new RomExtensionStructureBuilder()
             .withActor(EndiannessActor.FIRMWARE)
@@ -132,7 +132,7 @@ class RomExtensionStructureBuilderTest {
     }
 
     @Test
-    void build_WithDMStructure_WithSig_BuildsSameHexData() throws Exception {
+    void build_WithDMStructure_WithSig_BuildsSameHexData() {
         // given
         var builder = new RomExtensionStructureBuilder()
             .withActor(EndiannessActor.FIRMWARE)
@@ -146,7 +146,7 @@ class RomExtensionStructureBuilderTest {
     }
 
     @Test
-    void build_WithFMStructure_WithSig_BuildsSameHexData() throws Exception {
+    void build_WithFMStructure_WithSig_BuildsSameHexData() {
         // given
         var builder = new RomExtensionStructureBuilder()
             .withActor(EndiannessActor.FIRMWARE)
@@ -166,8 +166,7 @@ class RomExtensionStructureBuilderTest {
             .withActor(EndiannessActor.FIRMWARE);
 
         // when-then
-        Assertions.assertThrows(RomExtensionStructureException.class,
-            () -> builder.parse(new byte[]{1, 2, 3, 4, 5}));
+        Assertions.assertThrows(ParseStructureException.class, () -> builder.parse(new byte[]{1, 2, 3, 4, 5}));
     }
 
     @Test
@@ -177,12 +176,11 @@ class RomExtensionStructureBuilderTest {
             .withActor(EndiannessActor.FIRMWARE);
 
         // when-then
-        Assertions.assertThrows(RomExtensionStructureException.class,
-            () -> builder.parse(new byte[]{1, 2, 3}));
+        Assertions.assertThrows(ParseStructureException.class, () -> builder.parse(new byte[]{1, 2, 3}));
     }
 
     @Test
-    void build_WithCustomMockedData_BuildsAndParses() throws Exception {
+    void build_WithCustomMockedData_BuildsAndParses() {
         // given
         final RomExtensionStructure initDataStructure = new RomExtensionStructureBuilder()
             .withFamily(FM_FAMILY_ID)

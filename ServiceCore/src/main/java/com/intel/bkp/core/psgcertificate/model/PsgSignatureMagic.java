@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -56,11 +56,11 @@ public enum PsgSignatureMagic {
             .collect(Collectors.joining(", "));
     }
 
-    public static PsgSignatureMagic from(int magic) throws PsgInvalidSignatureException {
+    public static PsgSignatureMagic from(int magic) throws ParseStructureException {
         return Arrays.stream(values())
             .filter(item -> item.getValue() == magic)
             .findAny()
-            .orElseThrow(() -> new PsgInvalidSignatureException(
+            .orElseThrow(() -> new ParseStructureException(
                 "Invalid signature magic. Expected any of: %s, Actual: %s."
                     .formatted(PsgPublicKeyMagic.getAllowedMagics(), toFormattedHex(magic))));
     }

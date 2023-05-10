@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,10 +31,9 @@
  *
  */
 
-package com.intel.bkp.verifier.endianness;
+package com.intel.bkp.core.interfaces;
 
-public enum EndiannessStructureType {
-    CREATE_ATTESTATION_SUBKEY_RSP,
-    GET_MEASUREMENT_RSP,
-    SPDM_DMTF_MEASUREMENT_HEADER
+public interface IStructure {
+
+    byte[] array();
 }

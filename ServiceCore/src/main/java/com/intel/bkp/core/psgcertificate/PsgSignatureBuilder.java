@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,12 +33,9 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.endianness.EndiannessBuilder;
-import com.intel.bkp.core.endianness.EndiannessStructureFields;
-import com.intel.bkp.core.endianness.EndiannessStructureType;
-import com.intel.bkp.core.endianness.maps.PsgSignatureEndiannessMapImpl;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
+import com.intel.bkp.core.endianness.StructureBuilder;
+import com.intel.bkp.core.endianness.StructureType;
+import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.model.PsgSignature;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureMagic;
@@ -48,9 +45,14 @@ import com.intel.bkp.utils.ByteBufferSafe;
 import lombok.Getter;
 import lombok.Setter;
 
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_HASH_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_SIZE_R;
+import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_SIZE_S;
+
 @Setter
 @Getter
-public class PsgSignatureBuilder extends EndiannessBuilder<PsgSignatureBuilder> {
+public class PsgSignatureBuilder extends StructureBuilder<PsgSignatureBuilder, PsgSignature> {
 
     private static final int SIGNATURE_METADATA_SIZE = 4 * Integer.BYTES;
 
@@ -62,17 +64,12 @@ public class PsgSignatureBuilder extends EndiannessBuilder<PsgSignatureBuilder> 
     private CurvePoint curvePoint;
 
     public PsgSignatureBuilder() {
-        super(EndiannessStructureType.PSG_SIGNATURE);
+        super(StructureType.PSG_SIGNATURE);
     }
 
     @Override
-    protected PsgSignatureBuilder self() {
+    public PsgSignatureBuilder self() {
         return this;
-    }
-
-    @Override
-    protected void initStructureMap(EndiannessStructureType currentStructureType, EndiannessActor currentActor) {
-        maps.put(currentStructureType, new PsgSignatureEndiannessMapImpl(currentActor));
     }
 
     public static PsgSignatureBuilder empty(PsgSignatureCurveType curveType) {
@@ -95,29 +92,25 @@ public class PsgSignatureBuilder extends EndiannessBuilder<PsgSignatureBuilder> 
 
     public PsgSignature build() {
         PsgSignature psgSignature = new PsgSignature();
-        psgSignature.setSignatureMagic(convert(magic.getValue(), EndiannessStructureFields.PSG_SIG_MAGIC));
-        psgSignature.setSizeR(convert(sizeR, EndiannessStructureFields.PSG_SIG_SIZE_R));
-        psgSignature.setSizeS(convert(sizeS, EndiannessStructureFields.PSG_SIG_SIZE_S));
+        psgSignature.setSignatureMagic(convert(magic.getValue(), PSG_SIG_MAGIC));
+        psgSignature.setSizeR(convert(sizeR, PSG_SIG_SIZE_R));
+        psgSignature.setSizeS(convert(sizeS, PSG_SIG_SIZE_S));
         psgSignature.setSignatureHashMagic(convert(PsgSignatureCurveType.fromCurveSpec(curvePoint.getCurveSpec())
                 .getMagic(),
-            EndiannessStructureFields.PSG_SIG_HASH_MAGIC));
+            PSG_SIG_HASH_MAGIC));
         psgSignature.setSignatureR(curvePoint.getPointA());
         psgSignature.setSignatureS(curvePoint.getPointB());
         return psgSignature;
     }
 
-    public PsgSignatureBuilder parse(byte[] sig) throws PsgInvalidSignatureException {
-        return parse(ByteBufferSafe.wrap(sig));
-    }
+    public PsgSignatureBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
+        magic = PsgSignatureMagic.from(convertInt(buffer.getInt(), PSG_SIG_MAGIC));
 
-    public PsgSignatureBuilder parse(ByteBufferSafe buffer) throws PsgInvalidSignatureException {
-        magic = PsgSignatureMagic.from(convertInt(buffer.getInt(), EndiannessStructureFields.PSG_SIG_MAGIC));
-
-        sizeR = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_SIG_SIZE_R);
-        sizeS = convertInt(buffer.getInt(), EndiannessStructureFields.PSG_SIG_SIZE_S);
+        sizeR = convertInt(buffer.getInt(), PSG_SIG_SIZE_R);
+        sizeS = convertInt(buffer.getInt(), PSG_SIG_SIZE_S);
 
         final PsgSignatureCurveType signatureType = PsgSignatureCurveType.fromMagic(convertInt(buffer.getInt(),
-            EndiannessStructureFields.PSG_SIG_HASH_MAGIC));
+            PSG_SIG_HASH_MAGIC));
 
         this.curvePoint = CurvePoint.from(buffer, signatureType.getCurveSpec());
         return this;

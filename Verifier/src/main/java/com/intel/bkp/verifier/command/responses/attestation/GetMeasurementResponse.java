@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,7 @@
 
 package com.intel.bkp.verifier.command.responses.attestation;
 
+import com.intel.bkp.core.interfaces.IStructure;
 import com.intel.bkp.verifier.command.logger.ILogger;
 import com.intel.bkp.verifier.interfaces.IMeasurementProvider;
 import com.intel.bkp.verifier.interfaces.Response;
@@ -43,7 +44,7 @@ import java.nio.ByteBuffer;
 
 @Getter
 @Setter
-public class GetMeasurementResponse implements Response, ILogger, IMeasurementProvider {
+public class GetMeasurementResponse implements Response, ILogger, IMeasurementProvider, IStructure {
 
     private byte[] reservedHeader = new byte[0];
     private byte[] magic = new byte[0];

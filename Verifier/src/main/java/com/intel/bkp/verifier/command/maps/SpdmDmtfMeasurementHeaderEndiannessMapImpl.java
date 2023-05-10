@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,9 +35,10 @@ package com.intel.bkp.verifier.command.maps;
 
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.verifier.endianness.EndiannessStructureFields;
+import com.intel.bkp.core.endianness.maps.BaseEndiannessMapImpl;
 
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static com.intel.bkp.verifier.endianness.StructureField.SPDM_DMTF_MEASUREMENT_HEADER_LEN;
 
 public final class SpdmDmtfMeasurementHeaderEndiannessMapImpl extends BaseEndiannessMapImpl {
 
@@ -46,8 +47,8 @@ public final class SpdmDmtfMeasurementHeaderEndiannessMapImpl extends BaseEndian
     }
 
     @Override
-    void populateFirmwareMap() {
-        put(EndiannessStructureFields.SPDM_DMTF_MEASUREMENT_HEADER_LEN, CONVERT);
+    protected void populateFirmwareMap() {
+        put(SPDM_DMTF_MEASUREMENT_HEADER_LEN, CONVERT);
     }
 }
 

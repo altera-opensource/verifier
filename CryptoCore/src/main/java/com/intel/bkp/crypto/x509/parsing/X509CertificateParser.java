@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2022 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -63,6 +63,10 @@ public class X509CertificateParser {
         } catch (CertificateException | IOException e) {
             throw new X509CertificateParsingException("Failed to parse certificate.", e);
         }
+    }
+
+    public static Optional<X509Certificate> tryToX509(String certInPem) {
+        return tryToX509(certInPem.getBytes(StandardCharsets.UTF_8));
     }
 
     public static Optional<X509Certificate> tryToX509(byte[] certBytes) {
