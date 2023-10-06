@@ -38,24 +38,25 @@ import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.ByteSwap;
 import com.intel.bkp.utils.ByteSwapOrder;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static com.intel.bkp.core.TestUtil.loadBinaryFile;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RomExtensionSignatureBuilderTest {
 
-    private static final String TEST_FILES_PATH = "/testfiles/romext";
     final private static byte[] WRONG_MAGIC = ByteSwap.getSwappedArray(0x99999999, ByteSwapOrder.CONVERT);
 
     final static byte[] ROM_EXT_STRUCTURE_WITH_SIG =
-        loadBinaryFile(TEST_FILES_PATH + "/dm_signed_2021_03_16.romext");
+        FileUtils.loadBinary(ResourceDir.ROMEXT, "dm_signed_2021_03_16.romext");
 
     @Test
     void parse_Success() {
@@ -63,7 +64,7 @@ class RomExtensionSignatureBuilderTest {
         RomExtensionStructureBuilder builder = prepareBuilder();
 
         // then
-        Assertions.assertNotNull(builder.getRomExtSigBuilder());
+        assertNotNull(builder.getRomExtSigBuilder());
     }
 
     @Test
@@ -73,7 +74,7 @@ class RomExtensionSignatureBuilderTest {
         final byte[] signature = ArrayUtils.addAll(builder.getSignature(), new byte[]{1, 2, 3, 4, 5, 6, 7, 8});
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance().withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
     }
@@ -86,7 +87,7 @@ class RomExtensionSignatureBuilderTest {
         replaceStructureMagicInSignature(signature, PsgRootCertMagic.MULTI.getValue());
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
@@ -100,7 +101,7 @@ class RomExtensionSignatureBuilderTest {
         replaceStructureMagicInSignature(signature, PsgCertificateEntryBuilder.PUBLIC_KEY_ENTRY_MAGIC);
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
@@ -114,7 +115,7 @@ class RomExtensionSignatureBuilderTest {
         replaceStructureMagicInSignature(signature, PsgCancellableBlock0EntryBuilder.MAGIC);
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));
@@ -128,7 +129,7 @@ class RomExtensionSignatureBuilderTest {
             PsgCancellableBlock0EntryBuilder.MAGIC);
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> RomExtensionSignatureBuilder.instance()
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(signature));

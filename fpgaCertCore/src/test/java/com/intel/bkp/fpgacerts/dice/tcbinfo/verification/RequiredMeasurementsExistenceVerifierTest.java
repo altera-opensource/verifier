@@ -39,7 +39,6 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +52,9 @@ import java.util.Map;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType.CMF;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType.ROM_EXTENSION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -101,8 +103,8 @@ class RequiredMeasurementsExistenceVerifierTest {
         final boolean result = sut.verify(MAP);
 
         // then
-        Assertions.assertTrue(result);
-        Assertions.assertEquals(0, loggerTestUtil.getSize());
+        assertTrue(result);
+        assertEquals(0, loggerTestUtil.getSize());
     }
 
     @Test
@@ -116,8 +118,8 @@ class RequiredMeasurementsExistenceVerifierTest {
         final boolean result = sut.verify(MAP);
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
     }
 
     @Test
@@ -131,8 +133,8 @@ class RequiredMeasurementsExistenceVerifierTest {
         final boolean result = sut.verify(MAP);
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
     }
 
     @Test
@@ -146,8 +148,8 @@ class RequiredMeasurementsExistenceVerifierTest {
         final boolean result = sut.verify(MAP);
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedMessage, Level.ERROR));
     }
 
     private void mockMeasurementExistenceVerifier(boolean isRomExtPresent, boolean isCmfPresent) {

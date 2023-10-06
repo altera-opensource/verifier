@@ -46,7 +46,9 @@ import lombok.ToString;
 @ToString
 public class DistributionPoint {
 
-    private String pathCer;
-    private TrustedRootHash trustedRootHash;
+    private String mainPath;
+    private String attestationCertBasePath;
+    private String zipBasePath;
+    private String[] trustedRootHash;
     private Proxy proxy;
 }

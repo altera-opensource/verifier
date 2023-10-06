@@ -33,10 +33,10 @@
 
 package com.intel.bkp.crypto.x509.parsing;
 
-import com.intel.bkp.crypto.TestUtil;
 import com.intel.bkp.crypto.exceptions.X509CertificateParsingException;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -44,9 +44,12 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Optional;
 
-class X509CertificateParserTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    private static final String TEST_FOLDER = "/certs/";
+class X509CertificateParserTest {
 
     // https://tsci.intel.com/content/IPCS/certs/IPCS.cer
     private static final String PEM_CERT_FILENAME = "IPCS.cer";
@@ -63,10 +66,10 @@ class X509CertificateParserTest {
     private static byte[] certDerEncoded;
 
     @BeforeAll
-    static void init() throws Exception {
-        certPemString = TestUtil.getResourceAsString(TEST_FOLDER, PEM_CERT_FILENAME);
-        certPemEncoded = TestUtil.getResourceAsBytes(TEST_FOLDER, PEM_CERT_FILENAME);
-        certDerEncoded = TestUtil.getResourceAsBytes(TEST_FOLDER, DER_CERT_FILENAME);
+    static void init() {
+        certPemString = FileUtils.loadFile(ResourceDir.CERTS, PEM_CERT_FILENAME);
+        certPemEncoded = FileUtils.loadBinary(ResourceDir.CERTS, PEM_CERT_FILENAME);
+        certDerEncoded = FileUtils.loadBinary(ResourceDir.CERTS, DER_CERT_FILENAME);
     }
 
     @Test
@@ -75,7 +78,7 @@ class X509CertificateParserTest {
         final X509Certificate result = X509CertificateParser.pemToX509Certificate(certPemString);
 
         // then
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.getSubjectX500Principal().getName());
+        assertEquals(PEM_CERT_SUBJECT, result.getSubjectX500Principal().getName());
     }
 
     @Test
@@ -84,13 +87,13 @@ class X509CertificateParserTest {
         final X509Certificate result = X509CertificateParser.pemToX509Certificate("");
 
         // then
-        Assertions.assertNull(result);
+        assertNull(result);
     }
 
     @Test
     void pemToX509Certificate_InvalidInput_Throws() {
         // when-then
-        Assertions.assertThrows(X509CertificateParsingException.class,
+        assertThrows(X509CertificateParsingException.class,
             () -> X509CertificateParser.pemToX509Certificate("not a crl in pem"));
     }
 
@@ -100,7 +103,7 @@ class X509CertificateParserTest {
         final X509Certificate result = X509CertificateParser.toX509Certificate(certPemEncoded);
 
         // then
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.getSubjectX500Principal().getName());
+        assertEquals(PEM_CERT_SUBJECT, result.getSubjectX500Principal().getName());
     }
 
     @Test
@@ -109,13 +112,13 @@ class X509CertificateParserTest {
         final X509Certificate result = X509CertificateParser.toX509Certificate(certDerEncoded);
 
         // then
-        Assertions.assertEquals(DER_CERT_SUBJECT, result.getSubjectX500Principal().getName());
+        assertEquals(DER_CERT_SUBJECT, result.getSubjectX500Principal().getName());
     }
 
     @Test
     void toX509Certificate_InvalidInput_Throws() {
         // when-then
-        Assertions.assertThrows(X509CertificateParsingException.class,
+        assertThrows(X509CertificateParsingException.class,
             () -> X509CertificateParser.toX509Certificate(new byte[]{0x01, 0x02}));
     }
 
@@ -125,8 +128,8 @@ class X509CertificateParserTest {
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509(certPemString);
 
         // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
+        assertTrue(result.isPresent());
+        assertEquals(PEM_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
     }
 
     @Test
@@ -135,7 +138,7 @@ class X509CertificateParserTest {
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509("not a valid cert");
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -144,8 +147,8 @@ class X509CertificateParserTest {
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509(certDerEncoded);
 
         // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(DER_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
+        assertTrue(result.isPresent());
+        assertEquals(DER_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
     }
 
     @Test
@@ -154,8 +157,8 @@ class X509CertificateParserTest {
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509(certPemEncoded);
 
         // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
+        assertTrue(result.isPresent());
+        assertEquals(PEM_CERT_SUBJECT, result.get().getSubjectX500Principal().getName());
     }
 
     @Test
@@ -164,7 +167,7 @@ class X509CertificateParserTest {
         final Optional<X509Certificate> result = X509CertificateParser.tryToX509(new byte[]{0x01, 0x02});
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -173,8 +176,8 @@ class X509CertificateParserTest {
         final List<X509Certificate> result = X509CertificateParser.toX509CertificateChain(certDerEncoded);
 
         // then
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals(DER_CERT_SUBJECT, result.get(0).getSubjectX500Principal().getName());
+        assertEquals(1, result.size());
+        assertEquals(DER_CERT_SUBJECT, result.get(0).getSubjectX500Principal().getName());
     }
 
     @Test
@@ -186,15 +189,15 @@ class X509CertificateParserTest {
         final List<X509Certificate> result = X509CertificateParser.toX509CertificateChain(chainBytes);
 
         // then
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(DER_CERT_SUBJECT, result.get(0).getSubjectX500Principal().getName());
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.get(1).getSubjectX500Principal().getName());
+        assertEquals(2, result.size());
+        assertEquals(DER_CERT_SUBJECT, result.get(0).getSubjectX500Principal().getName());
+        assertEquals(PEM_CERT_SUBJECT, result.get(1).getSubjectX500Principal().getName());
     }
 
     @Test
     void toX509CertificateChain_InvalidInput_Throws() {
         // when-then
-        Assertions.assertThrows(X509CertificateParsingException.class,
+        assertThrows(X509CertificateParsingException.class,
             () -> X509CertificateParser.toX509CertificateChain(new byte[]{0x01, 0x02}));
     }
 }

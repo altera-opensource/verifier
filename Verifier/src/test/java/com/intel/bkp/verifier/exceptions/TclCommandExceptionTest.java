@@ -33,8 +33,10 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TclCommandExceptionTest {
 
@@ -42,9 +44,9 @@ class TclCommandExceptionTest {
 
     @Test
     void constructor_Success() {
-        final TclCommandException exception = Assertions.assertThrows(TclCommandException.class,
+        final TclCommandException exception = assertThrows(TclCommandException.class,
             this::throwError);
-        Assertions.assertEquals(TEST_MESSAGE, exception.getMessage());
+        assertEquals(TEST_MESSAGE, exception.getMessage());
     }
 
     private void throwError() {

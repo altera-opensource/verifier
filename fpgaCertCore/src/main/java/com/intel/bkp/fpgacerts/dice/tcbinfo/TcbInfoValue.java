@@ -35,6 +35,8 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfoFactory;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -53,28 +55,33 @@ import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfPresent;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @RequiredArgsConstructor
 @EqualsAndHashCode
 public class TcbInfoValue {
 
     private static final TcbInfoValue EMPTY = new TcbInfoValue();
 
+    @Builder.Default
     private Optional<String> version = Optional.empty();
+    @Builder.Default
     private Optional<Integer> svn = Optional.empty();
+    @Builder.Default
     private Optional<FwIdField> fwid = Optional.empty();
+    @Builder.Default
     private Optional<MaskedVendorInfo> maskedVendorInfo = Optional.empty();
+    @Builder.Default
     private Optional<String> flags = Optional.empty();
 
     public static TcbInfoValue from(TcbInfo tcbInfo) {
-        final TcbInfoValue value = new TcbInfoValue();
-
-        value.setVersion(tcbInfo.get(VERSION));
-        value.setSvn(tcbInfo.get(SVN));
-        value.setFwid(tcbInfo.get(FWIDS));
-        value.setMaskedVendorInfo(tcbInfo.get(VENDOR_INFO).map(MaskedVendorInfoFactory::get));
-        value.setFlags(tcbInfo.get(FLAGS));
-
-        return value;
+        return TcbInfoValue.builder()
+            .version(tcbInfo.get(VERSION))
+            .svn(tcbInfo.get(SVN))
+            .fwid(tcbInfo.get(FWIDS))
+            .maskedVendorInfo(tcbInfo.get(VENDOR_INFO).map(MaskedVendorInfoFactory::get))
+            .flags(tcbInfo.get(FLAGS))
+            .build();
     }
 
     public boolean isEmpty() {

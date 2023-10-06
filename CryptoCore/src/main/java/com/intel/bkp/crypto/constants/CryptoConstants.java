@@ -53,14 +53,19 @@ public class CryptoConstants {
     public static final String EC_CURVE_SPEC_521 = "secp521r1"; // NISTP521
     public static final String EC_CURVE_SPEC_384 = "secp384r1"; // NISTP384
     public static final String EC_CURVE_SPEC_256 = "secp256r1"; // NISTP256
+
+    public static final int EC_CURVE_SPEC_521_SIZE = 521;
+    public static final int EC_CURVE_SPEC_384_SIZE = 384;
+    public static final int EC_CURVE_SPEC_256_SIZE = 256;
+
     public static final String AES_CIPHER_TYPE = "GCM";
     public static final String RSA_CIPHER_TYPE = "RSA/None/OAEPWithSHA384AndMGF1Padding";
 
     public static final int AES_KEY_SIZE = 256;
     public static final int RSA_KEY_SIZE = 3072;
 
+    public static final int SHA512_LEN = 66;
     public static final int SHA384_LEN = 48;
     public static final int SHA256_LEN = 32;
-    public static final int SHA384_SIG_LEN = 2 * SHA384_LEN;
 
 }

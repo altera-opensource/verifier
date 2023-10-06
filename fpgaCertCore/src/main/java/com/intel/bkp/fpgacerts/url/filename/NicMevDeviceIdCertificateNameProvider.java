@@ -40,7 +40,7 @@ public class NicMevDeviceIdCertificateNameProvider extends CertificateNameProvid
     private final NicDiceParams params;
 
     public NicMevDeviceIdCertificateNameProvider(NicDiceParams params) {
-        super(IpcsIssuedCertificateType.NIC_MEV_DEVICE_ID);
+        super(IpcsFileName.NIC_MEV_DEVICE_ID);
         this.params = params;
     }
 

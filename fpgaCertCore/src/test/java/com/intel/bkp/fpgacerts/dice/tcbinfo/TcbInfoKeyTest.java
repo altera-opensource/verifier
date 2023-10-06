@@ -33,13 +33,15 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class TcbInfoKeyTest {
@@ -70,11 +72,11 @@ class TcbInfoKeyTest {
         final TcbInfoKey result = TcbInfoKey.from(new TcbInfo());
 
         // then
-        Assertions.assertNull(result.getVendor());
-        Assertions.assertNull(result.getModel());
-        Assertions.assertNull(result.getLayer());
-        Assertions.assertNull(result.getIndex());
-        Assertions.assertNull(result.getType());
+        assertNull(result.getVendor());
+        assertNull(result.getModel());
+        assertNull(result.getLayer());
+        assertNull(result.getIndex());
+        assertNull(result.getType());
     }
 
     @Test
@@ -83,11 +85,11 @@ class TcbInfoKeyTest {
         final TcbInfoKey result = TcbInfoKey.from(TCB_INFO);
 
         // then
-        Assertions.assertEquals(VENDOR, result.getVendor());
-        Assertions.assertEquals(MODEL, result.getModel());
-        Assertions.assertEquals(LAYER, result.getLayer());
-        Assertions.assertEquals(INDEX, result.getIndex());
-        Assertions.assertEquals(TYPE, result.getType());
+        assertEquals(VENDOR, result.getVendor());
+        assertEquals(MODEL, result.getModel());
+        assertEquals(LAYER, result.getLayer());
+        assertEquals(INDEX, result.getIndex());
+        assertEquals(TYPE, result.getType());
     }
 
     @Test
@@ -99,11 +101,11 @@ class TcbInfoKeyTest {
         final TcbInfoKey result = TcbInfoKey.from(measurementType, MODEL);
 
         // then
-        Assertions.assertEquals("intel.com", result.getVendor());
-        Assertions.assertEquals(MODEL, result.getModel());
-        Assertions.assertEquals(measurementType.getLayer(), result.getLayer());
-        Assertions.assertEquals(0, result.getIndex());
-        Assertions.assertNull(result.getType());
+        assertEquals("intel.com", result.getVendor());
+        assertEquals(MODEL, result.getModel());
+        assertEquals(measurementType.getLayer(), result.getLayer());
+        assertEquals(0, result.getIndex());
+        assertNull(result.getType());
     }
 
     @Test
@@ -115,11 +117,11 @@ class TcbInfoKeyTest {
         final TcbInfoKey result = TcbInfoKey.from(measurementType);
 
         // then
-        Assertions.assertEquals("intel.com", result.getVendor());
-        Assertions.assertEquals(measurementType.getOid(), result.getType());
-        Assertions.assertEquals(measurementType.getLayer(), result.getLayer());
-        Assertions.assertNull(result.getModel());
-        Assertions.assertNull(result.getIndex());
+        assertEquals("intel.com", result.getVendor());
+        assertEquals(measurementType.getOid(), result.getType());
+        assertEquals(measurementType.getLayer(), result.getLayer());
+        assertNull(result.getModel());
+        assertNull(result.getIndex());
     }
 
     @Test
@@ -131,7 +133,7 @@ class TcbInfoKeyTest {
         final String result = TcbInfoKey.from(new TcbInfo()).toString();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -143,6 +145,6 @@ class TcbInfoKeyTest {
         final String result = TcbInfoKey.from(TCB_INFO).toString();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

@@ -37,8 +37,9 @@ import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.crypto.exceptions.HMacProviderException;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SigmaProviderTest {
 
@@ -54,9 +55,9 @@ public class SigmaProviderTest {
         final SigmaProvider result = new SigmaProvider(serviceDhKeyPair, deviceDhKeyPair);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.getServiceDhKeyPair());
-        Assertions.assertNotNull(result.getDeviceDhKeyPair());
+        assertNotNull(result);
+        assertNotNull(result.getServiceDhKeyPair());
+        assertNotNull(result.getDeviceDhKeyPair());
     }
 
     @Test
@@ -68,8 +69,8 @@ public class SigmaProviderTest {
         result.establishSigmaProtocol();
 
         // then
-        Assertions.assertNotNull(result.getPmk());
-        Assertions.assertNotNull(result.getSek());
-        Assertions.assertNotNull(result.getSmk());
+        assertNotNull(result.getPmk());
+        assertNotNull(result.getSek());
+        assertNotNull(result.getSmk());
     }
 }

@@ -33,8 +33,9 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MeasurementTypeTest {
 
@@ -47,6 +48,6 @@ class MeasurementTypeTest {
         final String result = MeasurementType.CMF.getOid();
 
         // then
-        Assertions.assertEquals(cmfOid, result);
+        assertEquals(cmfOid, result);
     }
 }

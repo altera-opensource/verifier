@@ -36,18 +36,12 @@ package com.intel.bkp.core.utils.provider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStoreException;
 import java.security.KeyStoreSpi;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -65,19 +59,17 @@ public class TestKeyStore extends KeyStoreSpi {
 
     private static final Certificate certificate = new Certificate("certType") {
         @Override
-        public byte[] getEncoded() throws CertificateEncodingException {
+        public byte[] getEncoded() {
             return new byte[0];
         }
 
         @Override
-        public void verify(PublicKey key) throws CertificateException, NoSuchAlgorithmException,
-            InvalidKeyException, NoSuchProviderException, SignatureException {
+        public void verify(PublicKey key) {
 
         }
 
         @Override
-        public void verify(PublicKey key, String sigProvider) throws CertificateException,
-            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+        public void verify(PublicKey key, String sigProvider) {
 
         }
 
@@ -108,19 +100,17 @@ public class TestKeyStore extends KeyStoreSpi {
     };
     private static final Certificate certificateNullPubKey = new Certificate("certType") {
         @Override
-        public byte[] getEncoded() throws CertificateEncodingException {
+        public byte[] getEncoded() {
             return new byte[0];
         }
 
         @Override
-        public void verify(PublicKey key) throws CertificateException, NoSuchAlgorithmException,
-            InvalidKeyException, NoSuchProviderException, SignatureException {
+        public void verify(PublicKey key) {
 
         }
 
         @Override
-        public void verify(PublicKey key, String sigProvider) throws CertificateException,
-            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+        public void verify(PublicKey key, String sigProvider) {
 
         }
 
@@ -152,7 +142,7 @@ public class TestKeyStore extends KeyStoreSpi {
     }
 
     @Override
-    public Key engineGetKey(String alias, char[] password) throws NoSuchAlgorithmException, UnrecoverableKeyException {
+    public Key engineGetKey(String alias, char[] password) throws UnrecoverableKeyException {
         if (alias.equals(testKeyAliasPositive)) {
             return (Key) this.store.get(alias);
         } else {
@@ -186,12 +176,12 @@ public class TestKeyStore extends KeyStoreSpi {
     }
 
     @Override
-    public void engineSetKeyEntry(String alias, byte[] key, Certificate[] chain) throws KeyStoreException {
+    public void engineSetKeyEntry(String alias, byte[] key, Certificate[] chain) {
 
     }
 
     @Override
-    public void engineSetCertificateEntry(String alias, Certificate cert) throws KeyStoreException {
+    public void engineSetCertificateEntry(String alias, Certificate cert) {
 
     }
 
@@ -235,14 +225,12 @@ public class TestKeyStore extends KeyStoreSpi {
     }
 
     @Override
-    public void engineStore(OutputStream stream, char[] password) throws IOException, NoSuchAlgorithmException,
-        CertificateException {
+    public void engineStore(OutputStream stream, char[] password) {
 
     }
 
     @Override
-    public void engineLoad(InputStream stream, char[] password) throws IOException, NoSuchAlgorithmException,
-        CertificateException {
+    public void engineLoad(InputStream stream, char[] password) throws IOException {
 
         String passwordString = new String(password);
         if (!passwordString.equals(this.password)) {

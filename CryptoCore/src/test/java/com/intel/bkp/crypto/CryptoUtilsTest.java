@@ -35,7 +35,6 @@ package com.intel.bkp.crypto;
 
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
@@ -43,6 +42,10 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class CryptoUtilsTest {
 
@@ -52,8 +55,8 @@ public class CryptoUtilsTest {
         KeyPair result = CryptoUtils.genEcdhBC();
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDH_KEY, result.getPrivate().getAlgorithm());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.ECDH_KEY, result.getPrivate().getAlgorithm());
     }
 
     @Test
@@ -62,8 +65,8 @@ public class CryptoUtilsTest {
         KeyPair result = CryptoUtils.genEcdsaBC();
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.EC_KEY, result.getPrivate().getAlgorithm());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.EC_KEY, result.getPrivate().getAlgorithm());
     }
 
     @Test
@@ -83,9 +86,9 @@ public class CryptoUtilsTest {
         final byte[] bytesB = CryptoUtils.genEcdhSharedSecretBC(secondPrivate, firstPublic);
 
         // then
-        Assertions.assertNotNull(bytesA);
-        Assertions.assertNotNull(bytesB);
-        Assertions.assertArrayEquals(bytesA, bytesB);
+        assertNotNull(bytesA);
+        assertNotNull(bytesB);
+        assertArrayEquals(bytesA, bytesB);
     }
 
     @Test
@@ -94,7 +97,7 @@ public class CryptoUtilsTest {
         KeyPair keyPair = CryptoUtils.genRsaBC();
 
         //then
-        Assertions.assertNotNull(keyPair);
+        assertNotNull(keyPair);
     }
 
     @Test
@@ -107,7 +110,7 @@ public class CryptoUtilsTest {
         PublicKey result = CryptoUtils.restoreRSAPubKeyBC(publicKey.getEncoded());
 
         // then
-        Assertions.assertEquals(publicKey, result);
+        assertEquals(publicKey, result);
     }
 
     @Test
@@ -116,9 +119,9 @@ public class CryptoUtilsTest {
         SecretKey result = CryptoUtils.genAesBC();
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.AES_KEY, result.getAlgorithm());
-        Assertions.assertEquals(CryptoConstants.AES_KEY_SIZE / 8, result.getEncoded().length);
+        assertNotNull(result);
+        assertEquals(CryptoConstants.AES_KEY, result.getAlgorithm());
+        assertEquals(CryptoConstants.AES_KEY_SIZE / 8, result.getEncoded().length);
     }
 
     @Test
@@ -131,7 +134,7 @@ public class CryptoUtilsTest {
         final int result = CryptoUtils.getPubKeyXYLenForPubKey((ECPublicKey)keyPair.getPublic());
 
         // then
-        Assertions.assertEquals(expectedLen, result);
+        assertEquals(expectedLen, result);
     }
 
     @Test
@@ -144,6 +147,6 @@ public class CryptoUtilsTest {
         final int result = CryptoUtils.getPubKeyXYLenForPubKey((ECPublicKey)keyPair.getPublic());
 
         // then
-        Assertions.assertEquals(expectedLen, result);
+        assertEquals(expectedLen, result);
     }
 }

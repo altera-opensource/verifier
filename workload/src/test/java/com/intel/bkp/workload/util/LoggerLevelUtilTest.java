@@ -35,9 +35,10 @@ package com.intel.bkp.workload.util;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LoggerLevelUtilTest {
 
@@ -50,6 +51,6 @@ class LoggerLevelUtilTest {
         LoggerLevelUtil.setLogLevel("INFO");
 
         //then
-        Assertions.assertEquals(Level.INFO, logger.getLevel());
+        assertEquals(Level.INFO, logger.getLevel());
     }
 }

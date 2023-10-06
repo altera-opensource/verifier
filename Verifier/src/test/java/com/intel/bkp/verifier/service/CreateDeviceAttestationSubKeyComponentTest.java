@@ -33,25 +33,24 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.intel.bkp.command.model.CommandLayer;
+import com.intel.bkp.command.responses.sigma.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.core.psgcertificate.PsgPublicKeyBuilder;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.crypto.curve.CurvePoint;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
-import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.database.repository.S10CacheEntityService;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.protocol.sigma.service.CreateAttestationSubKeyMessageSender;
+import com.intel.bkp.verifier.protocol.sigma.service.S10AttestationRevocationService;
+import com.intel.bkp.verifier.protocol.sigma.service.TeardownMessageSender;
+import com.intel.bkp.verifier.protocol.sigma.verification.CreateAttestationSubKeyVerifier;
+import com.intel.bkp.verifier.protocol.sigma.verification.SigmaM2DeviceIdVerifier;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
-import com.intel.bkp.verifier.service.sender.CreateAttestationSubKeyMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
-import com.intel.bkp.verifier.sigma.CreateAttestationSubKeyVerifier;
-import com.intel.bkp.verifier.sigma.SigmaM2DeviceIdVerifier;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,6 +59,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.PublicKey;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -134,7 +134,7 @@ class CreateDeviceAttestationSubKeyComponentTest {
         VerifierExchangeResponse result = sut.perform(appContext, CONTEXT, PUF_TYPE, DEVICE_ID);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK, result);
+        assertEquals(VerifierExchangeResponse.OK, result);
         verify(createSubKeyVerifier).verify(any(), any(), eq(pufPubKey));
         verify(teardownMessageSender).send(transportLayer, commandLayer);
         verify(teardownMessageSender).send(transportLayer, commandLayer, SDM_SESSION_ID);

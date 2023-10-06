@@ -33,12 +33,12 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.ByteConverter.toBytes;
 import static com.intel.bkp.utils.ByteConverter.toInt;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ByteConverterTest {
 
@@ -52,7 +52,7 @@ class ByteConverterTest {
         byte[] result = toBytes(data);
 
         // then
-        Assertions.assertEquals(expected, toHex(result));
+        assertEquals(expected, toHex(result));
     }
 
     @Test
@@ -65,7 +65,7 @@ class ByteConverterTest {
         byte[] result = toBytes(data);
 
         // then
-        Assertions.assertEquals(expected, toHex(result));
+        assertEquals(expected, toHex(result));
     }
 
     @Test
@@ -78,7 +78,7 @@ class ByteConverterTest {
         final byte[] actual = toBytes(value);
 
         // then
-        Assertions.assertEquals(expected, toHex(actual));
+        assertEquals(expected, toHex(actual));
     }
 
     @Test
@@ -91,7 +91,7 @@ class ByteConverterTest {
         final byte[] actual = toBytes(value);
 
         // then
-        Assertions.assertEquals(expected, toHex(actual));
+        assertEquals(expected, toHex(actual));
     }
 
     @Test
@@ -104,7 +104,7 @@ class ByteConverterTest {
         byte[] result = ByteConverter.toIntegerBytes(data);
 
         // then
-        Assertions.assertEquals(expected, toHex(result));
+        assertEquals(expected, toHex(result));
     }
 
     @Test
@@ -117,6 +117,6 @@ class ByteConverterTest {
         int result = toInt(data);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

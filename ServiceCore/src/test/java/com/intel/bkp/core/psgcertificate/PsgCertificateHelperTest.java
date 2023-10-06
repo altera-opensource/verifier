@@ -33,9 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateChainWrongSizeException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidLeafCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidParentCertificatesException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidRootCertificateException;
@@ -47,9 +45,10 @@ import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.curve.EcSignatureAlgorithm;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.CertificateUtils;
+import com.intel.bkp.test.KeyGenUtils;
+import com.intel.bkp.test.SigningUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.security.KeyPair;
@@ -59,8 +58,15 @@ import java.util.List;
 
 import static com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType.SECP256R1;
 import static com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType.SECP384R1;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 class PsgCertificateHelperTest {
 
@@ -80,9 +86,9 @@ class PsgCertificateHelperTest {
         // when
         List<CertificateEntryWrapper> certificateChainList = sut.getCertificateChainList(certChain);
         // then
-        Assertions.assertEquals(2, certificateChainList.size());
-        Assertions.assertEquals(PsgCertificateType.LEAF, certificateChainList.get(0).getType());
-        Assertions.assertEquals(PsgCertificateType.ROOT, certificateChainList.get(1).getType());
+        assertEquals(2, certificateChainList.size());
+        assertEquals(PsgCertificateType.LEAF, certificateChainList.get(0).getType());
+        assertEquals(PsgCertificateType.ROOT, certificateChainList.get(1).getType());
     }
 
     @Test
@@ -92,16 +98,16 @@ class PsgCertificateHelperTest {
         // when
         List<CertificateEntryWrapper> certificateChainList = sut.getCertificateChainList(certChain);
         // then
-        Assertions.assertEquals(0, certificateChainList.size());
+        assertEquals(0, certificateChainList.size());
     }
 
     @Test
     void verifyParentsInChainByPubKey_succeedsIfNoError() throws PsgInvalidParentCertificatesException,
-        PsgCertificateException, PsgInvalidSignatureException {
+        PsgInvalidSignatureException {
         // given
-        KeyPair rootKeyPair = TestUtil.genEcKeys(null);
-        KeyPair leafKeyPair = TestUtil.genEcKeys(null);
-        KeyPair leafSecondKeyPair = TestUtil.genEcKeys(null);
+        KeyPair rootKeyPair = KeyGenUtils.genEc384();
+        KeyPair leafKeyPair = KeyGenUtils.genEc384();
+        KeyPair leafSecondKeyPair = KeyGenUtils.genEc384();
 
         assert rootKeyPair != null;
         assert leafKeyPair != null;
@@ -118,7 +124,7 @@ class PsgCertificateHelperTest {
         byte[] leafContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP384R1))
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair, PsgCurveType.SECP384R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, rootKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
             ), SECP384R1)
             .build()
@@ -128,7 +134,7 @@ class PsgCertificateHelperTest {
         byte[] leafSecondContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP384R1))
             .publicKey(getPsgPublicKeyBuilder(leafSecondKeyPair, PsgCurveType.SECP384R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, leafKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
             ), SECP384R1)
             .build()
@@ -141,11 +147,11 @@ class PsgCertificateHelperTest {
 
     @Test
     void verifyParentsInChainByPubKey_WithEc256_succeedsIfNoError()
-        throws PsgInvalidParentCertificatesException, PsgCertificateException, PsgInvalidSignatureException {
+        throws PsgInvalidParentCertificatesException, PsgInvalidSignatureException {
         // given
-        KeyPair rootKeyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_256);
-        KeyPair leafKeyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_256);
-        KeyPair leafSecondKeyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_256);
+        KeyPair rootKeyPair = KeyGenUtils.genEc256();
+        KeyPair leafKeyPair = KeyGenUtils.genEc256();
+        KeyPair leafSecondKeyPair = KeyGenUtils.genEc256();
 
         assert rootKeyPair != null;
         assert leafKeyPair != null;
@@ -162,7 +168,7 @@ class PsgCertificateHelperTest {
         byte[] leafContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP256R1))
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair, PsgCurveType.SECP256R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, rootKeyPair.getPrivate(), CryptoConstants.SHA256_WITH_ECDSA
             ), SECP256R1)
             .build()
@@ -172,7 +178,7 @@ class PsgCertificateHelperTest {
         byte[] leafSecondContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP256R1))
             .publicKey(getPsgPublicKeyBuilder(leafSecondKeyPair, PsgCurveType.SECP256R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, leafKeyPair.getPrivate(), CryptoConstants.SHA256_WITH_ECDSA
             ), SECP256R1)
             .build()
@@ -184,10 +190,10 @@ class PsgCertificateHelperTest {
     }
 
     @Test
-    void verifyParentsInChainByPubKey_withInvalidParent_throwException() throws PsgCertificateException {
+    void verifyParentsInChainByPubKey_withInvalidParent_throwException() {
         // given
-        KeyPair rootKeyPair = TestUtil.genEcKeys(null);
-        KeyPair leafKeyPair = TestUtil.genEcKeys(null);
+        KeyPair rootKeyPair = KeyGenUtils.genEc384();
+        KeyPair leafKeyPair = KeyGenUtils.genEc384();
         assert rootKeyPair != null;
         assert leafKeyPair != null;
 
@@ -202,27 +208,27 @@ class PsgCertificateHelperTest {
         byte[] leafContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP384R1))
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair, PsgCurveType.SECP384R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, leafKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
             ), SECP384R1)
             .build()
             .array();
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.LEAF, leafContent));
 
-        Assertions.assertThrows(PsgInvalidParentCertificatesException.class,
+        assertThrows(PsgInvalidParentCertificatesException.class,
             () -> sut.verifyParentsInChainByPubKey(certificateChainList));
     }
 
     @Test
     void verifyParentsInChainByPubKey_withWrongSignature_throwException()
-        throws PsgCertificateException, PsgInvalidSignatureException {
+        throws PsgInvalidSignatureException {
         MockitoAnnotations.openMocks(this);
         // given
-        PsgCertificateHelper spy = Mockito.spy(sut);
+        PsgCertificateHelper spy = spy(sut);
         doThrow(new PsgInvalidSignatureException("Failed to check signature", new Exception()))
             .when(spy).sigVerify(any(), any());
-        KeyPair rootKeyPair = TestUtil.genEcKeys(null);
-        KeyPair leafKeyPair = TestUtil.genEcKeys(null);
+        KeyPair rootKeyPair = KeyGenUtils.genEc384();
+        KeyPair leafKeyPair = KeyGenUtils.genEc384();
 
         assert rootKeyPair != null;
         assert leafKeyPair != null;
@@ -230,7 +236,7 @@ class PsgCertificateHelperTest {
         byte[] leafContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP384R1))
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair, PsgCurveType.SECP384R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, leafKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
             ), SECP384R1)
             .build()
@@ -244,7 +250,7 @@ class PsgCertificateHelperTest {
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.ROOT, rootContent));
 
         // when
-        Assertions.assertThrows(PsgInvalidSignatureException.class,
+        assertThrows(PsgInvalidSignatureException.class,
             () -> spy.verifyParentsInChainByPubKey(certificateChainList));
     }
 
@@ -254,7 +260,7 @@ class PsgCertificateHelperTest {
         List<CertificateEntryWrapper> certificateChainList = new LinkedList<>();
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.ROOT, new byte[4]));
 
-        Assertions.assertThrows(PsgCertificateChainWrongSizeException.class,
+        assertThrows(PsgCertificateChainWrongSizeException.class,
             () -> sut.verifyChainListSizeInternal(certificateChainList));
     }
 
@@ -267,7 +273,7 @@ class PsgCertificateHelperTest {
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.LEAF, new byte[4]));
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.ROOT, new byte[4]));
 
-        Assertions.assertThrows(PsgCertificateChainWrongSizeException.class,
+        assertThrows(PsgCertificateChainWrongSizeException.class,
             () -> sut.verifyChainListSizeInternal(certificateChainList));
     }
 
@@ -279,7 +285,7 @@ class PsgCertificateHelperTest {
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.ROOT, new byte[4]));
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.ROOT, new byte[4]));
 
-        Assertions.assertThrows(PsgCertificateChainWrongSizeException.class,
+        assertThrows(PsgCertificateChainWrongSizeException.class,
             () -> sut.verifyChainListSizeInternal(certificateChainList));
     }
 
@@ -296,9 +302,9 @@ class PsgCertificateHelperTest {
 
     @Test
     void verifyRootCertificateInternal_notThrowsAnything()
-        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException, PsgCertificateException {
+        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException {
         // given
-        KeyPair rootKeyPair = TestUtil.genEcKeys(null);
+        KeyPair rootKeyPair = KeyGenUtils.genEc384();
         assert rootKeyPair != null;
         List<CertificateEntryWrapper> certificateChainList = new LinkedList<>();
         byte[] rootContent = new PsgCertificateRootEntryBuilder()
@@ -318,15 +324,15 @@ class PsgCertificateHelperTest {
         List<CertificateEntryWrapper> certificateChainList = new LinkedList<>();
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.LEAF, new byte[4]));
 
-        Assertions.assertThrows(PsgCertificateChainWrongSizeException.class,
+        assertThrows(PsgCertificateChainWrongSizeException.class,
             () -> sut.verifyRootCertificateInternal(certificateChainList, new byte[4]));
     }
 
     @Test
-    void verifyRootCertificateInternal_withIncorrectCert_throwsException() throws PsgCertificateException {
+    void verifyRootCertificateInternal_withIncorrectCert_throwsException() {
         // given
-        KeyPair rootKeyPair = TestUtil.genEcKeys(null);
-        KeyPair leafKeyPair = TestUtil.genEcKeys(null);
+        KeyPair rootKeyPair = KeyGenUtils.genEc384();
+        KeyPair leafKeyPair = KeyGenUtils.genEc384();
         assert rootKeyPair != null;
         assert leafKeyPair != null;
         List<CertificateEntryWrapper> certificateChainList = new LinkedList<>();
@@ -340,17 +346,17 @@ class PsgCertificateHelperTest {
             .build()
             .array();
 
-        Assertions.assertThrows(PsgInvalidRootCertificateException.class,
+        assertThrows(PsgInvalidRootCertificateException.class,
             () -> sut.verifyRootCertificateInternal(certificateChainList, wrongRootContent));
     }
 
     @Test
     void sigVerify_withPublicKey_Success() throws PsgInvalidSignatureException {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys();
-        X509Certificate x509Certificate = TestUtil.genSelfSignedCert(keyPair);
+        KeyPair keyPair = KeyGenUtils.genEc384();
+        X509Certificate x509Certificate = CertificateUtils.generateCertificate(keyPair);
         byte[] testData = "TestDataToSignAndVerify".getBytes();
-        byte[] signed = TestUtil.signEcData(testData, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
+        byte[] signed = SigningUtils.signEcData(testData, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
         PsgSignatureBuilder psgSignature = new PsgSignatureBuilder().signature(signed, SECP384R1);
 
         // when
@@ -359,34 +365,34 @@ class PsgCertificateHelperTest {
         );
 
         // then
-        Assertions.assertTrue(verify);
+        assertTrue(verify);
     }
 
     @Test
     void sigVerify_withInvalidCertificateOrder_ReturnsFalse() throws PsgInvalidSignatureException {
         // given
-        PsgCertificateCommon child = Mockito.mock(PsgCertificateCommon.class);
-        PsgCertificateCommon parent = Mockito.mock(PsgCertificateCommon.class);
-        PsgCertificateHelper spy = Mockito.spy(sut);
+        PsgCertificateCommon child = mock(PsgCertificateCommon.class);
+        PsgCertificateCommon parent = mock(PsgCertificateCommon.class);
+        PsgCertificateHelper spy = spy(sut);
 
         // when
         boolean result = spy.sigVerify(child, parent);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
     void parseRootCertificate_ThrowsException() {
-        Assertions.assertThrows(PsgInvalidRootCertificateException.class, () -> sut.parseRootCertificate(new byte[4]));
+        assertThrows(PsgInvalidRootCertificateException.class, () -> sut.parseRootCertificate(new byte[4]));
     }
 
     @Test
     void findLeafCertificateInChain_Success()
-        throws PsgCertificateChainWrongSizeException, PsgInvalidLeafCertificateException, PsgCertificateException {
+        throws PsgCertificateChainWrongSizeException, PsgInvalidLeafCertificateException {
         // given
-        KeyPair leafKeyPair = TestUtil.genEcKeys(null);
-        KeyPair leafKeyPairSecond = TestUtil.genEcKeys(null);
+        KeyPair leafKeyPair = KeyGenUtils.genEc384();
+        KeyPair leafKeyPairSecond = KeyGenUtils.genEc384();
 
         assert leafKeyPair != null;
         assert leafKeyPairSecond != null;
@@ -394,7 +400,7 @@ class PsgCertificateHelperTest {
         byte[] leafContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP384R1))
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair, PsgCurveType.SECP384R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, leafKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
             ), SECP384R1)
             .build()
@@ -402,7 +408,7 @@ class PsgCertificateHelperTest {
         PsgCertificateEntry leafContentSecond = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder(PsgSignatureCurveType.SECP384R1))
             .publicKey(getPsgPublicKeyBuilder(leafKeyPairSecond, PsgCurveType.SECP384R1))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                 dataToSign, leafKeyPairSecond.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
             ), SECP384R1)
             .build();
@@ -414,13 +420,13 @@ class PsgCertificateHelperTest {
         final PsgCertificateEntryBuilder leafCertificateInChain = sut.findLeafCertificateInChain(certificateChainList);
 
         // then
-        Assertions.assertArrayEquals(leafContentSecond.array(), leafCertificateInChain.build().array());
+        assertArrayEquals(leafContentSecond.array(), leafCertificateInChain.build().array());
     }
 
     @Test
     void findLeafCertificateInChain_WithEmptyArray_ThrowsException() {
         // then
-        Assertions.assertThrows(PsgCertificateChainWrongSizeException.class,
+        assertThrows(PsgCertificateChainWrongSizeException.class,
             () -> sut.findLeafCertificateInChain(new LinkedList<>()));
     }
 
@@ -430,7 +436,7 @@ class PsgCertificateHelperTest {
         final List<CertificateEntryWrapper> certificateChainList = new LinkedList<>();
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.LEAF, new byte[5]));
 
-        Assertions.assertThrows(PsgInvalidLeafCertificateException.class,
+        assertThrows(PsgInvalidLeafCertificateException.class,
             () -> sut.findLeafCertificateInChain(certificateChainList));
     }
 

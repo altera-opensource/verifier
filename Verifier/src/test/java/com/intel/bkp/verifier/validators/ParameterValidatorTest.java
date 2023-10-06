@@ -33,10 +33,12 @@
 
 package com.intel.bkp.verifier.validators;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class ParameterValidatorTest {
@@ -49,7 +51,7 @@ class ParameterValidatorTest {
         String correctContext = "0102030405ABCDEF";
 
         // when-then
-        Assertions.assertTrue(sut.validateContext(correctContext));
+        assertTrue(sut.validateContext(correctContext));
     }
 
     @Test
@@ -58,7 +60,7 @@ class ParameterValidatorTest {
         String correctContext = "0102030405060708090A0B0C0D0E0F0102030405060708090A0B0C0D0E0F";
 
         // when-then
-        Assertions.assertFalse(sut.validateContext(correctContext));
+        assertFalse(sut.validateContext(correctContext));
     }
 
     @Test
@@ -67,6 +69,6 @@ class ParameterValidatorTest {
         String correctContext = "not a Hex string";
 
         // when-then
-        Assertions.assertFalse(sut.validateContext(correctContext));
+        assertFalse(sut.validateContext(correctContext));
     }
 }

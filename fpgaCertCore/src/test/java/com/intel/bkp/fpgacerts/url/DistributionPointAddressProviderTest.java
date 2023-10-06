@@ -33,18 +33,35 @@
 
 package com.intel.bkp.fpgacerts.url;
 
+import com.intel.bkp.fpgacerts.model.Family;
 import com.intel.bkp.fpgacerts.model.SmartNicFamily;
+import com.intel.bkp.fpgacerts.model.UdsChoice;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
 import com.intel.bkp.fpgacerts.url.params.NicDiceParams;
+import com.intel.bkp.fpgacerts.url.params.RimParams;
+import com.intel.bkp.fpgacerts.url.params.RimSignedDataParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DistributionPointAddressProviderTest {
 
     private static final String PATH_CER_WITH_SLASH = "https://tsci.intel.com/content/IPCS/certs/";
     private static final String PATH_CER_WITHOUT_SLASH = "https://tsci.intel.com/content/IPCS/certs";
+    private static final String PATH_NIC_CER_WITH_SLASH = "https://tsci.intel.com/content/NIC/certs/";
+    private static final String PATH_NIC_CER_WITHOUT_SLASH = "https://tsci.intel.com/content/NIC/certs";
+
+    private static final String PATH_RIM_WITH_SLASH = "https://tsci.intel.com/content/IPCS/rims/";
+    private static final String PATH_XRIM_WITH_SLASH = "https://tsci.intel.com/content/IPCS/crls/";
 
     private static final S10Params S10_PARAMS = new S10Params("deviceId", "pufType");
     private static final DiceParams DICE_PARAMS = new DiceParams("skiInBase64", "UID");
@@ -58,110 +75,168 @@ class DistributionPointAddressProviderTest {
     private static final String EXPECTED_DEVICE_ID_PATH = PATH_CER_WITH_SLASH + "deviceid_uid_skiInBase64.cer";
     private static final String EXPECTED_ENROLLMENT_PATH = PATH_CER_WITH_SLASH + "enrollment_uid_svn_skiERinBase64.cer";
     private static final String EXPECTED_IID_UDS_PATH = PATH_CER_WITH_SLASH + "iiduds_uid_skiInBase64.cer";
-    private static final String EXPECTED_NIC_MEV_PATH = PATH_CER_WITH_SLASH + "01_uid.cer";
-    private static final String EXPECTED_NIC_LKV_PATH = PATH_CER_WITH_SLASH + "02_uid_skiInBase64.cer";
-    private static final String EXPECTED_NIC_CNV_PATH = PATH_CER_WITH_SLASH + "03_uid_skiInBase64.cer";
+    private static final String EXPECTED_NIC_MEV_PATH = PATH_NIC_CER_WITH_SLASH + "01_uid.cer";
+    private static final String EXPECTED_NIC_LKV_PATH = PATH_NIC_CER_WITH_SLASH + "02_uid_skiInBase64.cer";
+    private static final String EXPECTED_NIC_CNV_PATH = PATH_NIC_CER_WITH_SLASH + "03_uid_skiInBase64.cer";
 
-    private final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_CER_WITH_SLASH);
-    private final DistributionPointAddressProvider sutWithoutSlash =
-        new DistributionPointAddressProvider(PATH_CER_WITHOUT_SLASH);
+    private static final DistributionPointAddressProvider SUT =
+        new DistributionPointAddressProvider(PATH_CER_WITH_SLASH, PATH_NIC_CER_WITH_SLASH);
+    private static final DistributionPointAddressProvider SUT_WITHOUT_SLASH =
+        new DistributionPointAddressProvider(PATH_CER_WITHOUT_SLASH, PATH_NIC_CER_WITHOUT_SLASH);
+    private static final DistributionPointAddressProvider SUT_WITHOUT_NIC_PREFIX =
+        new DistributionPointAddressProvider(PATH_CER_WITH_SLASH);
 
-    @Test
-    void getAttestationCertUrl() {
+    private static Stream<Arguments> getNicDeviceIdCertUrlParams() {
+        return Stream.of(
+            Arguments.of(NIC_PARAMS_FOR_MEV, EXPECTED_NIC_MEV_PATH),
+            Arguments.of(NIC_PARAMS_FOR_CNV, EXPECTED_NIC_CNV_PATH),
+            Arguments.of(NIC_PARAMS_FOR_LKV, EXPECTED_NIC_LKV_PATH)
+        );
+    }
+
+    private static Stream<DistributionPointAddressProvider> getSuts() {
+        return Stream.of(
+            SUT,
+            SUT_WITHOUT_SLASH,
+            SUT_WITHOUT_NIC_PREFIX
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getSuts")
+    void getAttestationCertUrl(DistributionPointAddressProvider sut) {
         // when
         final String result = sut.getAttestationCertUrl(S10_PARAMS);
 
         // then
-        Assertions.assertEquals(EXPECTED_ATTESTATION_PATH, result);
+        assertEquals(EXPECTED_ATTESTATION_PATH, result);
     }
 
-    @Test
-    void getAttestationCertUrl_WithoutSlash_AddsSlash() {
-        // when
-        final String result = sutWithoutSlash.getAttestationCertUrl(S10_PARAMS);
-
-        // then
-        Assertions.assertEquals(EXPECTED_ATTESTATION_PATH, result);
-    }
-
-    @Test
-    void getDeviceIdCertUrl() {
+    @ParameterizedTest
+    @MethodSource(value = "getSuts")
+    void getDeviceIdCertUrl(DistributionPointAddressProvider sut) {
         // when
         final String result = sut.getDeviceIdCertUrl(DICE_PARAMS);
 
         // then
-        Assertions.assertEquals(EXPECTED_DEVICE_ID_PATH, result);
+        assertEquals(EXPECTED_DEVICE_ID_PATH, result);
     }
 
-    @Test
-    void getDeviceIdCertUrl_WithoutSlash_AddsSlash() {
+    @ParameterizedTest
+    @EnumSource(UdsChoice.class)
+    void getDeviceIdCertUrl_WithUdsChoice(UdsChoice udsChoice) {
+        // given
+        final String expectedPath = EXPECTED_DEVICE_ID_PATH
+            .replace(PATH_CER_WITH_SLASH, PATH_CER_WITH_SLASH + udsChoice.getDpSubDirectory() + "/");
         // when
-        final String result = sutWithoutSlash.getDeviceIdCertUrl(DICE_PARAMS);
+        final String result = SUT.getDeviceIdCertUrl(udsChoice, DICE_PARAMS);
 
         // then
-        Assertions.assertEquals(EXPECTED_DEVICE_ID_PATH, result);
+        assertEquals(expectedPath, result);
     }
 
-    @Test
-    void getEnrollmentCertUrl() {
+    @ParameterizedTest
+    @MethodSource(value = "getSuts")
+    void getEnrollmentCertUrl(DistributionPointAddressProvider sut) {
         // when
         final String result = sut.getEnrollmentCertUrl(DICE_ENROLLMENT_PARAMS);
 
         // then
-        Assertions.assertEquals(EXPECTED_ENROLLMENT_PATH, result);
+        assertEquals(EXPECTED_ENROLLMENT_PATH, result);
     }
 
-    @Test
-    void getEnrollmentCertUrl_WithoutSlash_AddsSlash() {
+    @ParameterizedTest
+    @EnumSource(UdsChoice.class)
+    void getEnrollmentCertUrl_WithUdsChoice(UdsChoice udsChoice) {
+        // given
+        final String expectedPath = EXPECTED_ENROLLMENT_PATH
+            .replace(PATH_CER_WITH_SLASH, PATH_CER_WITH_SLASH + udsChoice.getDpSubDirectory() + "/");
         // when
-        final String result = sutWithoutSlash.getEnrollmentCertUrl(DICE_ENROLLMENT_PARAMS);
+        final String result = SUT.getEnrollmentCertUrl(udsChoice, DICE_ENROLLMENT_PARAMS);
 
         // then
-        Assertions.assertEquals(EXPECTED_ENROLLMENT_PATH, result);
+        assertEquals(expectedPath, result);
     }
 
-    @Test
-    void getIidUdsCertUrl() {
+    @ParameterizedTest
+    @MethodSource(value = "getSuts")
+    void getIidUdsCertUrl(DistributionPointAddressProvider sut) {
         // when
         final String result = sut.getIidUdsCertUrl(DICE_PARAMS);
 
         // then
-        Assertions.assertEquals(EXPECTED_IID_UDS_PATH, result);
+        assertEquals(EXPECTED_IID_UDS_PATH, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getNicDeviceIdCertUrlParams")
+    void getNicDeviceIdCertUrl_ReturnsExpected(NicDiceParams params, String expectedUrl) {
+        // when
+        final String result = SUT.getNicDeviceIdCertUrl(params);
+
+        // then
+        assertEquals(expectedUrl, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getNicDeviceIdCertUrlParams")
+    void getNicDeviceIdCertUrl_WithoutSlashInPrefix_ReturnsExpected(NicDiceParams params, String expectedUrl) {
+        // when
+        final String result = SUT_WITHOUT_SLASH.getNicDeviceIdCertUrl(params);
+
+        // then
+        assertEquals(expectedUrl, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getNicDeviceIdCertUrlParams")
+    void getNicDeviceIdCertUrl_WithoutNicPrefix_Throws(NicDiceParams params) {
+        // when-then
+        assertThrows(IllegalStateException.class, () -> SUT_WITHOUT_NIC_PREFIX.getNicDeviceIdCertUrl(params));
     }
 
     @Test
-    void getIidUdsCertUrl_WithoutSlash_AddsSlash() {
+    void getRimSigningCertUrl_Success() {
+        // given
+        final String familyName = Family.AGILEX.getFamilyName();
+        final String ski = "41SSZwl66ctC-wuR6nz5ggpzhTY";
+        final String expected = PATH_CER_WITH_SLASH + "RIM_Signing_agilex_41SSZwl66ctC-wuR6nz5ggpzhTY.cer";
+        final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_CER_WITH_SLASH);
+
         // when
-        final String result = sutWithoutSlash.getIidUdsCertUrl(DICE_PARAMS);
+        final String actual = sut.getRimSigningCertUrl(new RimParams(ski, familyName));
 
         // then
-        Assertions.assertEquals(EXPECTED_IID_UDS_PATH, result);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void getNicDeviceIdCertUrl_ForMev_WithoutSkiInFileName() {
+    void getRimSignedDataUrl_Success() {
+        // given
+        final String expected = PATH_RIM_WITH_SLASH + "agilex_L1_Mog-JSb1TqIfv5lkKo9W54egMZ0d.corim";
+        final String familyName = Family.AGILEX.getFamilyName();
+        final String fwId = "Mog-JSb1TqIfv5lkKo9W54egMZ0d";
+        final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_RIM_WITH_SLASH);
+
         // when
-        final String result = sut.getNicDeviceIdCertUrl(NIC_PARAMS_FOR_MEV);
+        final String actual = sut.getRimSignedDataUrl(new RimSignedDataParams(familyName, "L1", fwId));
 
         // then
-        Assertions.assertEquals(EXPECTED_NIC_MEV_PATH, result);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void getNicDeviceIdCertUrl_ForLkv_WithSkiInFileName() {
+    void getXrimSignedDataUrl_Success() {
+        // given
+        final String familyName = Family.AGILEX.getFamilyName();
+        final String ski = "41SSZwl66ctC-wuR6nz5ggpzhTY";
+        final String expected = PATH_XRIM_WITH_SLASH + "RIM_Signing_agilex_41SSZwl66ctC-wuR6nz5ggpzhTY.xcorim";
+        final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_XRIM_WITH_SLASH);
+
         // when
-        final String result = sut.getNicDeviceIdCertUrl(NIC_PARAMS_FOR_LKV);
+        final String actual = sut.getXrimSignedDataUrl(new RimParams(ski, familyName));
 
         // then
-        Assertions.assertEquals(EXPECTED_NIC_LKV_PATH, result);
-    }
-
-    @Test
-    void getNicDeviceIdCertUrl_ForCnv_WithSkiInFileName() {
-        // when
-        final String result = sut.getNicDeviceIdCertUrl(NIC_PARAMS_FOR_CNV);
-
-        // then
-        Assertions.assertEquals(EXPECTED_NIC_CNV_PATH, result);
+        assertEquals(expected, actual);
     }
 }

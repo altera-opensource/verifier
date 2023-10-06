@@ -35,8 +35,10 @@ package com.intel.bkp.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FirstIntegerByteParserTest {
 
@@ -50,27 +52,27 @@ class FirstIntegerByteParserTest {
         final TestEnum result = FirstIntegerByteParser.from(id, TestEnum.values(), TestEnum::getId);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
     void from_WithNotExistingEnumValue_Throws() {
-        assertThrows(new byte[]{0x9, 0, 0, 0});
+        verifyThrows(new byte[]{0x9, 0, 0, 0});
     }
 
     @Test
     void from_WithLongDataSize_ThrowsException() {
-        assertThrows(new byte[]{TestEnum.B.getId(), 0, 0, 0, 0, 0, 0, 0});
+        verifyThrows(new byte[]{TestEnum.B.getId(), 0, 0, 0, 0, 0, 0, 0});
     }
 
     @Test
     void from_WithNotSupportedBytes_ThrowsException() {
-        assertThrows(new byte[]{TestEnum.B.getId(), 0, 0, 0x1});
+        verifyThrows(new byte[]{TestEnum.B.getId(), 0, 0, 0x1});
     }
 
-    private static void assertThrows(byte[] unknownId) {
+    private static void verifyThrows(byte[] unknownId) {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> FirstIntegerByteParser.from(unknownId, TestEnum.values(), TestEnum::getId));
     }
 

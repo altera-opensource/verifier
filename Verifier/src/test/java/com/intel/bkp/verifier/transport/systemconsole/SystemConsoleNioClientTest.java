@@ -33,10 +33,8 @@
 
 package com.intel.bkp.verifier.transport.systemconsole;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -44,6 +42,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,7 +75,7 @@ class SystemConsoleNioClientTest {
         // given
         String tclCommand = new TclCommands().sendPacket(COMMAND);
         sut.setSocketChannel(socketChannel);
-        when(socketChannel.read(ArgumentMatchers.any(ByteBuffer.class)))
+        when(socketChannel.read(any(ByteBuffer.class)))
             .thenAnswer(invocation -> {
                 ByteBuffer buffer = invocation.getArgument(0);
                 final byte[] bytes = UNPROCESSED_RESPONSE.getBytes();
@@ -84,6 +84,6 @@ class SystemConsoleNioClientTest {
             });
 
         // when-then
-        Assertions.assertEquals(RESPONSE, sut.sendPacket(tclCommand));
+        assertEquals(RESPONSE, sut.sendPacket(tclCommand));
     }
 }

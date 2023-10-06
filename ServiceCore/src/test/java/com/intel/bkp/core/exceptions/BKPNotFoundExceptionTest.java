@@ -34,23 +34,25 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class BKPNotFoundExceptionTest {
 
     @Test
     void constructor_WithOnlyErrorCode_ReturnValidError() {
-        final BKPNotFoundException exception = Assertions.assertThrows(BKPNotFoundException.class, this::throwError);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        final BKPNotFoundException exception = assertThrows(BKPNotFoundException.class, this::throwError);
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     @Test
     void constructor_WithErrorCodeAndThrowable_ReturnValidError() {
-        final BKPNotFoundException exception = Assertions.assertThrows(BKPNotFoundException.class,
+        final BKPNotFoundException exception = assertThrows(BKPNotFoundException.class,
             this::throwErrorWithCause);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     private void throwError() {

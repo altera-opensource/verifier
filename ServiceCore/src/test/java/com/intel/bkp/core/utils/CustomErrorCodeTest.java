@@ -34,8 +34,9 @@
 package com.intel.bkp.core.utils;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CustomErrorCodeTest {
 
@@ -61,7 +62,7 @@ public class CustomErrorCodeTest {
         CustomErrorCode error = new CustomErrorCode(errorCode, customMessage);
 
         // then
-        Assertions.assertEquals(customMessage, error.getExternalMessage());
-        Assertions.assertEquals(errorCodeNumber, error.getCode());
+        assertEquals(customMessage, error.getExternalMessage());
+        assertEquals(errorCodeNumber, error.getCode());
     }
 }

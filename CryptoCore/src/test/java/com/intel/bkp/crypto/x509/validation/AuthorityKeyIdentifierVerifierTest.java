@@ -33,9 +33,8 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.FileUtils;
 import org.bouncycastle.asn1.x509.Extension;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +43,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509Certificate;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,15 +68,15 @@ class AuthorityKeyIdentifierVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        attestationCert = TestUtil.loadCertificate(ATTESTATION_CERT_FILENAME);
-        parentCert = TestUtil.loadCertificate(PARENT_CERT_FILENAME);
-        rootCert = TestUtil.loadCertificate(ROOT_CERT_FILENAME);
+        attestationCert = FileUtils.loadCertificate(ATTESTATION_CERT_FILENAME);
+        parentCert = FileUtils.loadCertificate(PARENT_CERT_FILENAME);
+        rootCert = FileUtils.loadCertificate(ROOT_CERT_FILENAME);
     }
 
     @Test
     void verify_ChildAKIMatchesParentSKI_ReturnsTrue() {
         // when-then
-        Assertions.assertTrue(sut.verify(attestationCert, parentCert));
+        assertTrue(sut.verify(attestationCert, parentCert));
     }
 
     @Test
@@ -84,7 +85,7 @@ class AuthorityKeyIdentifierVerifierTest {
         when(certificate.getExtensionValue(Extension.authorityKeyIdentifier.getId())).thenReturn(null);
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, parentCert));
+        assertTrue(sut.verify(certificate, parentCert));
     }
 
     @Test
@@ -93,13 +94,13 @@ class AuthorityKeyIdentifierVerifierTest {
         when(certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId())).thenReturn(null);
 
         // when-then
-        Assertions.assertFalse(sut.verify(attestationCert, certificate));
+        assertFalse(sut.verify(attestationCert, certificate));
     }
 
     @Test
     void verify_ChildAKIDoesNotMatchParentSKI_ReturnsFalse() {
         // when-then
-        Assertions.assertFalse(sut.verify(attestationCert, rootCert));
+        assertFalse(sut.verify(attestationCert, rootCert));
     }
 
 }

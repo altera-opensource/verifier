@@ -37,14 +37,16 @@ import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.provider.TestProvider;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.RandomUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
-
 import java.security.Provider;
 
-import static com.intel.bkp.crypto.TestUtil.getRandom;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AesUtilsTest {
 
@@ -58,7 +60,7 @@ class AesUtilsTest {
         provider = new TestProvider(providerName, "1.0", "info");
 
         // then
-        Assertions.assertThrows(KeystoreGenericException.class, () -> AesUtils.genAES(provider, CryptoConstants.AES_KEY,
+        assertThrows(KeystoreGenericException.class, () -> AesUtils.genAES(provider, CryptoConstants.AES_KEY,
             CryptoConstants.AES_KEY_SIZE));
     }
 
@@ -69,23 +71,23 @@ class AesUtilsTest {
             CryptoConstants.AES_KEY_SIZE);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.AES_KEY, result.getAlgorithm());
-        Assertions.assertEquals(CryptoConstants.AES_KEY_SIZE / 8, result.getEncoded().length);
+        assertNotNull(result);
+        assertEquals(CryptoConstants.AES_KEY, result.getAlgorithm());
+        assertEquals(CryptoConstants.AES_KEY_SIZE / 8, result.getEncoded().length);
     }
 
     @Test
     void genAesKeyFromByteArray() {
         // given
-        byte[] aesBytes = getRandom(32);
+        byte[] aesBytes = RandomUtils.generateRandomBytes(32);
 
         // when
         SecretKey result = AesUtils.genAesKeyFromByteArray(aesBytes, CryptoConstants.AES_KEY);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.AES_KEY, result.getAlgorithm());
-        Assertions.assertArrayEquals(aesBytes, result.getEncoded());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.AES_KEY, result.getAlgorithm());
+        assertArrayEquals(aesBytes, result.getEncoded());
     }
 
 }

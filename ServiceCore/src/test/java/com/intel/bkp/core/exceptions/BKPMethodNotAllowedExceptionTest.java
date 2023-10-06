@@ -34,16 +34,18 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BKPMethodNotAllowedExceptionTest {
 
     @Test
     void constructor_WithOnlyErrorCode_ReturnValidError() {
-        final BKPMethodNotAllowedException exception = Assertions.assertThrows(BKPMethodNotAllowedException.class,
+        final BKPMethodNotAllowedException exception = assertThrows(BKPMethodNotAllowedException.class,
             this::throwError);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     private void throwError() {

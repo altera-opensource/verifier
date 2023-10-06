@@ -34,12 +34,13 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TcbInfoParserTest {
 
@@ -58,8 +59,8 @@ class TcbInfoParserTest {
 
         // when-then
         final IllegalArgumentException exception =
-            Assertions.assertThrows(IllegalArgumentException.class, () -> TcbInfoParser.parseTcbInfo(asn1Encodable));
-        Assertions.assertTrue(exception.getMessage().contains(expectedMessage));
+            assertThrows(IllegalArgumentException.class, () -> TcbInfoParser.parseTcbInfo(asn1Encodable));
+        assertTrue(exception.getMessage().contains(expectedMessage));
     }
 
 }

@@ -35,6 +35,7 @@ package com.intel.bkp.workload.util;
 
 import com.intel.bkp.workload.exceptions.WorkloadAppException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,15 +46,15 @@ import java.nio.file.Paths;
 public class WorkloadFileReader {
 
     public boolean exists(String fileName) {
-        Path filePath = Paths.get(fileName);
+        final Path filePath = Paths.get(fileName);
         return Files.exists(filePath) && !Files.isDirectory(filePath);
     }
 
     public String readFile(String fileName) {
         log.debug("[WORKLOAD] Reading file: {}", fileName);
-        Path filePath = Paths.get(fileName);
+        final Path filePath = Paths.get(fileName);
         try {
-            return Files.readString(filePath);
+            return Hex.encodeHexString(Files.readAllBytes(filePath));
         } catch (IOException e) {
             throw new WorkloadAppException("Failed to read file: " + filePath, e);
         }

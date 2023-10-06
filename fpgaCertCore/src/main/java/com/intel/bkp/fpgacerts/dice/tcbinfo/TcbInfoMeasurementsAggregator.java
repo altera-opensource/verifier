@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.joining;
+
 @Getter
 public class TcbInfoMeasurementsAggregator {
 
@@ -60,5 +62,11 @@ public class TcbInfoMeasurementsAggregator {
             throw new IllegalArgumentException(String.format("TcbInfo measurement already exists but values mismatch."
                 + "%n TcbInfo measurement key: %s%nExisting value: %s%nNew value: %s", key, map.get(key), value));
         }
+    }
+
+    public String mapToString() {
+        return map.keySet().stream()
+            .map(key -> key + "  =  " + map.get(key))
+            .collect(joining(",\n\t", "\n{\n\t", "\n}\n"));
     }
 }

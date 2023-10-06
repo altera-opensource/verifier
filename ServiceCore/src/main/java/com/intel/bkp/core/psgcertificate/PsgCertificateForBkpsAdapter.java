@@ -34,7 +34,6 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.CertificateEntryWrapper;
 import com.intel.bkp.core.psgcertificate.model.PsgCertificateType;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
@@ -50,7 +49,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PsgCertificateForBkpsAdapter {
 
-    public static List<CertificateEntryWrapper> parse(String encodedChain) throws PsgCertificateException {
+    public static List<CertificateEntryWrapper> parse(String encodedChain) {
         byte[] decodedChain = CertificateEncoder.sanitizeChainPayloadHex(encodedChain);
 
         ByteBufferSafe decodedChainBuffer = ByteBufferSafe.wrap(decodedChain);
@@ -76,8 +75,7 @@ public class PsgCertificateForBkpsAdapter {
         return decodedChainBuffer.remaining() >= 2 * Integer.BYTES;
     }
 
-    private static CertificateEntryWrapper getRootCertificate(ByteBufferSafe bufferSafe, int length)
-        throws PsgCertificateException {
+    private static CertificateEntryWrapper getRootCertificate(ByteBufferSafe bufferSafe, int length) {
         byte[] certificateContent = bufferSafe.arrayFromInt(length);
         bufferSafe.get(certificateContent);
         return new CertificateEntryWrapper(PsgCertificateType.ROOT,
@@ -90,8 +88,7 @@ public class PsgCertificateForBkpsAdapter {
         );
     }
 
-    private static CertificateEntryWrapper getLeafCertificate(ByteBufferSafe bufferSafe, int length)
-        throws PsgCertificateException {
+    private static CertificateEntryWrapper getLeafCertificate(ByteBufferSafe bufferSafe, int length) {
         byte[] certificateContent = bufferSafe.arrayFromInt(length);
         bufferSafe.get(certificateContent);
         return new CertificateEntryWrapper(PsgCertificateType.LEAF,

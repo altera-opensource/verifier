@@ -34,14 +34,15 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class KeystoreGenericExceptionTest {
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        Assertions.assertThrows(KeystoreGenericException.class, () -> {
+        assertThrows(KeystoreGenericException.class, () -> {
             throw new KeystoreGenericException("test", new Exception());
         });
     }

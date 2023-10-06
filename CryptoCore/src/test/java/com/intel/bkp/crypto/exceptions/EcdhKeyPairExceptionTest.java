@@ -33,8 +33,9 @@
 
 package com.intel.bkp.crypto.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EcdhKeyPairExceptionTest {
     static final String testMessage = "Some message";
@@ -45,7 +46,7 @@ public class EcdhKeyPairExceptionTest {
         Exception cause = new RuntimeException(testMessage);
 
         // when-then
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> {
+        assertThrows(EcdhKeyPairException.class, () -> {
             throw new EcdhKeyPairException(testMessage, cause);
         });
     }
@@ -53,7 +54,7 @@ public class EcdhKeyPairExceptionTest {
     @Test
     public void constructor_WithOnlyMessage_ReturnValidError() {
         // when-then
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> {
+        assertThrows(EcdhKeyPairException.class, () -> {
             throw new EcdhKeyPairException(testMessage);
         });
     }

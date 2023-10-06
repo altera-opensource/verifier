@@ -35,10 +35,9 @@ package com.intel.bkp.fpgacerts.dice.ueid;
 
 import ch.qos.logback.classic.Level;
 import com.intel.bkp.fpgacerts.LoggerTestUtil;
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.utils.DeviceIdUtil;
+import com.intel.bkp.test.CertificateUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +53,8 @@ import java.util.Set;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,8 +82,8 @@ class UeidVerifierTest {
     private X509Certificate certificate;
 
     @BeforeAll
-    static void init() throws Exception {
-        certWithUeidExtension = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
+    static void init() {
+        certWithUeidExtension = CertificateUtils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
     }
 
     @BeforeEach
@@ -102,7 +103,7 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certWithUeidExtension)).verify(DEVICE_ID);
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
     @Test
@@ -115,7 +116,7 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(DEVICE_ID);
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
     @Test
@@ -131,8 +132,8 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
 
         // then
-        Assertions.assertFalse(valid);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
+        assertFalse(valid);
+        assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -147,8 +148,8 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
 
         // then
-        Assertions.assertFalse(valid);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
+        assertFalse(valid);
+        assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -164,8 +165,8 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certWithUeidExtension)).verify(mismatchedDeviceId);
 
         // then
-        Assertions.assertFalse(valid);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
+        assertFalse(valid);
+        assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -183,8 +184,8 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
 
         // then
-        Assertions.assertFalse(valid);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
+        assertFalse(valid);
+        assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -200,8 +201,8 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
 
         // then
-        Assertions.assertFalse(valid);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
+        assertFalse(valid);
+        assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -218,8 +219,8 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
 
         // then
-        Assertions.assertFalse(valid);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
+        assertFalse(valid);
+        assertTrue(loggerTestUtil.contains(expectedErrorMessage, Level.ERROR));
     }
 
     @Test
@@ -233,7 +234,7 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify(VALID_UID);
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
     @Test
@@ -247,7 +248,7 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate, certWithUeidExtension)).verify(DEVICE_ID);
 
         // then
-        Assertions.assertFalse(valid);
+        assertFalse(valid);
     }
 
     @Test
@@ -260,7 +261,7 @@ class UeidVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate, certWithUeidExtension)).verify(DEVICE_ID);
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
 }

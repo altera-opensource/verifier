@@ -38,13 +38,14 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Optional;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MeasurementExistenceVerifierTest {
 
@@ -70,7 +71,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -83,7 +84,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -98,7 +99,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -111,7 +112,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(DIFFERENT_MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -126,7 +127,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -141,7 +142,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -156,7 +157,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -169,7 +170,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -182,7 +183,7 @@ class MeasurementExistenceVerifierTest {
         final boolean result = sut.isMeasurementPresent(MODEL, MEASUREMENT_TYPE);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     private static TcbInfoKey getKeyForOlderDevices() {

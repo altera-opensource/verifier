@@ -33,10 +33,11 @@
 
 package com.intel.bkp.verifier.database.table;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TableDefinitionBaseTest {
 
@@ -76,7 +77,7 @@ class TableDefinitionBaseTest {
         final String result = sut.getSelectSQL();
 
         // then
-        Assertions.assertEquals(String.format("SELECT * FROM %s", TABLE_NAME), result);
+        assertEquals(String.format("SELECT * FROM %s", TABLE_NAME), result);
     }
 
     @Test
@@ -85,7 +86,7 @@ class TableDefinitionBaseTest {
         final String result = sut.getTableDefinition();
 
         // then
-        Assertions.assertEquals(String.format("CREATE TABLE IF NOT EXISTS %s (%s)", TABLE_NAME, COLUMN),
+        assertEquals(String.format("CREATE TABLE IF NOT EXISTS %s (%s)", TABLE_NAME, COLUMN),
             result);
     }
 
@@ -95,7 +96,7 @@ class TableDefinitionBaseTest {
         final String result = sut.getInsertSQL();
 
         // then
-        Assertions.assertEquals(String.format("REPLACE INTO %s (%s) VALUES(?)", TABLE_NAME, COLUMN),
+        assertEquals(String.format("REPLACE INTO %s (%s) VALUES (?)", TABLE_NAME, COLUMN),
             result);
     }
 }

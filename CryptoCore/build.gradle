@@ -43,6 +43,7 @@ plugins {
     alias(libs.plugins.lombok)
     alias(libs.plugins.gradle.versions)
     alias(libs.plugins.modernizer)
+    id 'maven-publish'
     id 'java-library'
     id 'idea'
 }
@@ -50,9 +51,13 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
+apply from: rootProject.file('gradle/common.gradle')
+
+def buildVersion = ext.getBuildVersion()
+
 jar {
     archiveBaseName.set('CryptoCore')
-    archiveVersion.set(getBuildVersion())
+    archiveVersion.set(buildVersion)
     manifest {
         attributes(
             'Sealed': 'true',
@@ -62,8 +67,8 @@ jar {
     }
 }
 
-group = 'com.intel.bkp'
-version = getBuildVersion()
+group = 'com.intel.bkp.crypto'
+version = buildVersion
 
 
 test {
@@ -81,12 +86,17 @@ dependencies {
     implementation libs.bouncycastle
     implementation libs.slf4j.api
 
+    testImplementation project(':TestLibrary')
     testImplementation platform(libs.junit.bom)
     testImplementation libs.junit.jupiter
     testImplementation libs.bundles.mockito
     testImplementation libs.slf4j.test
 }
 
-def getBuildVersion() {
-    return file("${projectDir}/version").text.trim()
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }

@@ -36,17 +36,17 @@ package com.intel.bkp.verifier.transport.hps;
 import com.intel.bkp.verifier.exceptions.TransportLayerException;
 import com.intel.bkp.verifier.transport.tcp.TcpClient;
 import com.intel.bkp.verifier.transport.tcp.TcpConfig;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,7 +74,7 @@ class HpsTransportImplTest {
         sut.initialize(connectionConfig);
 
         // then
-        Mockito.verify(client).initialize(ArgumentMatchers.any(TcpConfig.class));
+        verify(client).initialize(any(TcpConfig.class));
     }
 
     @Test
@@ -86,8 +86,8 @@ class HpsTransportImplTest {
         final byte[] result = sut.sendCommand(COMMAND);
 
         // then
-        Mockito.verify(client).sendPacket(COMMAND);
-        Assertions.assertArrayEquals(RESPONSE, result);
+        verify(client).sendPacket(COMMAND);
+        assertArrayEquals(RESPONSE, result);
     }
 
     @Test
@@ -96,7 +96,7 @@ class HpsTransportImplTest {
         doThrow(new TransportLayerException("test")).when(client).sendPacket(any());
 
         // when-then
-        Assertions.assertThrows(TransportLayerException.class, () -> sut.sendCommand(COMMAND));
+        assertThrows(TransportLayerException.class, () -> sut.sendCommand(COMMAND));
     }
 
     @Test
@@ -105,6 +105,6 @@ class HpsTransportImplTest {
         sut.disconnect();
 
         // then
-        Mockito.verify(client).disconnect();
+        verify(client).disconnect();
     }
 }

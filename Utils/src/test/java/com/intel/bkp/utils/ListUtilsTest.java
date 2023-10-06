@@ -33,11 +33,12 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ListUtilsTest {
     private static final Integer TEST_VALUE = 99;
@@ -52,7 +53,7 @@ class ListUtilsTest {
         final var result = ListUtils.toLinkedList(list);
 
         // then
-        Assertions.assertEquals(TEST_VALUE, result.getFirst());
+        assertEquals(TEST_VALUE, result.getFirst());
     }
 
     @Test
@@ -65,6 +66,6 @@ class ListUtilsTest {
         final var result = ListUtils.toLinkedList(list);
 
         // then
-        Assertions.assertEquals(TEST_VALUE, result.getFirst());
+        assertEquals(TEST_VALUE, result.getFirst());
     }
 }

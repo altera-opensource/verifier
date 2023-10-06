@@ -38,7 +38,6 @@ import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.impl.EcUtils;
 import org.bouncycastle.math.ec.ECPoint;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +53,8 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -85,7 +86,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid((ECPrivateKey)keyPair.getPrivate());
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -97,7 +98,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(privateKey);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -109,7 +110,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(privateKey);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -121,7 +122,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(privateKey);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -133,7 +134,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(privateKey);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -149,7 +150,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(affineX, affineY, curveType);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -165,7 +166,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(affineX, affineY, curveType);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -174,7 +175,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(null, null, CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -186,7 +187,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(affineX, null, CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -199,7 +200,7 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(affineX, affineY, CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -213,6 +214,6 @@ public class EcdhVerifierTest {
         boolean result = EcdhVerifier.isValid(affineX, affineY, CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 }

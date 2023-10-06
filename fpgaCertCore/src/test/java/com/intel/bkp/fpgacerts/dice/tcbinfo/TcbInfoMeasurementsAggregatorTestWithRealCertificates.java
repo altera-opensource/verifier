@@ -33,8 +33,6 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import com.intel.bkp.fpgacerts.Utils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement.asMeasurements;
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class TcbInfoMeasurementsAggregatorTestWithRealCertificates {
@@ -66,10 +66,10 @@ class TcbInfoMeasurementsAggregatorTestWithRealCertificates {
     private TcbInfoMeasurementsAggregator sut;
 
     @BeforeAll
-    static void init() throws Exception {
-        aliasCert = Utils.readCertificate(TEST_FOLDER, ALIAS_CERT);
-        firmwareCert = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
-        deviceIdEnrollmentCert = Utils.readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
+    static void init() {
+        aliasCert = readCertificate(TEST_FOLDER, ALIAS_CERT);
+        firmwareCert = readCertificate(TEST_FOLDER, FIRMWARE_CERT);
+        deviceIdEnrollmentCert = readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
     }
 
     @BeforeEach
@@ -91,6 +91,6 @@ class TcbInfoMeasurementsAggregatorTestWithRealCertificates {
 
         // then
         final Map<TcbInfoKey, TcbInfoValue> result = sut.getMap();
-        Assertions.assertEquals(4, result.size());
+        assertEquals(4, result.size());
     }
 }

@@ -42,7 +42,7 @@ import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
 
 public class DiceAliasChainVerifier extends DiceChainVerifierBase {
 
-    public DiceAliasChainVerifier(ICrlProvider crlProvider, String trustedRootHash, boolean testModeSecrets) {
+    public DiceAliasChainVerifier(ICrlProvider crlProvider, String[] trustedRootHash, boolean testModeSecrets) {
         super(crlProvider, trustedRootHash, testModeSecrets);
     }
 

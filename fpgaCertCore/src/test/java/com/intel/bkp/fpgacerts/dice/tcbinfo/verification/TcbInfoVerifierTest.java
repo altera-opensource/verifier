@@ -39,7 +39,6 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import lombok.SneakyThrows;
 import org.bouncycastle.asn1.DEROctetString;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +56,9 @@ import java.util.Set;
 
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -158,8 +160,8 @@ class TcbInfoVerifierTest {
                 .map(ITcbInfoFieldVerifier::getClass)
                 .toList();
 
-        Assertions.assertEquals(expectedFieldVerifierClasses.size(), actualFieldVerifierClasses.size());
-        Assertions.assertTrue(expectedFieldVerifierClasses.containsAll(actualFieldVerifierClasses));
+        assertEquals(expectedFieldVerifierClasses.size(), actualFieldVerifierClasses.size());
+        assertTrue(expectedFieldVerifierClasses.containsAll(actualFieldVerifierClasses));
     }
 
     @Test
@@ -189,7 +191,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
         verify(modelVerifier).withFamilyName(FAMILY_NAME);
         verify(modelVerifier, times(tcbInfosInChain)).verify(any());
         verify(vendorVerifier, times(tcbInfosInChain)).verify(any());
@@ -211,7 +213,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -227,7 +229,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -244,7 +246,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -256,7 +258,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(emptyChain).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -269,7 +271,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -283,7 +285,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -298,7 +300,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -315,7 +317,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -333,7 +335,7 @@ class TcbInfoVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     private void mockFamilyName() {
@@ -384,7 +386,7 @@ class TcbInfoVerifierTest {
                 .get();
 
         final boolean actualTestModeSecrets = (boolean) getPrivateFieldValue("testModeSecrets", flagsVerifier);
-        Assertions.assertEquals(expectedTestModeSecrets, actualTestModeSecrets);
+        assertEquals(expectedTestModeSecrets, actualTestModeSecrets);
     }
 
     @SneakyThrows

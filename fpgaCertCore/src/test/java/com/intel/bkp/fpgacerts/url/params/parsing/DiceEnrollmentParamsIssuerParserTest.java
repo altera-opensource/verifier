@@ -33,14 +33,15 @@
 
 package com.intel.bkp.fpgacerts.url.params.parsing;
 
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.CertificateUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.security.cert.X509Certificate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DiceEnrollmentParamsIssuerParserTest {
 
@@ -54,8 +55,8 @@ class DiceEnrollmentParamsIssuerParserTest {
     private DiceEnrollmentParamsIssuerParser sut;
 
     @BeforeAll
-    static void init() throws Exception {
-        deviceIdEnrollmentCert = Utils.readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
+    static void init() {
+        deviceIdEnrollmentCert = CertificateUtils.readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
     }
 
     @BeforeEach
@@ -69,7 +70,7 @@ class DiceEnrollmentParamsIssuerParserTest {
         final DiceEnrollmentParams result = sut.parse(deviceIdEnrollmentCert);
 
         // then
-        Assertions.assertEquals(EXPECTED_SKI, result.getSki());
-        Assertions.assertEquals(EXPECTED_SVN, result.getSvn());
+        assertEquals(EXPECTED_SKI, result.getId());
+        assertEquals(EXPECTED_SVN, result.getSvn());
     }
 }

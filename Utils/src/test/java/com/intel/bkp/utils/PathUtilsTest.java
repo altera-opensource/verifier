@@ -33,8 +33,9 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PathUtilsTest {
 
@@ -49,7 +50,7 @@ class PathUtilsTest {
         final String result = PathUtils.checkTrailingSlash(EXPECTED_PATH_WITH_SLASH);
 
         // then
-        Assertions.assertEquals(EXPECTED_PATH_WITH_SLASH, result);
+        assertEquals(EXPECTED_PATH_WITH_SLASH, result);
     }
 
     @Test
@@ -58,7 +59,7 @@ class PathUtilsTest {
         final String result = PathUtils.checkTrailingSlash(EXPECTED_PATH_NO_SLASH);
 
         // then
-        Assertions.assertEquals(EXPECTED_PATH_WITH_SLASH, result);
+        assertEquals(EXPECTED_PATH_WITH_SLASH, result);
     }
 
     @Test
@@ -67,7 +68,7 @@ class PathUtilsTest {
         final String result = PathUtils.checkTrailingSlash(null);
 
         // then
-        Assertions.assertEquals("", result);
+        assertEquals("", result);
     }
 
     @Test
@@ -76,7 +77,7 @@ class PathUtilsTest {
         final String result = PathUtils.removeTrailingSlash(EXPECTED_PATH_WITH_SLASH);
 
         // then
-        Assertions.assertEquals(EXPECTED_PATH_NO_SLASH, result);
+        assertEquals(EXPECTED_PATH_NO_SLASH, result);
     }
 
     @Test
@@ -85,7 +86,7 @@ class PathUtilsTest {
         final String result = PathUtils.removeTrailingSlash(EXPECTED_PATH_NO_SLASH);
 
         // then
-        Assertions.assertEquals(EXPECTED_PATH_NO_SLASH, result);
+        assertEquals(EXPECTED_PATH_NO_SLASH, result);
     }
 
     @Test
@@ -97,7 +98,7 @@ class PathUtilsTest {
         final String result = PathUtils.buildPath("test", "path");
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -109,7 +110,7 @@ class PathUtilsTest {
         final String result = PathUtils.buildPath("test/", "path/");
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -121,7 +122,7 @@ class PathUtilsTest {
         final String result = PathUtils.buildPath(" ", "path");
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -133,7 +134,7 @@ class PathUtilsTest {
         final String result = PathUtils.buildPath("test", "", "path");
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -145,7 +146,7 @@ class PathUtilsTest {
         final String result = PathUtils.buildPath("test", null);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -157,7 +158,7 @@ class PathUtilsTest {
         final String result = PathUtils.getFileNameWithoutExtension(path);
 
         // then
-        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+        assertEquals(EXPECTED_BASE_FILE_NAME, result);
     }
 
     @Test
@@ -169,7 +170,7 @@ class PathUtilsTest {
         final String result = PathUtils.getFileNameWithoutExtension(path);
 
         // then
-        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+        assertEquals(EXPECTED_BASE_FILE_NAME, result);
     }
 
     @Test
@@ -181,7 +182,7 @@ class PathUtilsTest {
         final String result = PathUtils.getFileNameWithoutExtension(path);
 
         // then
-        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+        assertEquals(EXPECTED_BASE_FILE_NAME, result);
     }
 
     @Test
@@ -193,6 +194,6 @@ class PathUtilsTest {
         final String result = PathUtils.getFileNameWithoutExtension(path);
 
         // then
-        Assertions.assertEquals(EXPECTED_BASE_FILE_NAME, result);
+        assertEquals(EXPECTED_BASE_FILE_NAME, result);
     }
 }

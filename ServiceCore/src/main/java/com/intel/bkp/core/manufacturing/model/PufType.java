@@ -33,6 +33,9 @@
 
 package com.intel.bkp.core.manufacturing.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.EnumSet;
@@ -43,8 +46,16 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 /**
  * The PufType enumeration.
  */
+@RequiredArgsConstructor
+@Getter
 public enum PufType {
-    IID, INTEL, EFUSE, IIDUSER, INTEL_USER;
+    IID("UDS_IID"),
+    INTEL("UDS_INTEL"),
+    EFUSE("UDS_EFUSE"),
+    IIDUSER("USER_IID"),
+    INTEL_USER("USER_INTEL");
+
+    private final String alternativeName;
 
     public static PufType fromOrdinal(Integer ordinal) {
         return EnumSet.allOf(PufType.class).stream()

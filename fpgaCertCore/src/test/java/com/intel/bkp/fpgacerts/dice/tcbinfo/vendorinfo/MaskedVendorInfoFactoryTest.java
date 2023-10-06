@@ -33,8 +33,10 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class MaskedVendorInfoFactoryTest {
 
@@ -47,7 +49,7 @@ class MaskedVendorInfoFactoryTest {
         final MaskedVendorInfo result = MaskedVendorInfoFactory.get(obj);
 
         // then
-        Assertions.assertEquals(obj, result);
+        assertEquals(obj, result);
     }
 
     @Test
@@ -59,8 +61,8 @@ class MaskedVendorInfoFactoryTest {
         final MaskedVendorInfo result = MaskedVendorInfoFactory.get(obj);
 
         // then
-        Assertions.assertEquals("ABC", result.getVendorInfo());
-        Assertions.assertNull(result.getVendorInfoMask());
+        assertEquals("ABC", result.getVendorInfo());
+        assertNull(result.getVendorInfoMask());
     }
 
     @Test
@@ -72,7 +74,7 @@ class MaskedVendorInfoFactoryTest {
         final MaskedVendorInfo result = MaskedVendorInfoFactory.get(obj);
 
         // then
-        Assertions.assertEquals("", result.getVendorInfo());
-        Assertions.assertNull(result.getVendorInfoMask());
+        assertEquals("", result.getVendorInfo());
+        assertNull(result.getVendorInfoMask());
     }
 }

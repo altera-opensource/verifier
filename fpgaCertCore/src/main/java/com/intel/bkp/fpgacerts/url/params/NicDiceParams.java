@@ -55,6 +55,6 @@ public class NicDiceParams extends DiceParams {
     @Override
     public String toString() {
         return String.format("NicDiceParams(SKI = %s, UID = %s (in Distribution Point format: %s), FAMILY = %s)",
-            getSki(), getUidInLogsFormat(), getUid(), getFamilyId());
+            getId(), getUidInLogsFormat(), getUid(), getFamilyId());
     }
 }

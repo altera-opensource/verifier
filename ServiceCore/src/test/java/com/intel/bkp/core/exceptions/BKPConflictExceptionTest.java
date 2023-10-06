@@ -34,16 +34,18 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BKPConflictExceptionTest {
 
     @Test
     void constructor_WithOnlyErrorCode_ReturnValidError() {
-        final BKPConflictException exception = Assertions.assertThrows(BKPConflictException.class,
+        final BKPConflictException exception = assertThrows(BKPConflictException.class,
             this::throwError);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     private void throwError() {

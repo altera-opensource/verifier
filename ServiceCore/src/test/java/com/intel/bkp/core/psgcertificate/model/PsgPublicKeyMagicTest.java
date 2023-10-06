@@ -34,20 +34,22 @@
 package com.intel.bkp.core.psgcertificate.model;
 
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PsgPublicKeyMagicTest {
 
     @Test
     void getAllowedMagics_Success() {
         // given
-        final String expected = "0x%s, 0x%s".formatted(
+        final String expected = "0x%s, 0x%s, 0x%s".formatted(
             toHex(PsgPublicKeyMagic.MANIFEST_MAGIC.getValue()),
-            toHex(PsgPublicKeyMagic.M1_MAGIC.getValue())
+            toHex(PsgPublicKeyMagic.M1_MAGIC.getValue()),
+            toHex(PsgPublicKeyMagic.EMPTY.getValue())
         );
 
         // when
@@ -60,24 +62,30 @@ class PsgPublicKeyMagicTest {
     @Test
     void from_WithManifestMagic_Success() {
         // when-then
-        Assertions.assertDoesNotThrow(() -> PsgPublicKeyMagic.from(PsgPublicKeyMagic.MANIFEST_MAGIC.getValue()));
+        assertDoesNotThrow(() -> PsgPublicKeyMagic.from(PsgPublicKeyMagic.MANIFEST_MAGIC.getValue()));
     }
 
     @Test
     void from_WithM1Magic_Success() {
         // when-then
-        Assertions.assertDoesNotThrow(() -> PsgPublicKeyMagic.from(PsgPublicKeyMagic.M1_MAGIC.getValue()));
+        assertDoesNotThrow(() -> PsgPublicKeyMagic.from(PsgPublicKeyMagic.M1_MAGIC.getValue()));
+    }
+
+    @Test
+    void from_WithEmptyMagic_Success() {
+        // when-then
+        assertDoesNotThrow(() -> PsgPublicKeyMagic.from(PsgPublicKeyMagic.EMPTY.getValue()));
     }
 
     @Test
     void from_WithWrongMagic_ThrowsException() {
         // when-then
-        final ParseStructureException exception = Assertions.assertThrows(ParseStructureException.class,
+        final ParseStructureException exception = assertThrows(ParseStructureException.class,
             () -> PsgPublicKeyMagic.from(PsgSignatureMagic.STANDARD.getValue()));
 
         // then
-        Assertions.assertEquals(
-            "Invalid magic number in PSG pub key. Expected any of: 0x40656643, 0x58700660, Actual: 0x74881520.",
+        assertEquals(
+            "Invalid magic number in PSG pub key. Expected any of: 0x40656643, 0x58700660, 0x00, Actual: 0x74881520.",
             exception.getMessage());
     }
 }

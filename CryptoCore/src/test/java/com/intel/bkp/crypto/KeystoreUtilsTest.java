@@ -38,7 +38,6 @@ import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.impl.AesUtils;
 import com.intel.bkp.crypto.impl.EcUtils;
 import com.intel.bkp.crypto.provider.TestProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +47,13 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.util.Enumeration;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class KeystoreUtilsTest {
 
@@ -81,7 +87,7 @@ class KeystoreUtilsTest {
 
         //then
         final Key testKey = keyStore.getKey(testKeyAlias, "".toCharArray());
-        Assertions.assertNotNull(testKey);
+        assertNotNull(testKey);
     }
 
     @Test
@@ -90,9 +96,8 @@ class KeystoreUtilsTest {
         final KeyStore keyStore = prepareKeyStore(false);
         final SecretKey secretKey = prepareAesKey();
 
-        Assertions.assertThrows(KeystoreGenericException.class, () -> {
-            KeystoreUtils.storeSecretKey(keyStore, secretKey, testKeyAlias);
-        });
+        assertThrows(KeystoreGenericException.class,
+            () -> KeystoreUtils.storeSecretKey(keyStore, secretKey, testKeyAlias));
     }
 
     @Test
@@ -106,9 +111,9 @@ class KeystoreUtilsTest {
         final Enumeration<String> aliasesList = KeystoreUtils.listSecurityObjects(keyStore);
 
         //then
-        Assertions.assertNotNull(aliasesList);
-        Assertions.assertTrue(aliasesList.hasMoreElements());
-        Assertions.assertEquals(testKeyAlias, aliasesList.nextElement());
+        assertNotNull(aliasesList);
+        assertTrue(aliasesList.hasMoreElements());
+        assertEquals(testKeyAlias, aliasesList.nextElement());
     }
 
     @Test
@@ -120,7 +125,7 @@ class KeystoreUtilsTest {
         final Enumeration<String> aliasesList = KeystoreUtils.listSecurityObjects(keyStore);
 
         //then
-        Assertions.assertNull(aliasesList);
+        assertNull(aliasesList);
     }
 
     @Test
@@ -130,11 +135,9 @@ class KeystoreUtilsTest {
         final KeyPair keyPair = prepareEcKey();
 
         //when-then
-        Assertions.assertDoesNotThrow(() -> {
-            KeystoreUtils.storeKeyWithCertificate(
-                provider, keyStore, keyPair, testKeyAlias, 1L, CryptoConstants.SHA384_WITH_ECDSA
-            );
-        });
+        assertDoesNotThrow(() -> KeystoreUtils.storeKeyWithCertificate(
+            provider, keyStore, keyPair, testKeyAlias, 1L, CryptoConstants.SHA384_WITH_ECDSA
+        ));
     }
 
     @Test
@@ -143,11 +146,9 @@ class KeystoreUtilsTest {
         KeyStore keyStore = prepareKeyStore(true);
         final KeyPair keyPair = prepareEcKey();
 
-        Assertions.assertThrows(KeystoreGenericException.class, () -> {
-            KeystoreUtils.storeKeyWithCertificate(
-                provider, keyStore, keyPair, testKeyAliasWrong, 1L, CryptoConstants.SHA384_WITH_ECDSA
-            );
-        });
+        assertThrows(KeystoreGenericException.class, () -> KeystoreUtils.storeKeyWithCertificate(
+            provider, keyStore, keyPair, testKeyAliasWrong, 1L, CryptoConstants.SHA384_WITH_ECDSA
+        ));
     }
 
     @Test
@@ -156,11 +157,9 @@ class KeystoreUtilsTest {
         KeyStore keyStore = prepareKeyStore(false);
         final KeyPair keyPair = prepareEcKey();
 
-        Assertions.assertThrows(KeystoreGenericException.class, () -> {
-            KeystoreUtils.storeKeyWithCertificate(
-                provider, keyStore, keyPair, testKeyAlias, 1L, CryptoConstants.SHA384_WITH_ECDSA
-            );
-        });
+        assertThrows(KeystoreGenericException.class, () -> KeystoreUtils.storeKeyWithCertificate(
+            provider, keyStore, keyPair, testKeyAlias, 1L, CryptoConstants.SHA384_WITH_ECDSA
+        ));
     }
 
     private SecretKey prepareAesKey() throws KeystoreGenericException {

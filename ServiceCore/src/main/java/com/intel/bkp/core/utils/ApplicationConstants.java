@@ -46,7 +46,7 @@ public class ApplicationConstants {
     public static final String SECURITY_KEY = "SECURITY";
     public static final String TX_ID_HEADER = "X-Request-TransactionId";
 
-    public static final int REQUEST_BODY_STRING_MAX_SIZE = 10240;
+    public static final int REQUEST_BODY_STRING_MAX_SIZE = 15360; // 15kB
     public static final int REQUEST_BODY_MAX_LIST_SIZE = 1024;
 
     public static final String DATE_TIME_ORACLE_FORMAT = "yyyy-MM-dd HH:mm:ss";

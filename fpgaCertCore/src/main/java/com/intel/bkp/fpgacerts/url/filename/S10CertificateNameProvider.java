@@ -35,7 +35,7 @@ package com.intel.bkp.fpgacerts.url.filename;
 
 import com.intel.bkp.fpgacerts.url.params.S10Params;
 
-import static com.intel.bkp.fpgacerts.url.filename.IpcsIssuedCertificateType.S10;
+import static com.intel.bkp.fpgacerts.url.filename.IpcsFileName.S10;
 
 public class S10CertificateNameProvider extends CertificateNameProviderBase {
     private final S10Params params;

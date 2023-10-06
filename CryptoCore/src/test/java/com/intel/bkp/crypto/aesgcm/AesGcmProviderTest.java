@@ -33,24 +33,27 @@
 
 package com.intel.bkp.crypto.aesgcm;
 
-import com.intel.bkp.crypto.TestUtil;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
+import com.intel.bkp.test.KeyGenUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.ByteOrder;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AesGcmProviderTest {
 
-    private AesGcmProvider sut = Mockito.mock(AesGcmProvider.class, Mockito.CALLS_REAL_METHODS);
+    private AesGcmProvider sut = mock(AesGcmProvider.class, CALLS_REAL_METHODS);
 
     @Test
     public void encrypt_WithEmptySecretKey_ThrowsException() {
@@ -60,12 +63,12 @@ public class AesGcmProviderTest {
         prepareByteOrder();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.encrypt(new byte[]{1})
         );
 
         // then
-        Assertions.assertEquals("Context Key is not set.", exception.getMessage());
+        assertEquals("Context Key is not set.", exception.getMessage());
     }
 
     @Test
@@ -76,12 +79,12 @@ public class AesGcmProviderTest {
         prepareByteOrder();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.encrypt(new byte[]{1})
         );
 
         // then
-        Assertions.assertEquals("Provider is not set.", exception.getMessage());
+        assertEquals("Provider is not set.", exception.getMessage());
     }
 
     @Test
@@ -92,12 +95,12 @@ public class AesGcmProviderTest {
         prepareByteOrder();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.encrypt(new byte[]{1})
         );
 
         // then
-        Assertions.assertEquals("Cipher type is not set.", exception.getMessage());
+        assertEquals("Cipher type is not set.", exception.getMessage());
     }
 
     @Test
@@ -108,12 +111,12 @@ public class AesGcmProviderTest {
         prepareCipher();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.encrypt(new byte[]{1})
         );
 
         // then
-        Assertions.assertEquals("ByteOrder is not set.", exception.getMessage());
+        assertEquals("ByteOrder is not set.", exception.getMessage());
     }
 
     @Test
@@ -122,12 +125,12 @@ public class AesGcmProviderTest {
         prepareAll();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.decrypt(new byte[]{0, 0, 0, 12, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1}) // no data here
         );
 
         // then
-        Assertions.assertEquals("AES decryption failed.", exception.getMessage());
+        assertEquals("AES decryption failed.", exception.getMessage());
     }
 
     @Test
@@ -140,7 +143,7 @@ public class AesGcmProviderTest {
         byte[] decrypt = sut.decrypt(sut.encrypt(expected));
 
         // then
-        Assertions.assertArrayEquals(expected, decrypt);
+        assertArrayEquals(expected, decrypt);
     }
 
     @Test
@@ -153,7 +156,7 @@ public class AesGcmProviderTest {
         byte[] decrypt = sut.decrypt(sut.encrypt(expected));
 
         // then
-        Assertions.assertArrayEquals(expected, decrypt);
+        assertArrayEquals(expected, decrypt);
     }
 
     @Test
@@ -166,7 +169,7 @@ public class AesGcmProviderTest {
         byte[] decrypt = sut.decrypt(sut.encrypt(expected));
 
         // then
-        Assertions.assertArrayEquals(expected, decrypt);
+        assertArrayEquals(expected, decrypt);
     }
 
     @Test
@@ -179,7 +182,7 @@ public class AesGcmProviderTest {
         byte[] decrypt = sut.decrypt(sut.encrypt(expected));
 
         // then
-        Assertions.assertArrayEquals(expected, decrypt);
+        assertArrayEquals(expected, decrypt);
     }
 
     @Test
@@ -188,12 +191,12 @@ public class AesGcmProviderTest {
         prepareAll();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.encrypt(null)
         );
 
         // then
-        Assertions.assertEquals("AES encryption failed.", exception.getMessage());
+        assertEquals("AES encryption failed.", exception.getMessage());
     }
 
     @Test
@@ -202,12 +205,12 @@ public class AesGcmProviderTest {
         prepareAll();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.decrypt(new byte[]{1, 1})
         );
 
         // then
-        Assertions.assertEquals("Data to decrypt for AesGcm is incorrect.", exception.getMessage());
+        assertEquals("Data to decrypt for AesGcm is incorrect.", exception.getMessage());
     }
 
     @Test
@@ -216,12 +219,12 @@ public class AesGcmProviderTest {
         prepareAll();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.decrypt(new byte[]{0, 0, 0, 1, 0}) // iv len is 1, but should be 12
         );
 
         // then
-        Assertions.assertEquals("Invalid iv length.", exception.getMessage());
+        assertEquals("Invalid iv length.", exception.getMessage());
     }
 
     @Test
@@ -230,16 +233,16 @@ public class AesGcmProviderTest {
         prepareAll();
 
         // when-then
-        final EncryptionProviderException exception = Assertions.assertThrows(EncryptionProviderException.class,
+        final EncryptionProviderException exception = assertThrows(EncryptionProviderException.class,
             () -> sut.decrypt(new byte[]{0, 0, 0, 12, 0})
         );
 
         // then
-        Assertions.assertEquals("Data to decrypt for AesGcm is incorrect.", exception.getMessage());
+        assertEquals("Data to decrypt for AesGcm is incorrect.", exception.getMessage());
     }
 
     private void prepareSecretKey() throws KeystoreGenericException {
-        when(sut.getSecretKey()).thenReturn(TestUtil.generateAesKey());
+        when(sut.getSecretKey()).thenReturn(KeyGenUtils.genAes256());
     }
 
     private void prepareProvider() {

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.transport.hps;
 
-import com.intel.bkp.verifier.interfaces.TransportLayer;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import com.intel.bkp.verifier.transport.tcp.TcpClient;
 import com.intel.bkp.verifier.transport.tcp.TcpConfig;
 import lombok.Setter;

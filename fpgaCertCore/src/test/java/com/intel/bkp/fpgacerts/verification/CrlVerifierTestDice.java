@@ -34,9 +34,8 @@
 package com.intel.bkp.fpgacerts.verification;
 
 import com.intel.bkp.crypto.x509.validation.SignatureVerifier;
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.CertificateUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +47,8 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,18 +84,18 @@ public class CrlVerifierTestDice {
 
     @BeforeAll
     static void init() throws Exception {
-        aliasCert = Utils.readCertificate(ALIAS_EFUSE_FOLDER, "UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer");
-        firmwareCert = Utils.readCertificate(ALIAS_EFUSE_FOLDER, "FIRMWARE_3AB5A0DC4DE7CB08.cer");
+        aliasCert = CertificateUtils.readCertificate(ALIAS_EFUSE_FOLDER, "UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer");
+        firmwareCert = CertificateUtils.readCertificate(ALIAS_EFUSE_FOLDER, "FIRMWARE_3AB5A0DC4DE7CB08.cer");
         deviceIdCert =
-            Utils.readCertificate(ALIAS_EFUSE_FOLDER, "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer");
-        productFamilyCert = Utils.readCertificate(COMMON_FOLDER, "IPCS_agilex.cer");
-        rootCert = Utils.readCertificate(COMMON_FOLDER, "DICE_RootCA.cer");
+            CertificateUtils.readCertificate(ALIAS_EFUSE_FOLDER, "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer");
+        productFamilyCert = CertificateUtils.readCertificate(COMMON_FOLDER, "IPCS_agilex.cer");
+        rootCert = CertificateUtils.readCertificate(COMMON_FOLDER, "DICE_RootCA.cer");
 
         list = List.of(aliasCert, firmwareCert, deviceIdCert, productFamilyCert, rootCert);
 
-        firmwareCrl = Utils.readCrl(COMMON_FOLDER, "IPCS_agilex_L1.crl");
-        deviceIdCrl = Utils.readCrl(COMMON_FOLDER, "IPCS_agilex.crl");
-        productFamilyCrl = Utils.readCrl(COMMON_FOLDER, "DICE.crl");
+        firmwareCrl = CertificateUtils.readCrl(COMMON_FOLDER, "IPCS_agilex_L1.crl");
+        deviceIdCrl = CertificateUtils.readCrl(COMMON_FOLDER, "IPCS_agilex.crl");
+        productFamilyCrl = CertificateUtils.readCrl(COMMON_FOLDER, "DICE.crl");
     }
 
     @Test
@@ -108,7 +109,7 @@ public class CrlVerifierTestDice {
         boolean result = sut.certificates(list).doNotRequireCrlForLeafCertificate().verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -117,6 +118,6 @@ public class CrlVerifierTestDice {
         boolean result = sut.certificates(list).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 }

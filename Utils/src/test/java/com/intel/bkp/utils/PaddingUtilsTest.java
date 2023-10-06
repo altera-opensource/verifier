@@ -33,13 +33,13 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.BiFunction;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PaddingUtilsTest {
 
@@ -106,7 +106,7 @@ public class PaddingUtilsTest {
         int result = PaddingUtils.getPaddingLengthPacked(array, packSize);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class PaddingUtilsTest {
         int result = PaddingUtils.getPaddingLengthPacked(array, packSize);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class PaddingUtilsTest {
         int result = PaddingUtils.getPaddingLengthPacked(array, packSize);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -148,7 +148,7 @@ public class PaddingUtilsTest {
         int result = PaddingUtils.getPaddingLengthPacked(array, packSize);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -162,7 +162,7 @@ public class PaddingUtilsTest {
         int result = PaddingUtils.getPaddingLengthPacked(array, packSize);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class PaddingUtilsTest {
         final byte[] result = PaddingUtils.getPaddingPacked(ARRAY, paddingLength + ARRAY.length);
 
         // then
-        Assertions.assertEquals(paddingLength, result.length);
+        assertEquals(paddingLength, result.length);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class PaddingUtilsTest {
         final byte[] result = PaddingUtils.getPaddingPacked(ARRAY, ARRAY.length);
 
         // then
-        Assertions.assertEquals(0, result.length);
+        assertEquals(0, result.length);
     }
 
     private void padRight_ReturnsExpected(String hex, int lengthInBytes, String expectedHex) {
@@ -212,6 +212,6 @@ public class PaddingUtilsTest {
         final byte[] result = method.apply(fromHex(hex), lengthInBytes);
 
         // then
-        Assertions.assertEquals(expectedHex, toHex(result));
+        assertEquals(expectedHex, toHex(result));
     }
 }

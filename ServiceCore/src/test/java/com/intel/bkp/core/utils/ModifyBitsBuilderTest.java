@@ -34,8 +34,9 @@
 package com.intel.bkp.core.utils;
 
 import com.intel.bkp.core.psgcertificate.model.PsgPermissions;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ModifyBitsBuilderTest {
 
@@ -48,8 +49,8 @@ public class ModifyBitsBuilderTest {
         final int build = builder.build();
 
         // then
-        Assertions.assertEquals("11111111111111111111111111111111", builder.toString());
-        Assertions.assertEquals(-1, build);
+        assertEquals("11111111111111111111111111111111", builder.toString());
+        assertEquals(-1, build);
     }
 
     @Test
@@ -61,8 +62,8 @@ public class ModifyBitsBuilderTest {
         final int build = builder.build();
 
         // then
-        Assertions.assertEquals("00000000000000000000000000000000", builder.toString());
-        Assertions.assertEquals(0, build);
+        assertEquals("00000000000000000000000000000000", builder.toString());
+        assertEquals(0, build);
     }
 
     @Test
@@ -75,8 +76,8 @@ public class ModifyBitsBuilderTest {
         final int build = builder.build();
 
         // then
-        Assertions.assertEquals("00000000000000010000000000000000", builder.toString());
-        Assertions.assertEquals(65536, build);
+        assertEquals("00000000000000010000000000000000", builder.toString());
+        assertEquals(65536, build);
     }
 
     @Test
@@ -89,8 +90,8 @@ public class ModifyBitsBuilderTest {
         final int build = builder.build();
 
         // then
-        Assertions.assertEquals("00000000000000010000000000010000", builder.toString());
-        Assertions.assertEquals(65552, build);
+        assertEquals("00000000000000010000000000010000", builder.toString());
+        assertEquals(65552, build);
     }
 
     @Test
@@ -103,7 +104,7 @@ public class ModifyBitsBuilderTest {
         final int build = builder.build();
 
         // then
-        Assertions.assertEquals("11111111111111101111111111101111", builder.toString());
-        Assertions.assertEquals(-65553, build);
+        assertEquals("11111111111111101111111111101111", builder.toString());
+        assertEquals(-65553, build);
     }
 }

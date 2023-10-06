@@ -35,11 +35,11 @@ package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.interfaces.VerifierExchange;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.model.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import com.intel.bkp.verifier.validators.ParameterValidator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -82,12 +82,12 @@ public class VerifierExchangeImpl implements VerifierExchange {
 
     @Override
     @SuppressWarnings("unchecked")
-    public VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurement) {
+    public VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurementHex) {
         var attestationResult = new VerifierExchangeResponseDTO(ERROR.getCode(), "");
 
         try (AppContext appContext = AppContext.instance()) {
             appContext.init();
-            attestationResult = getAttestationInternal(appContext, transportId, refMeasurement);
+            attestationResult = getAttestationInternal(appContext, transportId, refMeasurementHex);
         } catch (Exception e) {
             log.error("Device attestation failed: {}", e.getMessage());
             log.debug("Stacktrace: ", e);
@@ -137,7 +137,7 @@ public class VerifierExchangeImpl implements VerifierExchange {
     }
 
     VerifierExchangeResponseDTO getAttestationInternal(
-        AppContext appContext, String transportId, String refMeasurement) {
+        AppContext appContext, String transportId, String refMeasurementHex) {
         final VerifierExchangeResponseDTO response = new VerifierExchangeResponseDTO();
 
         final TransportLayer transportLayer = appContext.getTransportLayer();
@@ -147,7 +147,7 @@ public class VerifierExchangeImpl implements VerifierExchange {
             response.setDeviceId(toHex(deviceId));
             log.info("Platform attestation will be performed for device of id: {}", toHex(deviceId));
 
-            response.setStatus(getAttestationComponent.perform(refMeasurement, deviceId).getCode());
+            response.setStatus(getAttestationComponent.perform(refMeasurementHex, deviceId).getCode());
         } catch (Exception e) {
             log.error("Failed to perform platform attestation: {}", e.getMessage());
             log.debug("Stacktrace: ", e);

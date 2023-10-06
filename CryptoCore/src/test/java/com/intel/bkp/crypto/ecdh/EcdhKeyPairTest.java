@@ -35,12 +35,16 @@ package com.intel.bkp.crypto.ecdh;
 
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.KeyPair;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 /**
@@ -58,9 +62,9 @@ public class EcdhKeyPairTest {
         final EcdhKeyPair result = EcdhKeyPair.generate();
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.getPrivateKey());
-        Assertions.assertNotNull(result.getPublicKey());
+        assertNotNull(result);
+        assertNotNull(result.getPrivateKey());
+        assertNotNull(result.getPublicKey());
     }
 
     @Test
@@ -72,9 +76,9 @@ public class EcdhKeyPairTest {
         final EcdhKeyPair ecdhKeyPair = EcdhKeyPair.fromKeyPair(keyPair);
 
         // then
-        Assertions.assertNotNull(ecdhKeyPair);
-        Assertions.assertNotNull(ecdhKeyPair.getPrivateKey());
-        Assertions.assertNotNull(ecdhKeyPair.getPublicKey());
+        assertNotNull(ecdhKeyPair);
+        assertNotNull(ecdhKeyPair.getPrivateKey());
+        assertNotNull(ecdhKeyPair.getPublicKey());
     }
 
     @Test
@@ -83,7 +87,7 @@ public class EcdhKeyPairTest {
         final KeyPair keyPair = null;
 
         // when
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> EcdhKeyPair.fromKeyPair(keyPair));
+        assertThrows(EcdhKeyPairException.class, () -> EcdhKeyPair.fromKeyPair(keyPair));
     }
 
     @Test
@@ -95,10 +99,10 @@ public class EcdhKeyPairTest {
         EcdhKeyPair ecdhKeyPair = EcdhKeyPair.fromPublicBytes(gaBytes);
 
         // then
-        Assertions.assertNotNull(ecdhKeyPair);
-        Assertions.assertNotNull(ecdhKeyPair.getPublicKey());
-        Assertions.assertArrayEquals(gaBytes, ecdhKeyPair.getPublicKey());
-        Assertions.assertNull(ecdhKeyPair.getPrivateKey());
+        assertNotNull(ecdhKeyPair);
+        assertNotNull(ecdhKeyPair.getPublicKey());
+        assertArrayEquals(gaBytes, ecdhKeyPair.getPublicKey());
+        assertNull(ecdhKeyPair.getPrivateKey());
     }
 
     @Test
@@ -107,7 +111,7 @@ public class EcdhKeyPairTest {
         byte[] gaBytes = null;
 
         // when
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> EcdhKeyPair.fromPublicBytes(gaBytes));
+        assertThrows(EcdhKeyPairException.class, () -> EcdhKeyPair.fromPublicBytes(gaBytes));
     }
 
     @Test
@@ -116,7 +120,7 @@ public class EcdhKeyPairTest {
         byte[] gaBytes = new byte[0];
 
         // when
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> EcdhKeyPair.fromPublicBytes(gaBytes));
+        assertThrows(EcdhKeyPairException.class, () -> EcdhKeyPair.fromPublicBytes(gaBytes));
     }
 
 }

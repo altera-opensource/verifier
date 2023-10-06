@@ -35,10 +35,12 @@ package com.intel.bkp.fpgacerts.model;
 
 import com.intel.bkp.fpgacerts.exceptions.UnknownFamilyIdException;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AttFamilyTest {
 
@@ -48,7 +50,7 @@ class AttFamilyTest {
         final String actual = AttFamily.AGILEX.getFamilyName();
 
         // then
-        Assertions.assertEquals("agilex", actual);
+        assertEquals("agilex", actual);
     }
 
     @Test
@@ -57,7 +59,7 @@ class AttFamilyTest {
         final byte actual = AttFamily.AGILEX.getFamilyId();
 
         // then
-        Assertions.assertEquals((byte) 52, actual);
+        assertEquals((byte) 52, actual);
     }
 
     @Test
@@ -70,7 +72,7 @@ class AttFamilyTest {
         final AttFamily actual = AttFamily.from(familyId);
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -79,7 +81,7 @@ class AttFamilyTest {
         final byte unknownFamilyId = 0x00;
 
         // when-then
-        Assertions.assertThrows(UnknownFamilyIdException.class, () -> AttFamily.from(unknownFamilyId));
+        assertThrows(UnknownFamilyIdException.class, () -> AttFamily.from(unknownFamilyId));
     }
 
     @Test
@@ -92,7 +94,7 @@ class AttFamilyTest {
         final AttFamily actual = AttFamily.from(familyNameInLowercase);
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -105,7 +107,7 @@ class AttFamilyTest {
         final AttFamily actual = AttFamily.from(familyNameCapitalized);
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -114,7 +116,7 @@ class AttFamilyTest {
         final String familyNameInUppercase = AttFamily.AGILEX.getFamilyName().toUpperCase(Locale.ROOT);
 
         // when-then
-        Assertions.assertThrows(UnknownFamilyIdException.class, () -> AttFamily.from(familyNameInUppercase));
+        assertThrows(UnknownFamilyIdException.class, () -> AttFamily.from(familyNameInUppercase));
     }
 
     @Test
@@ -123,6 +125,6 @@ class AttFamilyTest {
         final String unknownFamilyName = "blabla";
 
         // when-then
-        Assertions.assertThrows(UnknownFamilyIdException.class, () -> AttFamily.from(unknownFamilyName));
+        assertThrows(UnknownFamilyIdException.class, () -> AttFamily.from(unknownFamilyName));
     }
 }

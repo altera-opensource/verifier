@@ -33,23 +33,19 @@
 
 package com.intel.bkp.fpgacerts.url.filename;
 
-import com.intel.bkp.fpgacerts.model.SmartNicFamily;
-import com.intel.bkp.fpgacerts.url.params.DiceParams;
 import com.intel.bkp.fpgacerts.url.params.NicDiceParams;
-
-import static com.intel.bkp.utils.HexConverter.toHex;
 
 public class NicDeviceIdCertificateNameProvider extends CertificateNameProviderBase {
 
     private final NicDiceParams params;
 
     public NicDeviceIdCertificateNameProvider(NicDiceParams params) {
-        super(IpcsIssuedCertificateType.NIC_DEVICE_ID);
+        super(IpcsFileName.NIC_DEVICE_ID);
         this.params = params;
     }
 
     @Override
     protected Object[] getFileNameParameters() {
-        return new Object[]{params.getFamilyId(), params.getUid(), params.getSki()};
+        return new Object[]{params.getFamilyId(), params.getUid(), params.getId()};
     }
 }

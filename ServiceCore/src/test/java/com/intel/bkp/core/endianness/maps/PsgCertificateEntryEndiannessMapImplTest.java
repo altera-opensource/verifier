@@ -34,7 +34,6 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_DATA_LEN;
@@ -43,6 +42,7 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_SHA_LEN;
 import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_SIG_LEN;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PsgCertificateEntryEndiannessMapImplTest {
 
@@ -53,7 +53,7 @@ class PsgCertificateEntryEndiannessMapImplTest {
             new PsgCertificateEntryEndiannessMapImpl(EndiannessActor.SERVICE);
 
         // then
-        Assertions.assertEquals(0, sut.getSize());
+        assertEquals(0, sut.getSize());
     }
 
     @Test
@@ -63,11 +63,11 @@ class PsgCertificateEntryEndiannessMapImplTest {
             new PsgCertificateEntryEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_LENGTH_OFFSET));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_DATA_LEN));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_SIG_LEN));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_CERT_SHA_LEN));
-        Assertions.assertEquals(5, sut.getSize());
+        assertEquals(CONVERT, sut.get(PSG_CERT_MAGIC));
+        assertEquals(CONVERT, sut.get(PSG_CERT_LENGTH_OFFSET));
+        assertEquals(CONVERT, sut.get(PSG_CERT_DATA_LEN));
+        assertEquals(CONVERT, sut.get(PSG_CERT_SIG_LEN));
+        assertEquals(CONVERT, sut.get(PSG_CERT_SHA_LEN));
+        assertEquals(5, sut.getSize());
     }
 }

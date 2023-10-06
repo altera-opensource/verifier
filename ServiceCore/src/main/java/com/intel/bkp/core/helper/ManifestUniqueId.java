@@ -69,10 +69,6 @@ public class ManifestUniqueId {
         return ManifestUniqueId.from(deviceId, toSingleByte(familyId));
     }
 
-    public static ManifestUniqueId from(String deviceId) {
-        return ManifestUniqueId.from(deviceId, (Integer) null);
-    }
-
     public static ManifestUniqueId empty() {
         return EMPTY;
     }

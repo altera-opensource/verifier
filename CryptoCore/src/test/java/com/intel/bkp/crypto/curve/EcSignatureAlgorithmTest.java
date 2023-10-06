@@ -33,8 +33,9 @@
 
 package com.intel.bkp.crypto.curve;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EcSignatureAlgorithmTest {
 
@@ -44,6 +45,6 @@ class EcSignatureAlgorithmTest {
         final EcSignatureAlgorithm actual = EcSignatureAlgorithm.fromCurveSpec(CurveSpec.C256);
 
         // then
-        Assertions.assertEquals(EcSignatureAlgorithm.ECDSA_P256, actual);
+        assertEquals(EcSignatureAlgorithm.ECDSA_P256, actual);
     }
 }

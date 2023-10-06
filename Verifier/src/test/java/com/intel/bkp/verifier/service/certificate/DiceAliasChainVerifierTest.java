@@ -39,7 +39,6 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoVerifier;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +50,9 @@ import java.util.List;
 
 import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_INIT;
 import static com.intel.bkp.fpgacerts.model.Oid.KEY_PURPOSE_ATTEST_LOC;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class DiceAliasChainVerifierTest {
@@ -65,14 +67,14 @@ class DiceAliasChainVerifierTest {
 
     @BeforeEach
     void setup() {
-        sut = new DiceAliasChainVerifier(crlProvider, TRUSTED_ROOT_HASH, TEST_MODE_SECRETS);
+        sut = new DiceAliasChainVerifier(crlProvider, new String[]{TRUSTED_ROOT_HASH}, TEST_MODE_SECRETS);
     }
 
     @Test
     void constructor_configuresProperly() {
         // then
-        Assertions.assertEquals(crlProvider, sut.getCrlVerifier().getCrlProvider());
-        Assertions.assertEquals(TRUSTED_ROOT_HASH, sut.getTrustedRootHash());
+        assertEquals(crlProvider, sut.getCrlVerifier().getCrlProvider());
+        assertEquals(TRUSTED_ROOT_HASH, sut.getTrustedRootHash()[0]);
         verifyTestModeSecretsInFlagsVerifier(TEST_MODE_SECRETS, sut.getTcbInfoVerifier());
     }
 
@@ -88,7 +90,7 @@ class DiceAliasChainVerifierTest {
         final String[] result = sut.getExpectedLeafCertKeyPurposes();
 
         // then
-        Assertions.assertArrayEquals(aliasCertificateKeyPurposes, result);
+        assertArrayEquals(aliasCertificateKeyPurposes, result);
     }
 
     @Test
@@ -97,11 +99,11 @@ class DiceAliasChainVerifierTest {
         final String failureDetails = "some details about why validation happened.";
 
         // when-then
-        VerifierRuntimeException ex = Assertions.assertThrows(VerifierRuntimeException.class,
+        VerifierRuntimeException ex = assertThrows(VerifierRuntimeException.class,
             () -> sut.handleVerificationFailure(failureDetails));
 
         // then
-        Assertions.assertEquals(failureDetails, ex.getMessage());
+        assertEquals(failureDetails, ex.getMessage());
     }
 
     @SuppressWarnings("unchecked")
@@ -115,7 +117,7 @@ class DiceAliasChainVerifierTest {
                 .get();
 
         final boolean actualTestModeSecrets = (boolean) getPrivateFieldValue("testModeSecrets", flagsVerifier);
-        Assertions.assertEquals(expectedTestModeSecrets, actualTestModeSecrets);
+        assertEquals(expectedTestModeSecrets, actualTestModeSecrets);
     }
 
     @SneakyThrows

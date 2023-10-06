@@ -34,8 +34,9 @@
 package com.intel.bkp.workload.util;
 
 import com.intel.bkp.workload.model.CommandType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AppArgumentParserTest {
 
@@ -53,7 +54,7 @@ class AppArgumentParserTest {
         final AppArgument result = AppArgumentParser.parseArguments(args);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -75,6 +76,6 @@ class AppArgumentParserTest {
         final AppArgument result = AppArgumentParser.parseArguments(args);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

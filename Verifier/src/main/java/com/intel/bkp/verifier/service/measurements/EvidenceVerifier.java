@@ -33,47 +33,70 @@
 
 package com.intel.bkp.verifier.service.measurements;
 
+import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementHolder;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
+import com.intel.bkp.fpgacerts.utils.VerificationStatusLogger;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.model.evidence.Rim;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.joining;
-
 @Slf4j
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class EvidenceVerifier {
 
-    private RimParser rimParser = new RimParser();
-    private RimToTcbInfoMeasurementsMapper rimMapper = new RimToTcbInfoMeasurementsMapper();
+    private static final String EVIDENCE_VERIFICATION_MESSAGE = "Evidence verification";
+
+    private final RimService rimService;
+
+    public EvidenceVerifier() {
+        this(new RimService());
+    }
 
     public VerifierExchangeResponse verify(TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator,
-                                           String refMeasurement) {
-        log.debug("Received TcbInfos from device: {}", mapToString(tcbInfoMeasurementsAggregator.getMap()));
+                                           String refMeasurementHex) {
+        log.debug("Received TcbInfos from device: {}", tcbInfoMeasurementsAggregator.mapToString());
 
         try {
-            final Rim referenceMeasurement = rimParser.parse(refMeasurement);
-
-            return Optional.of(referenceMeasurement)
-                .map(rimMapper::map)
-                .filter(tcbInfoMeasurements -> !tcbInfoMeasurements.isEmpty())
-                .map(tcbInfoMeasurements -> verifyInternal(tcbInfoMeasurements, tcbInfoMeasurementsAggregator))
+            return Optional.of(refMeasurementHex)
+                .filter(StringUtils::isNotBlank)
+                .map(rimService::getMeasurements)
+                    .map(holder -> {
+                        addEndorsedMeasurementsToDeviceMeasurements(tcbInfoMeasurementsAggregator, holder);
+                        return holder;
+                    }).map(holder -> verifyReferenceWithDeviceMeasurements(tcbInfoMeasurementsAggregator, holder))
                 .orElseGet(this::getResponseForEmptyRim);
+
         } catch (Exception e) {
             log.error("Exception occurred: {}", e.getMessage());
             log.debug("Stacktrace: ", e);
             return VerifierExchangeResponse.ERROR;
         }
+    }
+
+    private VerifierExchangeResponse verifyReferenceWithDeviceMeasurements(
+        TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator, MeasurementHolder measurementHolder) {
+        return Optional.of(measurementHolder.getReferenceMeasurements())
+            .filter(tcbInfoMeasurements -> !tcbInfoMeasurements.isEmpty())
+            .map(tcbInfoMeasurements -> verifyInternal(tcbInfoMeasurements, tcbInfoMeasurementsAggregator))
+            .orElseGet(this::getResponseForEmptyRim);
+    }
+
+    private void addEndorsedMeasurementsToDeviceMeasurements(TcbInfoMeasurementsAggregator tcbInfoAggregator,
+                                                             MeasurementHolder measurementHolder) {
+        tcbInfoAggregator.add(Optional.of(measurementHolder
+            .getEndorsedMeasurements())
+            .filter(tcbInfoMeasurements -> !tcbInfoMeasurements.isEmpty())
+            .orElse(Collections.emptyList()));
     }
 
     private VerifierExchangeResponse verifyInternal(List<TcbInfoMeasurement> expectedTcbInfoMeasurements,
@@ -88,7 +111,8 @@ public class EvidenceVerifier {
             log.debug("Reference value: {}", measurement.getValue());
 
             if (!tcbInfoResponseMap.containsKey(measurement.getKey())) {
-                log.error("Evidence verification failed. Response does not contain expected key.");
+                log.error(VerificationStatusLogger.failure(EVIDENCE_VERIFICATION_MESSAGE));
+                log.error("Response does not contain expected key.");
                 return VerifierExchangeResponse.FAIL;
             }
 
@@ -96,12 +120,15 @@ public class EvidenceVerifier {
             log.debug("Received value: {}", responseValue);
 
             if (!responseValue.matchesReferenceValue(measurement.getValue())) {
-                log.error("Evidence verification failed.\nReference: {}\nActual:    {}",
-                    measurement.getValue(), responseValue);
+                log.error("""
+                    Evidence verification failed.
+                    Reference: {}
+                    Actual:    {}
+                    """, measurement.getValue(), responseValue);
                 return VerifierExchangeResponse.FAIL;
             }
 
-            log.info("Verification passed.");
+            log.info(VerificationStatusLogger.success(EVIDENCE_VERIFICATION_MESSAGE));
         }
 
         return VerifierExchangeResponse.OK;
@@ -110,11 +137,5 @@ public class EvidenceVerifier {
     private VerifierExchangeResponse getResponseForEmptyRim() {
         log.warn("List of expected measurements in RIM is empty.");
         return VerifierExchangeResponse.OK;
-    }
-
-    public String mapToString(Map<TcbInfoKey, TcbInfoValue> map) {
-        return map.keySet().stream()
-            .map(key -> key + "  =  " + map.get(key))
-            .collect(joining(",\n\t", "\n{\n\t", "\n}\n"));
     }
 }

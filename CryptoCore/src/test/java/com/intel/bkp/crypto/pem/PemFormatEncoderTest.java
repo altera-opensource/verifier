@@ -34,7 +34,6 @@
 package com.intel.bkp.crypto.pem;
 
 import com.intel.bkp.crypto.CryptoUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -44,6 +43,11 @@ import static com.intel.bkp.crypto.constants.CryptoConstants.EC_KEY;
 import static com.intel.bkp.crypto.pem.PemFormatHeader.CRL;
 import static com.intel.bkp.crypto.pem.PemFormatHeader.CSR;
 import static com.intel.bkp.crypto.pem.PemFormatHeader.PUBLIC_KEY;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PemFormatEncoderTest {
 
@@ -72,7 +76,7 @@ class PemFormatEncoderTest {
         String encoded = PemFormatEncoder.encode(CSR, content);
 
         // then
-        Assertions.assertEquals(output, encoded);
+        assertEquals(output, encoded);
     }
 
     @Test
@@ -85,7 +89,7 @@ class PemFormatEncoderTest {
         String encoded = PemFormatEncoder.encode(CRL, content);
 
         // then
-        Assertions.assertEquals(output, encoded);
+        assertEquals(output, encoded);
     }
 
 
@@ -95,9 +99,9 @@ class PemFormatEncoderTest {
         String result = PemFormatEncoder.encode(PUBLIC_KEY, EXPECTED_BYTES);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.contains(PUBLIC_KEY.getBegin()));
-        Assertions.assertTrue(result.contains(PUBLIC_KEY.getEnd()));
+        assertNotNull(result);
+        assertTrue(result.contains(PUBLIC_KEY.getBegin()));
+        assertTrue(result.contains(PUBLIC_KEY.getEnd()));
     }
 
     @Test
@@ -106,27 +110,27 @@ class PemFormatEncoderTest {
         final byte[] result = PemFormatEncoder.decode(PUBLIC_KEY_PEM.getBytes(StandardCharsets.UTF_8));
 
         // then
-        Assertions.assertDoesNotThrow(() -> CryptoUtils.toPublicEncodedBC(result, EC_KEY));
+        assertDoesNotThrow(() -> CryptoUtils.toPublicEncodedBC(result, EC_KEY));
     }
 
     @Test
     void decode_InvalidPemHeader_ThrowsIllegalArgumentException() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> PemFormatEncoder.decode(PUBLIC_KEY_PEM_INVALID_HEADER.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
     void decode_EmptyPemContent_ThrowsIllegalArgumentException() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> PemFormatEncoder.decode(PUBLIC_KEY_PEM_EMPTY.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
     void decode_InvalidPemContent_ThrowsIllegalArgumentException() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> PemFormatEncoder.decode(PUBLIC_KEY_PEM_INVALID_CONTENT.getBytes(StandardCharsets.UTF_8)));
     }
 

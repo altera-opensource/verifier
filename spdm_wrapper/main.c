@@ -33,58 +33,10 @@
 
 #include "main.h"
 
-printf_callback printfCallback = NULL;
-mctp_encode_callback mctpEncodeCallback = NULL;
-mctp_decode_callback mctpDecodeCallback = NULL;
-libspdm_transport_mctp_get_header_size_cust_callback mctpGetHeaderSizeCustCallback = NULL;
+session_callbacks_t *cb;
 
-spdm_device_send_message_callback spdmDeviceSendMessageCallback = NULL;
-spdm_device_receive_message_callback spdmDeviceReceiveMessageCallback = NULL;
-
-spdm_device_acquire_sender_buffer_callback spdmDeviceAcquireSenderBufferCallback = NULL;
-spdm_device_release_sender_buffer_callback spdmDeviceReleaseSenderBufferCallback = NULL;
-spdm_device_acquire_receiver_buffer_callback spdmDeviceAcquireReceiverBufferCallback = NULL;
-spdm_device_release_receiver_buffer_callback spdmDeviceReleaseReceiverBufferCallback = NULL;
-
-void register_printf_callback(const printf_callback callback) {
-    printfCallback = callback;
-}
-
-void register_mctp_encode_callback(const mctp_encode_callback callback) {
-    mctpEncodeCallback = callback;
-}
-
-void register_mctp_decode_callback(const mctp_decode_callback callback) {
-    mctpDecodeCallback = callback;
-}
-
-void register_spdm_device_send_message_callback(const spdm_device_send_message_callback callback) {
-    spdmDeviceSendMessageCallback = callback;
-}
-
-void register_spdm_device_receive_message_callback(const spdm_device_receive_message_callback callback) {
-    spdmDeviceReceiveMessageCallback = callback;
-}
-
-void register_libspdm_transport_mctp_get_header_size_cust_callback(
-        const libspdm_transport_mctp_get_header_size_cust_callback callback) {
-    mctpGetHeaderSizeCustCallback = callback;
-}
-
-void register_spdm_device_acquire_sender_buffer(const spdm_device_acquire_sender_buffer_callback callback) {
-    spdmDeviceAcquireSenderBufferCallback = callback;
-}
-
-void register_spdm_device_release_sender_buffer(const spdm_device_release_sender_buffer_callback callback) {
-    spdmDeviceReleaseSenderBufferCallback = callback;
-}
-
-void register_spdm_device_acquire_receiver_buffer(const spdm_device_acquire_receiver_buffer_callback callback) {
-    spdmDeviceAcquireReceiverBufferCallback = callback;
-}
-
-void register_spdm_device_release_receiver_buffer(const spdm_device_release_receiver_buffer_callback callback) {
-    spdmDeviceReleaseReceiverBufferCallback = callback;
+void set_callbacks(session_callbacks_t *callbacks) {
+    cb = callbacks;
 }
 
 bool verify_spdm_cert_chain_func(
@@ -102,6 +54,8 @@ void libspdm_get_version_w(void *spdm_context, uint8_t *version_p) {
     size_t data_size = sizeof(spdm_version_number_entry);
     libspdm_get_data(spdm_context, LIBSPDM_DATA_SPDM_VERSION, &parameter,
                      &spdm_version_number_entry, &data_size);
+
+    cb->printCallback("Called libspdm_get_version_w.");
 
     // We are only interested in [15:12] MajorVersion [11:8] MinorVersion part of VersionNumberEntry
     *version_p = spdm_version_number_entry >> SPDM_VERSION_NUMBER_SHIFT_BIT;
@@ -125,7 +79,13 @@ size_t libspdm_get_context_size_w() {
     return libspdm_get_context_size();
 }
 
-libspdm_return_t libspdm_prepare_context_w(void *spdm_context) {
+libspdm_return_t libspdm_prepare_context_w(void *spdm_context, uint32_t bufferSize) {
+    uint32_t senderBufferSize = bufferSize;
+    uint32_t receiverBufferSize = bufferSize;
+    uint32_t maxSpdmMessageSize = bufferSize - MAILBOX_HEADER_SIZE;
+    uint32_t transportHeaderSize = MAILBOX_HEADER_SIZE;
+    uint32_t transportTailSize = 0;
+
     libspdm_return_t status = libspdm_init_context(spdm_context);
 
     if (LIBSPDM_STATUS_IS_ERROR(status)) {
@@ -135,17 +95,22 @@ libspdm_return_t libspdm_prepare_context_w(void *spdm_context) {
     libspdm_register_verify_spdm_cert_chain_func(spdm_context, verify_spdm_cert_chain_func);
 
     libspdm_register_device_buffer_func(spdm_context,
-                                        spdmDeviceAcquireSenderBufferCallback,
-                                        spdmDeviceReleaseSenderBufferCallback,
-                                        spdmDeviceAcquireReceiverBufferCallback,
-                                        spdmDeviceReleaseReceiverBufferCallback);
+                                        senderBufferSize,
+                                        receiverBufferSize,
+                                        cb->spdmDeviceAcquireSenderBufferCallback,
+                                        cb->spdmDeviceReleaseSenderBufferCallback,
+                                        cb->spdmDeviceAcquireReceiverBufferCallback,
+                                        cb->spdmDeviceReleaseReceiverBufferCallback);
 
-    libspdm_register_device_io_func(spdm_context, spdmDeviceSendMessageCallback,
-                                    spdmDeviceReceiveMessageCallback);
+    libspdm_register_device_io_func(spdm_context, cb->spdmDeviceSendMessageCallback,
+                                    cb->spdmDeviceReceiveMessageCallback);
 
-    libspdm_register_transport_layer_func(
-            spdm_context, mctpEncodeCallback, mctpDecodeCallback, mctpGetHeaderSizeCustCallback);
-
+    libspdm_register_transport_layer_func(spdm_context,
+                                          maxSpdmMessageSize,
+                                          transportHeaderSize,
+                                          transportTailSize,
+                                          cb->mctpEncodeCallback,
+                                          cb->mctpDecodeCallback);
     return LIBSPDM_STATUS_SUCCESS;
 }
 
@@ -161,18 +126,21 @@ void libspdm_set_scratch_buffer_w(void *spdm_context,
 
 libspdm_return_t libspdm_init_connection_w(void *spdm_context,
                                            bool get_version_only) {
+    cb->printCallback("Called libspdm_init_connection_w.");
     return libspdm_init_connection(spdm_context, get_version_only);
 }
 
 libspdm_return_t libspdm_get_digest_w(void *spdm_context, uint8_t *slot_mask,
                                       void *total_digest_buffer) {
-    return libspdm_get_digest(spdm_context, slot_mask, total_digest_buffer);
+    cb->printCallback("Called libspdm_get_digest_w.");
+    return libspdm_get_digest(spdm_context, NULL, slot_mask, total_digest_buffer);
 }
 
 libspdm_return_t libspdm_get_certificate_w(void *spdm_context, uint8_t slot_id,
                                            size_t *cert_chain_size,
                                            void *cert_chain) {
-    return libspdm_get_certificate(spdm_context, slot_id, cert_chain_size, cert_chain);
+    cb->printCallback("Called libspdm_get_certificate_w.");
+    return libspdm_get_certificate(spdm_context, NULL, slot_id, cert_chain_size, cert_chain);
 }
 
 libspdm_return_t libspdm_get_measurement_w(void *spdm_context,
@@ -181,10 +149,18 @@ libspdm_return_t libspdm_get_measurement_w(void *spdm_context,
                                            uint8_t slot_id_measurements,
                                            uint8_t request_attribute,
                                            void *signature) {
+    cb->printCallback("Called libspdm_get_measurement_w.");
     uint8_t number_of_block;
     return libspdm_get_measurement(
             spdm_context, NULL, request_attribute,
             SPDM_GET_MEASUREMENTS_REQUEST_MEASUREMENT_OPERATION_ALL_MEASUREMENTS,
             slot_id_measurements & 0xF, NULL, &number_of_block,
             measurement_record_length, measurement_record);
+}
+
+libspdm_return_t libspdm_set_certificate_w(void *spdm_context,
+                                         const uint32_t *session_id, uint8_t slot_id,
+                                         void *cert_chain, size_t cert_chain_size) {
+    cb->printCallback("Called libspdm_set_certificate_w.");
+    return libspdm_set_certificate(spdm_context, NULL, slot_id, cert_chain, cert_chain_size);
 }

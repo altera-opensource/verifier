@@ -36,7 +36,6 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.EnumMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
@@ -151,7 +152,7 @@ class TcbInfoMeasurementsAggregatorTest {
         final var tcbInfoMeasurement = new TcbInfoMeasurement(new TcbInfo(inputMap));
 
         // when
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.add(tcbInfoMeasurement));
+        assertThrows(IllegalArgumentException.class, () -> sut.add(tcbInfoMeasurement));
     }
 
     @Test
@@ -164,6 +165,21 @@ class TcbInfoMeasurementsAggregatorTest {
         assertEquals(1, map.size());
         assertTrue(map.containsKey(TCB_INFO_MEASUREMENT.getKey()));
         assertEquals(map.get(TCB_INFO_MEASUREMENT.getKey()), TCB_INFO_MEASUREMENT.getValue());
+    }
+
+    @Test
+    void mapToString_Success() {
+        // given
+        final var expected = "\n{\n\tTcbInfoKey( vendor=VENDOR model=MODEL layer=1 index=2 type=TYPE )  =  "
+            + "TcbInfoValue( version=VERSION fwid=FwIdField( hashAlg=HASH_ALG digest=DIGEST ) "
+            + "maskedVendorInfo=MaskedVendorInfo( vendorInfo=VENDOR_INFO ) flags=FLAGS )\n}\n";
+        sut.add(TCB_INFO_MEASUREMENT);
+
+        // when
+        final String actual = sut.mapToString();
+
+        // then
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -192,7 +208,7 @@ class TcbInfoMeasurementsAggregatorTest {
 
         // when-then
         sut.add(measurement);
-        Assertions.assertDoesNotThrow(() -> sut.add(modifiedMeasurement));
+        assertDoesNotThrow(() -> sut.add(modifiedMeasurement));
         final Map<TcbInfoKey, TcbInfoValue> resultMap = sut.getMap();
         assertEquals(1, resultMap.size());
     }
@@ -210,7 +226,7 @@ class TcbInfoMeasurementsAggregatorTest {
 
         // when-then
         sut.add(measurement);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.add(modifiedMeasurement));
+        assertThrows(IllegalArgumentException.class, () -> sut.add(modifiedMeasurement));
     }
 
     @Test
@@ -226,7 +242,7 @@ class TcbInfoMeasurementsAggregatorTest {
 
         // when-then
         sut.add(measurement);
-        Assertions.assertDoesNotThrow(() -> sut.add(modifiedMeasurement));
+        assertDoesNotThrow(() -> sut.add(modifiedMeasurement));
         final Map<TcbInfoKey, TcbInfoValue> resultMap = sut.getMap();
         assertEquals(1, resultMap.size());
     }
@@ -246,6 +262,6 @@ class TcbInfoMeasurementsAggregatorTest {
 
         // when-then
         sut.add(measurement);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.add(modifiedMeasurement));
+        assertThrows(IllegalArgumentException.class, () -> sut.add(modifiedMeasurement));
     }
 }

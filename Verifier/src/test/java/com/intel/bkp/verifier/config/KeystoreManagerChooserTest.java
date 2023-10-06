@@ -36,8 +36,9 @@ package com.intel.bkp.verifier.config;
 import com.intel.bkp.core.security.IKeystoreManager;
 import com.intel.bkp.core.security.provider.FileBasedProvider;
 import com.intel.bkp.core.security.provider.HsmBasedProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class KeystoreManagerChooserTest {
 
@@ -47,7 +48,7 @@ public class KeystoreManagerChooserTest {
         IKeystoreManager out = KeystoreManagerChooser.choose(true);
 
         // then
-        Assertions.assertTrue(out instanceof FileBasedProvider);
+        assertTrue(out instanceof FileBasedProvider);
     }
 
     @Test
@@ -56,7 +57,7 @@ public class KeystoreManagerChooserTest {
         IKeystoreManager out = KeystoreManagerChooser.choose(false);
 
         // then
-        Assertions.assertTrue(out instanceof HsmBasedProvider);
+        assertTrue(out instanceof HsmBasedProvider);
     }
 
 }

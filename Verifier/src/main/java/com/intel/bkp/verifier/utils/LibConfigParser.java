@@ -35,7 +35,7 @@ package com.intel.bkp.verifier.utils;
 
 import com.intel.bkp.core.properties.DistributionPoint;
 import com.intel.bkp.core.properties.Proxy;
-import com.intel.bkp.core.properties.TrustedRootHash;
+import com.intel.bkp.core.properties.TrustStore;
 import com.intel.bkp.core.security.SecurityProviderParams;
 import com.intel.bkp.core.security.SecurityProviderParamsSetter;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
@@ -44,9 +44,9 @@ import com.intel.bkp.verifier.model.AttestationCertificateFlow;
 import com.intel.bkp.verifier.model.DatabaseConfiguration;
 import com.intel.bkp.verifier.model.LibConfig;
 import com.intel.bkp.verifier.model.LibSpdmParams;
-import com.intel.bkp.verifier.model.TransportLayerType;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
 import com.intel.bkp.verifier.model.VerifierRootQkyChain;
+import com.intel.bkp.verifier.transport.model.TransportLayerType;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -64,13 +64,14 @@ import java.util.Properties;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
+import static com.intel.bkp.verifier.config.Properties.ACCEPT_UNSIGNED_CORIM;
 import static com.intel.bkp.verifier.config.Properties.DATABASE_CONFIGURATION_GROUP;
-import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_DICE_TRUSTED_ROOT;
+import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_ATT_CERT_PATH;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_GROUP;
-import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PATH_CER;
+import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_MAIN_PATH;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PROXY_HOST;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PROXY_PORT;
-import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_S10_TRUSTED_ROOT;
 import static com.intel.bkp.verifier.config.Properties.EC_GROUP;
 import static com.intel.bkp.verifier.config.Properties.KEY_TYPES_GROUP;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
@@ -86,12 +87,15 @@ import static com.intel.bkp.verifier.config.Properties.SECURITY_GROUP;
 import static com.intel.bkp.verifier.config.Properties.TEST_MODE_SECRETS;
 import static com.intel.bkp.verifier.config.Properties.TRANSPORT_LAYER_TYPE;
 import static com.intel.bkp.verifier.config.Properties.TRUSTED_ROOT_HASH_GROUP;
+import static com.intel.bkp.verifier.config.Properties.TRUSTSTORE_GROUP;
+import static com.intel.bkp.verifier.config.Properties.TRUSTSTORE_LOCATION;
+import static com.intel.bkp.verifier.config.Properties.TRUSTSTORE_PASSWORD;
+import static com.intel.bkp.verifier.config.Properties.TRUSTSTORE_TYPE;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_CHAIN_GROUP;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_GROUP;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_KEY_NAME;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_MULTI_ROOT_QKY_CHAIN_PATH;
 import static com.intel.bkp.verifier.config.Properties.VERIFIER_KEY_PARAMS_SINGLE_ROOT_QKY_CHAIN_PATH;
-import static com.intel.bkp.verifier.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
 
 @Slf4j
 @NoArgsConstructor
@@ -136,11 +140,13 @@ public class LibConfigParser {
         appConfig.setAttestationCertificateFlow(getAttestationCertificateFlow(prop));
         appConfig.setDistributionPoint(getDistributionPoint(prop));
         appConfig.setVerifierKeyParams(getVerifierKeyParams(prop));
+        appConfig.setTrustStore(getTrustStore(prop));
         appConfig.setLibSpdmParams(getLibSpdmParams(prop));
         appConfig.setDatabaseConfiguration(getDatabaseConfiguration(prop));
         appConfig.setProviderParams(getProviderParams(prop));
         appConfig.setRunGpAttestation(getRunGpAttestation(prop));
         appConfig.setTestModeSecrets(getTestModeSecrets(prop));
+        appConfig.setAcceptUnsignedCorim(getAcceptUnsignedCorim(prop));
         return appConfig;
     }
 
@@ -165,14 +171,9 @@ public class LibConfigParser {
     }
 
     private DistributionPoint getDistributionPoint(SchemaParams prop) {
-        final TrustedRootHash trustedRootHash = new TrustedRootHash(
-            Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_S10_TRUSTED_ROOT,
-                    DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
-                .orElse(""),
-            Optional.ofNullable(prop.getPropertyGroup(DISTRIBUTION_POINT_DICE_TRUSTED_ROOT,
-                    DISTRIBUTION_POINT_GROUP, TRUSTED_ROOT_HASH_GROUP))
-                .orElse("")
-        );
+        final var rootHashString = Optional.ofNullable(prop.getPropertyGroup(TRUSTED_ROOT_HASH_GROUP,
+            DISTRIBUTION_POINT_GROUP)).orElse("");
+        final String[] trustedRootHash = rootHashString.replaceAll(" ", "").split(",");
 
         final Proxy proxy = new Proxy(
             prop.getPropertyGroup(DISTRIBUTION_POINT_PROXY_HOST,
@@ -183,8 +184,18 @@ public class LibConfigParser {
                 .map(Integer::valueOf)
                 .orElse(null));
 
+        final String mainPath = Optional.ofNullable(
+            prop.getPropertyGroup(DISTRIBUTION_POINT_MAIN_PATH, DISTRIBUTION_POINT_GROUP))
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Invalid configuration file - missing parameter: " + DISTRIBUTION_POINT_MAIN_PATH));
+        final String attCertPath = Optional.ofNullable(
+            prop.getPropertyGroup(DISTRIBUTION_POINT_ATT_CERT_PATH, DISTRIBUTION_POINT_GROUP))
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Invalid configuration file - missing parameter: " + DISTRIBUTION_POINT_ATT_CERT_PATH));
         return new DistributionPoint(
-            prop.getPropertyGroup(DISTRIBUTION_POINT_PATH_CER, DISTRIBUTION_POINT_GROUP),
+            mainPath,
+            attCertPath,
+            "",
             trustedRootHash,
             proxy
         );
@@ -205,6 +216,18 @@ public class LibConfigParser {
                 prop.getPropertyGroup(VERIFIER_KEY_PARAMS_KEY_NAME, VERIFIER_KEY_PARAMS_GROUP)
             ).orElse("")
         );
+    }
+
+    private TrustStore getTrustStore(SchemaParams prop) {
+        return new TrustStore(Optional.ofNullable(
+            prop.getPropertyGroup(TRUSTSTORE_LOCATION, TRUSTSTORE_GROUP)
+        ).orElse(""),
+            Optional.ofNullable(
+                prop.getPropertyGroup(TRUSTSTORE_PASSWORD, TRUSTSTORE_GROUP)
+            ).orElse(""),
+            Optional.ofNullable(
+                prop.getPropertyGroup(TRUSTSTORE_TYPE, TRUSTSTORE_GROUP)
+            ).orElse(""));
     }
 
     private LibSpdmParams getLibSpdmParams(SchemaParams prop) {
@@ -288,6 +311,13 @@ public class LibConfigParser {
             .filter(StringUtils::isNotBlank)
             .map(Boolean::valueOf)
             .orElse(false);
+    }
+
+    private boolean getAcceptUnsignedCorim(SchemaParams prop) {
+        return Optional.ofNullable(prop.getProperty(ACCEPT_UNSIGNED_CORIM))
+                       .filter(StringUtils::isNotBlank)
+                       .map(Boolean::valueOf)
+                       .orElse(false);
     }
 
     private int toInt(String value, String param) {

@@ -34,7 +34,6 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +41,8 @@ import org.junit.jupiter.api.Test;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import static com.intel.bkp.fpgacerts.Utils.readCertificate;
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TcbInfoVerifierTestWithRealCertificates {
 
@@ -61,7 +61,7 @@ public class TcbInfoVerifierTestWithRealCertificates {
     private TcbInfoVerifier sut;
 
     @BeforeAll
-    static void loadCerts() throws Exception {
+    static void loadCerts() {
         productFamilyCert = readCertificate(COMMON_FOLDER, FAMILY_CERT);
         rootCert = readCertificate(COMMON_FOLDER, ROOT_CERT);
     }
@@ -96,7 +96,7 @@ public class TcbInfoVerifierTestWithRealCertificates {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @SneakyThrows

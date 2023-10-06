@@ -33,9 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgPublicKeyBuilderException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellation;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
@@ -43,54 +41,58 @@ import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.utils.ModifyBitsBuilder;
 import com.intel.bkp.crypto.curve.CurvePoint;
-import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.intel.bkp.core.psgcertificate.PsgPublicKeyBuilder.PSG_SHA384_FORMAT_LEN;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PsgPublicKeyBuilderTest {
 
-    private static final int PSG_SHA384_FORMAT_LEN = 120;
+    private static final String EMPTY_PSG_SAMPLE = "000000000000000000000000000000000000000000000000000000000000000000"
+        + "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        + "0000000000000000000000000000000000000000000000000000000000000000000";
 
     @Test
     void builder_WithEcPubKey_Success() {
         // given
-        final KeyPair keyPair = TestUtil.genEcKeys();
+        final KeyPair keyPair = KeyGenUtils.genEc384();
 
         // when
         final PsgPublicKeyBuilder builder = prepareBuilder(keyPair);
 
         // then
-        Assertions.assertNotNull(builder);
-        Assertions.assertEquals(PSG_SHA384_FORMAT_LEN, builder.totalLen());
+        assertNotNull(builder);
+        assertEquals(PSG_SHA384_FORMAT_LEN, builder.totalLen());
     }
 
     @Test
     void builder_WithEncodedECPubKey_Success() throws PsgPublicKeyBuilderException {
         // given
-        final KeyPair keyPair = TestUtil.genEcKeys();
+        final KeyPair keyPair = KeyGenUtils.genEc384();
 
         // when
         final PsgPublicKeyBuilder builder = prepareBuilder(keyPair.getPublic().getEncoded());
 
         // then
-        Assertions.assertNotNull(builder);
-        Assertions.assertEquals(PSG_SHA384_FORMAT_LEN, builder.totalLen());
+        assertNotNull(builder);
+        assertEquals(PSG_SHA384_FORMAT_LEN, builder.totalLen());
     }
 
     @Test
-    void builder_WithEncodedRSAPubKey_ThrowsException() throws KeystoreGenericException {
+    void builder_WithEncodedRSAPubKey_ThrowsException() {
         // given
-        final KeyPair keyPair = TestUtil.genRsaKeys();
+        final KeyPair keyPair = KeyGenUtils.genRsa3072();
 
         // when-then
-        Assertions.assertThrows(PsgPublicKeyBuilderException.class, () ->
+        assertThrows(PsgPublicKeyBuilderException.class, () ->
             prepareBuilder(keyPair.getPublic().getEncoded()));
     }
 
@@ -100,27 +102,27 @@ class PsgPublicKeyBuilderTest {
         final PsgPublicKeyBuilder builder = prepareBuilderXY(getPubKeyXY());
 
         // then
-        Assertions.assertNotNull(builder);
-        Assertions.assertEquals(PSG_SHA384_FORMAT_LEN, builder.totalLen());
+        assertNotNull(builder);
+        assertEquals(PSG_SHA384_FORMAT_LEN, builder.totalLen());
     }
 
     @Test
     void build_WithEcPubKey_Success() {
         // given
-        final KeyPair keyPair = TestUtil.genEcKeys();
+        final KeyPair keyPair = KeyGenUtils.genEc384();
         final PsgPublicKeyBuilder builder = prepareBuilder(keyPair);
 
         // when
         final PsgPublicKey psgPublicKey = builder.build();
 
         // then
-        Assertions.assertNotNull(psgPublicKey);
+        assertNotNull(psgPublicKey);
     }
 
     @Test
-    void parse_WithEcPubKey_WithHexData_Success() throws PsgPubKeyException {
+    void parse_WithEcPubKey_WithHexData_Success() {
         // given
-        final KeyPair keyPair = TestUtil.genEcKeys();
+        final KeyPair keyPair = KeyGenUtils.genEc384();
         final byte[] preparedData = prepareBuilder(keyPair).build().array();
 
         // when
@@ -128,13 +130,13 @@ class PsgPublicKeyBuilderTest {
             .parse(toHex(preparedData));
 
         // then
-        Assertions.assertNotNull(publicKeyBuilder);
+        assertNotNull(publicKeyBuilder);
     }
 
     @Test
-    void parse_WithEcPubKey_WithByteArrayData_Success() throws PsgPubKeyException {
+    void parse_WithEcPubKey_WithByteArrayData_Success() {
         // given
-        final KeyPair keyPair = TestUtil.genEcKeys();
+        final KeyPair keyPair = KeyGenUtils.genEc384();
         final byte[] preparedData = prepareBuilder(keyPair).build().array();
 
         // when
@@ -142,7 +144,7 @@ class PsgPublicKeyBuilderTest {
             .parse(preparedData);
 
         // then
-        Assertions.assertNotNull(publicKeyBuilder);
+        assertNotNull(publicKeyBuilder);
     }
 
     @Test
@@ -156,9 +158,34 @@ class PsgPublicKeyBuilderTest {
         final String result = publicKeyBuilder.build().toHex();
 
         // then
-        Assertions.assertEquals("6006705800000000000000004866325400000000FFFFFFFF0000000000000000000000000000"
+        assertEquals("6006705800000000000000004866325400000000FFFFFFFF0000000000000000000000000000"
             + "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
             + "00000000000000000000000000000000000000000000000000000000000000", result);
+    }
+
+    @Test
+    void parse_WithEmptyPubKey_Success() {
+        // when
+        final PsgPublicKeyBuilder publicKeyBuilder = new PsgPublicKeyBuilder()
+            .parse(EMPTY_PSG_SAMPLE);
+
+        // then
+        assertNotNull(publicKeyBuilder);
+        assertEquals(PsgPublicKeyMagic.EMPTY, publicKeyBuilder.getMagic());
+    }
+
+    @Test
+    void build_WithEmptyPubKey_Success() {
+        // given
+        final var publicKeyBuilder = new PsgPublicKeyBuilder()
+            .empty()
+            .withActor(EndiannessActor.FIRMWARE);
+
+        // when
+        final String result = publicKeyBuilder.build().toHex();
+
+        // then
+        assertEquals(EMPTY_PSG_SAMPLE, result);
     }
 
     private PsgPublicKeyBuilder prepareBuilder(KeyPair keyPair) {

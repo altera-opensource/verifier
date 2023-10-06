@@ -40,11 +40,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 import static com.intel.bkp.crypto.impl.HashUtils.getMSBytesForSha384;
-import static com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils.getSubjectKeyIdentifier;
 
 /**
  * Used for dice certs which should use EC key not RSA.
@@ -52,28 +50,41 @@ import static com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils.getSubjectKeyId
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SkiHelper {
 
-    /**
-     * Get first 20 bytes of SKI in BASE64 URL without padding.
-     *
-     * @param certificate - Assumed certificate contains SKI extension that was calculated using SHA384
-     * @return string
-     */
-    public static String getFirst20BytesOfSkiInBase64Url(X509Certificate certificate) {
-        final byte[] ski = getSubjectKeyIdentifier(certificate);
-        final byte[] first20Bytes = Arrays.copyOf(ski, 20);
-        return Base64Url.encodeWithoutPadding(first20Bytes);
-    }
+    public static final int RIM_BYTES_FOR_URL = 21;
+    public static final int BYTES_FOR_URL = 20;
+    public static final int BYTES_FOR_DICE_CERT_SUBJECT = 12;
 
-    public static String getFirst20BytesOfSkiInBase64Url(byte[] xyBytes) {
+    public static String getSkiInBase64UrlForUrl(byte[] xyBytes) {
         final byte[] publicKeyWithAppendedUncompressedByte = ArrayUtils.addAll(new byte[]{0x04}, xyBytes);
-        final byte[] first20Bytes = getMSBytesForSha384(publicKeyWithAppendedUncompressedByte, 20);
-        return Base64Url.encodeWithoutPadding(first20Bytes);
+        return getMSBytesOfSkiInBase64Url(BYTES_FOR_URL, publicKeyWithAppendedUncompressedByte);
     }
 
-    public static String getFirst12BytesOfSkiInBase64Url(PublicKey publicKey) {
-        final var subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
-        final byte[] publicKeyWithAppendedUncompressedByte = subjectPublicKeyInfo.getPublicKeyData().getBytes();
-        final byte[] first12Bytes = getMSBytesForSha384(publicKeyWithAppendedUncompressedByte, 12);
-        return Base64Url.encodeWithoutPadding(first12Bytes);
+    public static String getSkiInBase64UrlForUrl(PublicKey publicKey) {
+        return getMSBytesOfSkiInBase64Url(BYTES_FOR_URL, getPublicKeyWithAppendedUncompressedByte(publicKey));
+    }
+
+    public static String getFwIdInBase64UrlForUrl(byte[] digest) {
+        final byte[] msb = Arrays.copyOfRange(digest, 0, RIM_BYTES_FOR_URL);
+        return Base64Url.encodeWithoutPadding(msb);
+    }
+
+    public static String getSkiInBase64UrlForDiceSubject(PublicKey publicKey) {
+        return getMSBytesOfSkiInBase64Url(BYTES_FOR_DICE_CERT_SUBJECT,
+            getPublicKeyWithAppendedUncompressedByte(publicKey));
+    }
+
+    public static String getPdiForUrlFrom(byte[] deviceIdentity) {
+        return Base64Url.encodeWithoutPadding(Arrays.copyOf(deviceIdentity, BYTES_FOR_URL));
+    }
+
+    private static byte[] getPublicKeyWithAppendedUncompressedByte(PublicKey publicKey) {
+        return SubjectPublicKeyInfo.getInstance(publicKey.getEncoded())
+            .getPublicKeyData()
+            .getBytes();
+    }
+
+    private static String getMSBytesOfSkiInBase64Url(int bytesCount, byte[] data) {
+        final byte[] leadingBytes = getMSBytesForSha384(data, bytesCount);
+        return Base64Url.encodeWithoutPadding(leadingBytes);
     }
 }

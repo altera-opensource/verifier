@@ -35,12 +35,13 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class IntegerFieldParserTest {
 
@@ -57,7 +58,7 @@ class IntegerFieldParserTest {
         final Integer result = sut.parse(taggedObj);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -71,7 +72,7 @@ class IntegerFieldParserTest {
         final Integer result = sut.parse(taggedObj);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -81,6 +82,6 @@ class IntegerFieldParserTest {
         final ASN1TaggedObject taggedObj = (ASN1TaggedObject) ASN1TaggedObject.fromByteArray(expected);
 
         // when
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
     }
 }

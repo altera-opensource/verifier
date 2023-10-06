@@ -34,33 +34,35 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class BKPBadRequestExceptionTest {
 
     @Test
     void constructor_WithOnlyErrorCode_ReturnValidError() {
-        final BKPBadRequestException exception = Assertions.assertThrows(BKPBadRequestException.class,
+        final BKPBadRequestException exception = assertThrows(BKPBadRequestException.class,
             this::throwError);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     @Test
     void constructor_WithErrorCodeAndThrowable_ReturnValidError() {
-        final BKPBadRequestException exception = Assertions.assertThrows(BKPBadRequestException.class,
+        final BKPBadRequestException exception = assertThrows(BKPBadRequestException.class,
             this::throwErrorWithCause);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     @Test
     void constructor_WithErrorCodeAndMessage_ReturnValidError() {
-        final BKPBadRequestException exception = Assertions.assertThrows(BKPBadRequestException.class,
+        final BKPBadRequestException exception = assertThrows(BKPBadRequestException.class,
             () -> {
                 throw new BKPBadRequestException(getError(), "Message");
             });
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     private void throwError() {

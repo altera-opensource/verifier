@@ -33,12 +33,11 @@
 
 package com.intel.bkp.fpgacerts.url.params.parsing;
 
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.exceptions.InvalidDiceCertificateSubjectException;
 import com.intel.bkp.fpgacerts.exceptions.X509Exception;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
+import com.intel.bkp.test.CertificateUtils;
 import org.bouncycastle.asn1.x509.Extension;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +48,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.security.auth.x500.X500Principal;
 import java.security.cert.X509Certificate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,14 +67,11 @@ class DiceParamsIssuerParserTest {
     @Mock
     private static X509Certificate certificate;
 
-    @Mock
-    private static X500Principal principal;
-
     private DiceParamsIssuerParser sut;
 
     @BeforeAll
-    static void init() throws Exception {
-        firmwareCert = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
+    static void init() {
+        firmwareCert = CertificateUtils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
     }
 
     @BeforeEach
@@ -87,8 +86,8 @@ class DiceParamsIssuerParserTest {
         final DiceParams result = sut.parse(firmwareCert);
 
         // then
-        Assertions.assertEquals(EXPECTED_SKI, result.getSki());
-        Assertions.assertEquals(EXPECTED_UID, result.getUid());
+        assertEquals(EXPECTED_SKI, result.getId());
+        assertEquals(EXPECTED_UID, result.getUid());
     }
 
     @Test
@@ -97,17 +96,22 @@ class DiceParamsIssuerParserTest {
         when(certificate.getExtensionValue(AKI_OID)).thenReturn(null);
 
         // when-then
-        Assertions.assertThrows(X509Exception.class, () -> sut.parse(certificate));
+        assertThrows(X509Exception.class, () -> sut.parse(certificate));
     }
 
     @Test
     void parse_certWithIssuerDNThatIsNotInDiceFormat_Throws() {
         // given
-        when(certificate.getIssuerX500Principal()).thenReturn(principal);
-        when(principal.getName()).thenReturn("CN=ValidCommonName:ButNotInDiceFormat");
         when(certificate.getExtensionValue(AKI_OID)).thenReturn(firmwareCert.getExtensionValue(AKI_OID));
+        mockIssuer(certificate, "CN=ValidCommonName:ButNotInDiceFormat");
 
         // when-then
-        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class, () -> sut.parse(certificate));
+        assertThrows(InvalidDiceCertificateSubjectException.class, () -> sut.parse(certificate));
+    }
+
+    private void mockIssuer(X509Certificate cert, String issuer) {
+        final X500Principal principal = mock(X500Principal.class);
+        when(cert.getIssuerX500Principal()).thenReturn(principal);
+        when(principal.getName()).thenReturn(issuer);
     }
 }

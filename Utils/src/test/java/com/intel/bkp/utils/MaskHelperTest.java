@@ -34,10 +34,12 @@
 package com.intel.bkp.utils;
 
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MaskHelperTest {
 
@@ -123,13 +125,13 @@ class MaskHelperTest {
 
     @Test
     void applyMask_ByteArray_WithMaskShorterThenValue_Throws() {
-        Assertions.assertThrows(MaskHelper.MismatchedMaskLengthException.class,
+        assertThrows(MaskHelper.MismatchedMaskLengthException.class,
             () -> MaskHelper.applyMask(fromHex("0123"), fromHex("FF")));
     }
 
     @Test
     void applyMask_ByteArray_WithMaskLongerThenValue_Throws() {
-        Assertions.assertThrows(MaskHelper.MismatchedMaskLengthException.class,
+        assertThrows(MaskHelper.MismatchedMaskLengthException.class,
             () -> MaskHelper.applyMask(fromHex("0123"), fromHex("FFFFFF")));
     }
 
@@ -148,7 +150,7 @@ class MaskHelperTest {
         final String result = MaskHelper.getMask(length);
 
         // then
-        Assertions.assertEquals(expectedMask, result);
+        assertEquals(expectedMask, result);
     }
 
     @SneakyThrows
@@ -157,7 +159,7 @@ class MaskHelperTest {
         final String result = MaskHelper.applyMask(value, mask);
 
         // then
-        Assertions.assertEquals(expectedValue, result);
+        assertEquals(expectedValue, result);
     }
 
     @SneakyThrows
@@ -166,7 +168,7 @@ class MaskHelperTest {
         final byte[] result = MaskHelper.applyMask(fromHex(value), fromHex(mask));
 
         // then
-        Assertions.assertArrayEquals(fromHex(expectedValue), result);
+        assertArrayEquals(fromHex(expectedValue), result);
     }
 
 }

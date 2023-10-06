@@ -33,8 +33,9 @@
 
 package com.intel.bkp.verifier.transport.systemconsole;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EscapeUtilsTest {
 
@@ -48,7 +49,7 @@ class EscapeUtilsTest {
         final String result = EscapeUtils.escape(str);
 
         // then
-        Assertions.assertEquals(expectedEscapedStr, result);
+        assertEquals(expectedEscapedStr, result);
     }
 
 }

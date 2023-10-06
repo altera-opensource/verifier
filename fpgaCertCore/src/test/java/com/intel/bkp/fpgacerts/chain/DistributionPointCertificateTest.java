@@ -33,7 +33,6 @@
 
 package com.intel.bkp.fpgacerts.chain;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +42,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class DistributionPointCertificateTest {
@@ -73,7 +77,7 @@ class DistributionPointCertificateTest {
         final var result = DistributionPointCertificate.getX509Certificates(dpCerts);
 
         // then
-        Assertions.assertIterableEquals(x509Certs, result);
+        assertIterableEquals(x509Certs, result);
     }
 
     @Test
@@ -82,14 +86,14 @@ class DistributionPointCertificateTest {
         final var result = DistributionPointCertificate.getX509Certificates(List.of());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.isEmpty());
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
     void getX509Certificates_NullCollection_ThrowsNullPointer() {
         // when-then
-        Assertions.assertThrows(NullPointerException.class,
+        assertThrows(NullPointerException.class,
             () -> DistributionPointCertificate.getX509Certificates(null));
     }
 }

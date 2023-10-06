@@ -36,7 +36,6 @@ package com.intel.bkp.fpgacerts.dice.iidutils;
 import com.intel.bkp.fpgacerts.dice.ueid.UeidExtension;
 import com.intel.bkp.fpgacerts.dice.ueid.UeidExtensionParser;
 import com.intel.bkp.fpgacerts.model.AttFamily;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -47,6 +46,8 @@ import java.util.Optional;
 
 import static com.intel.bkp.fpgacerts.model.AttFamily.AGILEX;
 import static com.intel.bkp.fpgacerts.model.AttFamily.EASIC_N5X;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,7 +99,7 @@ class IidFlowDetectorTest {
         when(ueidExtensionParser.parse(cert)).thenThrow(new IllegalArgumentException(""));
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> sut.isIidFlow(cert));
+        assertThrows(IllegalArgumentException.class, () -> sut.isIidFlow(cert));
     }
 
     private void isIidFlow_ReturnsExpectedResult(Optional<Boolean> requireIidUds, AttFamily family,
@@ -113,7 +114,7 @@ class IidFlowDetectorTest {
         final boolean result = sut.isIidFlow(cert);
 
         // then
-        Assertions.assertEquals(expectedResult, result);
+        assertEquals(expectedResult, result);
     }
 
     private IidFlowDetector prepareSut(Optional<Boolean> requireIidUds) {

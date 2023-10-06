@@ -33,30 +33,29 @@
 
 package com.intel.bkp.crypto.impl;
 
-import com.intel.bkp.crypto.TestUtil;
 import com.intel.bkp.crypto.constants.SecurityKeyType;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
 
 import static com.intel.bkp.crypto.CryptoUtils.getBouncyCastleProvider;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PublicKeyUtilsTest {
 
     @Test
     void toPublicEncoded_success() throws Exception {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys();
-        assert keyPair != null;
+        KeyPair keyPair = KeyGenUtils.genEc384();
 
         // when
         PublicKey publicKey = PublicKeyUtils.toPublicEncoded(
             keyPair.getPublic().getEncoded(), SecurityKeyType.EC.name(), getBouncyCastleProvider());
 
         //then
-        Assertions.assertEquals(keyPair.getPublic(), publicKey);
+        assertEquals(keyPair.getPublic(), publicKey);
     }
 
 }

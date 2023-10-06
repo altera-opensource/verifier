@@ -33,10 +33,9 @@
 
 package com.intel.bkp.crypto.x509.utils;
 
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.FileUtils;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +43,10 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class KeyIdentifierUtilsTest {
 
@@ -65,9 +68,9 @@ class KeyIdentifierUtilsTest {
 
     @BeforeAll
     static void init() throws Exception {
-        certWithoutAKIandSKI = TestUtil.loadCertificate(CERT_WITHOUT_AKI_AND_SKI);
-        certWithAKIandSKI = TestUtil.loadCertificate(CERT_WITH_AKI_AND_SKI);
-        certWithSkiMethod2Rfc7093 = TestUtil.loadCertificate(CERT_WITH_SKI_METHOD_2_RFC7093);
+        certWithoutAKIandSKI = FileUtils.loadCertificate(CERT_WITHOUT_AKI_AND_SKI);
+        certWithAKIandSKI = FileUtils.loadCertificate(CERT_WITH_AKI_AND_SKI);
+        certWithSkiMethod2Rfc7093 = FileUtils.loadCertificate(CERT_WITH_SKI_METHOD_2_RFC7093);
     }
 
     @Test
@@ -79,8 +82,8 @@ class KeyIdentifierUtilsTest {
         final AuthorityKeyIdentifier aki = KeyIdentifierUtils.createAuthorityKeyIdentifier(certWithAKIandSKI);
 
         // then
-        Assertions.assertNotNull(aki);
-        Assertions.assertArrayEquals(ski, aki.getKeyIdentifier());
+        assertNotNull(aki);
+        assertArrayEquals(ski, aki.getKeyIdentifier());
     }
 
     @Test
@@ -89,7 +92,7 @@ class KeyIdentifierUtilsTest {
         final AuthorityKeyIdentifier aki = KeyIdentifierUtils.createAuthorityKeyIdentifier(certWithoutAKIandSKI);
 
         // then
-        Assertions.assertNotNull(aki);
+        assertNotNull(aki);
     }
 
     @Test
@@ -98,7 +101,7 @@ class KeyIdentifierUtilsTest {
         final byte[] aki = KeyIdentifierUtils.getAuthorityKeyIdentifier(certWithAKIandSKI);
 
         // then
-        Assertions.assertEquals(KEY_IDENTIFIER, toHex(aki));
+        assertEquals(KEY_IDENTIFIER, toHex(aki));
     }
 
     @Test
@@ -107,7 +110,7 @@ class KeyIdentifierUtilsTest {
         final byte[] aki = KeyIdentifierUtils.getAuthorityKeyIdentifier(certWithoutAKIandSKI);
 
         // then
-        Assertions.assertNull(aki);
+        assertNull(aki);
     }
 
     @Test
@@ -116,7 +119,7 @@ class KeyIdentifierUtilsTest {
         final byte[] ski = KeyIdentifierUtils.getSubjectKeyIdentifier(certWithAKIandSKI);
 
         // then
-        Assertions.assertEquals(KEY_IDENTIFIER, toHex(ski));
+        assertEquals(KEY_IDENTIFIER, toHex(ski));
     }
 
     @Test
@@ -124,13 +127,13 @@ class KeyIdentifierUtilsTest {
         // given
         final PublicKey publicKey = certWithSkiMethod2Rfc7093.getPublicKey();
         final SubjectKeyIdentifier expectedSki =
-                new SubjectKeyIdentifier(KeyIdentifierUtils.getSubjectKeyIdentifier(certWithSkiMethod2Rfc7093));
+            new SubjectKeyIdentifier(KeyIdentifierUtils.getSubjectKeyIdentifier(certWithSkiMethod2Rfc7093));
 
         // when
         final SubjectKeyIdentifier ski = KeyIdentifierUtils.createSubjectKeyIdentifier(publicKey);
 
         // then
-        Assertions.assertEquals(expectedSki, ski);
+        assertEquals(expectedSki, ski);
     }
 
     @Test
@@ -143,7 +146,7 @@ class KeyIdentifierUtilsTest {
         final byte[] ski = KeyIdentifierUtils.calculateSubjectKeyIdentifierUsingMethod2FromRfc7093(publicKey);
 
         // then
-        Assertions.assertEquals(toHex(expectedSki), toHex(ski));
+        assertEquals(toHex(expectedSki), toHex(ski));
     }
 
     @Test
@@ -152,7 +155,7 @@ class KeyIdentifierUtilsTest {
         final byte[] ski = KeyIdentifierUtils.getSubjectKeyIdentifier(certWithoutAKIandSKI);
 
         // then
-        Assertions.assertNull(ski);
+        assertNull(ski);
     }
 
 }

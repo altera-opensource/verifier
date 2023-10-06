@@ -33,8 +33,12 @@
 
 package com.intel.bkp.verifier.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TransportLayerExceptionTest {
 
@@ -42,18 +46,18 @@ class TransportLayerExceptionTest {
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        final TransportLayerException exception = Assertions.assertThrows(TransportLayerException.class,
+        final TransportLayerException exception = assertThrows(TransportLayerException.class,
             this::throwErrorWithException);
-        Assertions.assertEquals(TEST_MESSAGE, exception.getMessage());
-        Assertions.assertNotNull(exception.getCause());
+        assertEquals(TEST_MESSAGE, exception.getMessage());
+        assertNotNull(exception.getCause());
     }
 
     @Test
     void constructor_WithMessage_Success() {
-        final TransportLayerException exception = Assertions.assertThrows(TransportLayerException.class,
+        final TransportLayerException exception = assertThrows(TransportLayerException.class,
             this::throwErrorWithOnlyMessage);
-        Assertions.assertEquals(TEST_MESSAGE, exception.getMessage());
-        Assertions.assertNull(exception.getCause());
+        assertEquals(TEST_MESSAGE, exception.getMessage());
+        assertNull(exception.getCause());
     }
 
     private void throwErrorWithException() {

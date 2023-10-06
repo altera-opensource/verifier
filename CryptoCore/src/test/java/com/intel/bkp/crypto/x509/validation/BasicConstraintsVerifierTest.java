@@ -34,10 +34,9 @@
 package com.intel.bkp.crypto.x509.validation;
 
 import com.intel.bkp.crypto.LogUtils;
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.FileUtils;
 import org.bouncycastle.asn1.x509.Extension;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +50,8 @@ import java.util.stream.Stream;
 
 import static com.intel.bkp.crypto.x509.validation.BasicConstraintsVerifier.CA_FALSE;
 import static com.intel.bkp.crypto.x509.validation.BasicConstraintsVerifier.CA_TRUE_PATHLENGTH_NONE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,7 +72,7 @@ class BasicConstraintsVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        certWithoutBasicConstraints = TestUtil.loadCertificate(CERT_WITHOUT_BASIC_CONSTRAINTS_FILENAME);
+        certWithoutBasicConstraints = FileUtils.loadCertificate(CERT_WITHOUT_BASIC_CONSTRAINTS_FILENAME);
     }
 
     @AfterEach
@@ -91,7 +92,7 @@ class BasicConstraintsVerifierTest {
         mockCertificate(CA_FALSE, false);
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, CA_FALSE));
+        assertTrue(sut.verify(certificate, CA_FALSE));
     }
 
     @Test
@@ -100,7 +101,7 @@ class BasicConstraintsVerifierTest {
         mockCertificate(CA_FALSE, true);
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, CA_FALSE));
+        assertTrue(sut.verify(certificate, CA_FALSE));
     }
 
     @Test
@@ -109,7 +110,7 @@ class BasicConstraintsVerifierTest {
         mockCertificate(3, true);
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, 2));
+        assertTrue(sut.verify(certificate, 2));
     }
 
     @Test
@@ -118,7 +119,7 @@ class BasicConstraintsVerifierTest {
         mockCertificate(CA_TRUE_PATHLENGTH_NONE, true);
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, 2));
+        assertTrue(sut.verify(certificate, 2));
     }
 
     @Test
@@ -166,8 +167,8 @@ class BasicConstraintsVerifierTest {
     }
 
     private void verify_ReturnsFalseAndLogsErrorMessage(X509Certificate certificate, String expectedMessagePart) {
-        Assertions.assertFalse(sut.verify(certificate, 5));
-        Assertions.assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedMessagePart)));
+        assertFalse(sut.verify(certificate, 5));
+        assertTrue(getErrorLogs().anyMatch(message -> message.contains(expectedMessagePart)));
     }
 
     private Stream<String> getErrorLogs() {

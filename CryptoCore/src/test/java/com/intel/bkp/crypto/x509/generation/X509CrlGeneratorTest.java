@@ -33,11 +33,11 @@
 
 package com.intel.bkp.crypto.x509.generation;
 
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.CertificateUtils;
+import com.intel.bkp.test.KeyGenUtils;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -45,6 +45,7 @@ import java.security.Provider;
 import java.security.cert.X509CRL;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -63,13 +64,13 @@ class X509CrlGeneratorTest {
         final X509CRL crl = X509CrlGenerator.generateCrl(crlParams);
 
         // then
-        Assertions.assertNotNull(crl);
+        assertNotNull(crl);
     }
 
     @SneakyThrows
     private ICrlParams prepareCrlParams() {
-        final var signingKeyPair = TestUtil.genEcKeys();
-        final var signingCert = TestUtil.genSelfSignedCert(signingKeyPair);
+        final var signingKeyPair = KeyGenUtils.genEc384();
+        final var signingCert = CertificateUtils.generateCertificate(signingKeyPair);
         final var issuerDTO = new X509CrlIssuerDTO(signingCert, signingKeyPair.getPrivate(), PROVIDER);
 
         final var crlParams = mock(ICrlParams.class);

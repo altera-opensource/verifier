@@ -33,8 +33,10 @@
 
 package com.intel.bkp.crypto.aesctr;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AesCtrIvProviderTest {
 
@@ -47,7 +49,7 @@ public class AesCtrIvProviderTest {
         byte[] result = sut.generate();
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(AesCtrIvProvider.IV_LEN, result.length);
+        assertNotNull(result);
+        assertEquals(AesCtrIvProvider.IV_LEN, result.length);
     }
 }

@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.database.table;
 
-import com.intel.bkp.verifier.interfaces.ITableDefinition;
+import com.intel.bkp.verifier.database.model.ITableDefinition;
 import org.apache.commons.lang3.StringUtils;
 
 public abstract class TableDefinitionBase implements ITableDefinition {
@@ -95,7 +95,7 @@ public abstract class TableDefinitionBase implements ITableDefinition {
         getColumnsForInsert(sb);
 
         sb.append(RIGHT_PARENTHESIS);
-        sb.append(SPACE).append(VALUES);
+        sb.append(SPACE).append(VALUES).append(SPACE);
         sb.append(LEFT_PARENTHESIS);
         sb.append(StringUtils.repeat("?", ",", getColumnLength()));
         sb.append(RIGHT_PARENTHESIS);

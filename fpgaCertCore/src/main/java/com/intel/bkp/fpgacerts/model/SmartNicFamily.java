@@ -46,12 +46,11 @@ import java.util.Locale;
 @AllArgsConstructor
 @Getter
 public enum SmartNicFamily implements IFamily {
-    MEV("IPU ES2000", (byte) 0x01),
-    LKV("Enet Controller E610", (byte) 0x02),
-    CNV("Enet Controller E830", (byte) 0x03);
+    MEV(Family.MEV),
+    LKV(Family.LKV),
+    CNV(Family.CNV);
 
-    private final String familyName;
-    private final byte familyId;
+    private final Family family;
 
     public static SmartNicFamily from(byte[] data) {
         return FirstIntegerByteParser.from(data, values(), SmartNicFamily::getFamilyId);
@@ -59,16 +58,26 @@ public enum SmartNicFamily implements IFamily {
 
     public static SmartNicFamily from(byte familyId) {
         return Arrays.stream(values())
-            .filter(family -> family.familyId == familyId)
+            .filter(family -> family.getFamilyId() == familyId)
             .findFirst()
             .orElseThrow(UnknownFamilyIdException::new);
     }
 
     public static SmartNicFamily from(String familyName) {
         return Arrays.stream(values())
-            .filter(family -> family.familyName.equals(familyName)
-                || StringUtils.capitalize(family.familyName.toLowerCase(Locale.ROOT)).equals(familyName))
+            .filter(family -> family.getFamilyName().equals(familyName)
+                || StringUtils.capitalize(family.getFamilyName().toLowerCase(Locale.ROOT)).equals(familyName))
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
+    }
+
+    @Override
+    public String getFamilyName() {
+        return family.getFamilyName();
+    }
+
+    @Override
+    public byte getFamilyId() {
+        return family.getFamilyId();
     }
 }

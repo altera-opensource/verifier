@@ -34,7 +34,6 @@
 package com.intel.bkp.core.psgcertificate;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.CertificateEntryWrapper;
 import com.intel.bkp.core.psgcertificate.model.PsgCertificateType;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
@@ -42,22 +41,24 @@ import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.psgcertificate.model.PsgRootHashType;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.util.List;
 
-import static com.intel.bkp.core.TestUtil.genEcKeys;
-import static com.intel.bkp.core.TestUtil.signEcData;
 import static com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType.SECP384R1;
+import static com.intel.bkp.test.SigningUtils.signEcData;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PsgCertificateForBkpsAdapterTest {
 
     @Test
-    void parse_WithOnlyLeafCertificate_Success() throws PsgCertificateException {
+    void parse_WithOnlyLeafCertificate_Success() {
         // given
         byte[] result = prepareLeafPsgCertificate();
 
@@ -66,11 +67,11 @@ class PsgCertificateForBkpsAdapterTest {
             .parse(toHex(result));
 
         // then
-        Assertions.assertFalse(parse.isEmpty());
+        assertFalse(parse.isEmpty());
     }
 
     @Test
-    void parse_WithOnlyRootCertificate_Success() throws PsgCertificateException {
+    void parse_WithOnlyRootCertificate_Success() {
         // given
         byte[] result = prepareRootPsgCertificate();
 
@@ -79,11 +80,11 @@ class PsgCertificateForBkpsAdapterTest {
             .parse(toHex(result));
 
         // then
-        Assertions.assertFalse(parse.isEmpty());
+        assertFalse(parse.isEmpty());
     }
 
     @Test
-    void parse_WithCertificateChain_Success() throws PsgCertificateException {
+    void parse_WithCertificateChain_Success() {
         // given
         final byte[] rootCertificate = prepareRootPsgCertificate();
         final byte[] leafCertificate = prepareLeafPsgCertificate();
@@ -97,14 +98,14 @@ class PsgCertificateForBkpsAdapterTest {
         final List<CertificateEntryWrapper> parse = PsgCertificateForBkpsAdapter.parse(testData);
 
         // then
-        Assertions.assertFalse(parse.isEmpty());
-        Assertions.assertEquals(2, parse.size());
-        Assertions.assertEquals(1, parse
+        assertFalse(parse.isEmpty());
+        assertEquals(2, parse.size());
+        assertEquals(1, parse
             .stream()
             .filter(wrapper -> wrapper.getType().equals(PsgCertificateType.ROOT))
             .count()
         );
-        Assertions.assertEquals(1, parse
+        assertEquals(1, parse
             .stream()
             .filter(wrapper -> wrapper.getType().equals(PsgCertificateType.LEAF))
             .count()
@@ -112,7 +113,7 @@ class PsgCertificateForBkpsAdapterTest {
     }
 
     @Test
-    void parse_withWrongData_ReturnsEmptyList() throws PsgCertificateException {
+    void parse_withWrongData_ReturnsEmptyList() {
         // given
         ByteBuffer buffer = ByteBuffer.allocate(3 * Integer.BYTES);
         buffer.putInt(1);
@@ -124,11 +125,11 @@ class PsgCertificateForBkpsAdapterTest {
         final List<CertificateEntryWrapper> parse = PsgCertificateForBkpsAdapter.parse(testData);
 
         // then
-        Assertions.assertTrue(parse.isEmpty());
+        assertTrue(parse.isEmpty());
     }
 
-    private byte[] prepareLeafPsgCertificate() throws PsgCertificateException {
-        KeyPair keyPair = genEcKeys(null);
+    private byte[] prepareLeafPsgCertificate() {
+        KeyPair keyPair = KeyGenUtils.genEc384();
         assert keyPair != null;
 
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, PsgCurveType.SECP384R1);
@@ -144,9 +145,8 @@ class PsgCertificateForBkpsAdapterTest {
             .array();
     }
 
-    private byte[] prepareRootPsgCertificate() throws PsgCertificateException {
-        KeyPair keyPair = genEcKeys(CryptoConstants.EC_CURVE_SPEC_384);
-        assert keyPair != null;
+    private byte[] prepareRootPsgCertificate() {
+        KeyPair keyPair = KeyGenUtils.genEc384();
 
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, PsgCurveType.SECP384R1);
 

@@ -34,25 +34,26 @@
 package com.intel.bkp.core.psgcertificate.romext;
 
 import com.intel.bkp.core.RomExtensionAuthGeneratorUtil;
-import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.RandomUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class RomExtensionStructureBuilderTest {
 
-    private static final String TEST_FILES_PATH = "/testfiles/romext";
-
     final static byte[] DM_ROM_EXT_STRUCTURE_WITHOUT_SIG
-        = TestUtil.loadBinaryFile(TEST_FILES_PATH + "/dm_signed_2021_03_16_without_sig.romext");
+        = FileUtils.loadBinary(ResourceDir.ROMEXT, "dm_signed_2021_03_16_without_sig.romext");
     final static byte[] DM_ROM_EXT_STRUCTURE_WITH_SIG =
-        TestUtil.loadBinaryFile(TEST_FILES_PATH + "/dm_signed_2021_03_16.romext");
+        FileUtils.loadBinary(ResourceDir.ROMEXT, "dm_signed_2021_03_16.romext");
     // Values based on ManifestParser.exe result for file "dm_signed_2021_03_16_without_sig.romext"
     private static final int DM_EDI_ID = 0;
     private static final byte DM_FAMILY_ID = 0x35;
@@ -60,9 +61,9 @@ class RomExtensionStructureBuilderTest {
     private static final String DM_ROM_EXT_HASH =
         "FB88D16205F231AEBCF3639FF63C42B45C6ED5DDD842F314572688E3DC2AE51A22FCE4913AE489969C0B6087DB3BB83C";
 
-    final static byte[] FM_F7_ROM_EXT_WITH_SIG = TestUtil.loadBinaryFile(TEST_FILES_PATH + "/f7romext.romext");
-    final static byte[] FM_F7_ROM_EXT_WITHOUT_SIG = TestUtil.loadBinaryFile(TEST_FILES_PATH
-        + "/f7romext_without_sig.romext");
+    final static byte[] FM_F7_ROM_EXT_WITH_SIG = FileUtils.loadBinary(ResourceDir.ROMEXT, "f7romext.romext");
+    final static byte[] FM_F7_ROM_EXT_WITHOUT_SIG =
+        FileUtils.loadBinary(ResourceDir.ROMEXT, "f7romext_without_sig.romext");
 
     // Values based on ManifestParser.exe result for file "f7romext_without_sig.romext"
     private static final int FM_EDI_ID = 0;
@@ -81,10 +82,10 @@ class RomExtensionStructureBuilderTest {
         builder.parse(DM_ROM_EXT_STRUCTURE_WITHOUT_SIG);
 
         // then
-        Assertions.assertEquals(DM_EDI_ID, builder.getEdiId());
-        Assertions.assertEquals(DM_FAMILY_ID, builder.getFamilyId());
-        Assertions.assertEquals(DM_BUILD_IDENTIFIER_STRING, builder.getBuildIdentifierString());
-        Assertions.assertEquals(DM_ROM_EXT_HASH, builder.calculateRomExtensionHash());
+        assertEquals(DM_EDI_ID, builder.getEdiId());
+        assertEquals(DM_FAMILY_ID, builder.getFamilyId());
+        assertEquals(DM_BUILD_IDENTIFIER_STRING, builder.getBuildIdentifierString());
+        assertEquals(DM_ROM_EXT_HASH, builder.calculateRomExtensionHash());
     }
 
     @Test
@@ -97,10 +98,10 @@ class RomExtensionStructureBuilderTest {
         builder.parse(FM_F7_ROM_EXT_WITHOUT_SIG);
 
         // then
-        Assertions.assertEquals(FM_EDI_ID, builder.getEdiId());
-        Assertions.assertEquals(FM_FAMILY_ID, builder.getFamilyId());
-        Assertions.assertEquals(FM_BUILD_IDENTIFIER_STRING, builder.getBuildIdentifierString());
-        Assertions.assertEquals(FM_ROM_EXT_HASH, builder.calculateRomExtensionHash());
+        assertEquals(FM_EDI_ID, builder.getEdiId());
+        assertEquals(FM_FAMILY_ID, builder.getFamilyId());
+        assertEquals(FM_BUILD_IDENTIFIER_STRING, builder.getBuildIdentifierString());
+        assertEquals(FM_ROM_EXT_HASH, builder.calculateRomExtensionHash());
     }
 
     @Test
@@ -114,7 +115,7 @@ class RomExtensionStructureBuilderTest {
         final String actual = toHex(builder.build().array());
 
         // then
-        Assertions.assertEquals(toHex(DM_ROM_EXT_STRUCTURE_WITHOUT_SIG), actual);
+        assertEquals(toHex(DM_ROM_EXT_STRUCTURE_WITHOUT_SIG), actual);
     }
 
     @Test
@@ -128,7 +129,7 @@ class RomExtensionStructureBuilderTest {
         final String actual = toHex(builder.build().array());
 
         // then
-        Assertions.assertEquals(toHex(FM_F7_ROM_EXT_WITHOUT_SIG), actual);
+        assertEquals(toHex(FM_F7_ROM_EXT_WITHOUT_SIG), actual);
     }
 
     @Test
@@ -142,7 +143,7 @@ class RomExtensionStructureBuilderTest {
         final String actual = toHex(builder.build().array());
 
         // then
-        Assertions.assertEquals(toHex(DM_ROM_EXT_STRUCTURE_WITH_SIG), actual);
+        assertEquals(toHex(DM_ROM_EXT_STRUCTURE_WITH_SIG), actual);
     }
 
     @Test
@@ -156,7 +157,7 @@ class RomExtensionStructureBuilderTest {
         final String actual = toHex(builder.build().array());
 
         // then
-        Assertions.assertEquals(toHex(FM_F7_ROM_EXT_WITH_SIG), actual);
+        assertEquals(toHex(FM_F7_ROM_EXT_WITH_SIG), actual);
     }
 
     @Test
@@ -166,7 +167,7 @@ class RomExtensionStructureBuilderTest {
             .withActor(EndiannessActor.FIRMWARE);
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class, () -> builder.parse(new byte[]{1, 2, 3, 4, 5}));
+        assertThrows(ParseStructureException.class, () -> builder.parse(new byte[]{1, 2, 3, 4, 5}));
     }
 
     @Test
@@ -176,7 +177,7 @@ class RomExtensionStructureBuilderTest {
             .withActor(EndiannessActor.FIRMWARE);
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class, () -> builder.parse(new byte[]{1, 2, 3}));
+        assertThrows(ParseStructureException.class, () -> builder.parse(new byte[]{1, 2, 3}));
     }
 
     @Test
@@ -186,7 +187,7 @@ class RomExtensionStructureBuilderTest {
             .withFamily(FM_FAMILY_ID)
             .withUnusedFixedSize(new byte[]{2, 0, 8, 0})
             .withEdiId(0)
-            .withUnusedVarySize(TestUtil.generateRandomData(31264))
+            .withUnusedVarySize(RandomUtils.generateRandomBytes(31264))
             .withBuildIdentifier(FM_BUILD_IDENTIFIER_STRING)
             .sign(dataToSign -> new RomExtensionAuthGeneratorUtil().signRomExtension(dataToSign))
             .withActor(EndiannessActor.FIRMWARE)
@@ -198,8 +199,8 @@ class RomExtensionStructureBuilderTest {
             .parse(initDataStructure.array());
 
         // then
-        Assertions.assertEquals(FM_EDI_ID, parsedData.getEdiId());
-        Assertions.assertEquals(FM_FAMILY_ID, parsedData.getFamilyId());
-        Assertions.assertEquals(FM_BUILD_IDENTIFIER_STRING, parsedData.getBuildIdentifierString());
+        assertEquals(FM_EDI_ID, parsedData.getEdiId());
+        assertEquals(FM_FAMILY_ID, parsedData.getFamilyId());
+        assertEquals(FM_BUILD_IDENTIFIER_STRING, parsedData.getBuildIdentifierString());
     }
 }

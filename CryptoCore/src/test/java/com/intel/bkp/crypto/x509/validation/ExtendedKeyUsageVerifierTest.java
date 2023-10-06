@@ -33,9 +33,8 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.FileUtils;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +44,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.X509Certificate;
 
 import static com.intel.bkp.crypto.x509.validation.ExtendedKeyUsageVerifier.KEY_PURPOSE_CODE_SIGNING;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class ExtendedKeyUsageVerifierTest {
@@ -65,8 +66,8 @@ class ExtendedKeyUsageVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        invalidCert = TestUtil.loadCertificate(INVALID_CERT);
-        validCert = TestUtil.loadCertificate(VALID_CERT);
+        invalidCert = FileUtils.loadCertificate(INVALID_CERT);
+        validCert = FileUtils.loadCertificate(VALID_CERT);
     }
 
     @Test
@@ -78,7 +79,7 @@ class ExtendedKeyUsageVerifierTest {
         boolean result = sut.verify(KEY_PURPOSE_IN_VALID_CERT);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -90,7 +91,7 @@ class ExtendedKeyUsageVerifierTest {
         boolean result = sut.verify(KEY_PURPOSE_IN_VALID_CERT);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -102,7 +103,7 @@ class ExtendedKeyUsageVerifierTest {
         boolean result = sut.verify(KEY_PURPOSE_IN_VALID_CERT, KEY_PURPOSE_NOT_IN_VALID_CERT);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -114,7 +115,7 @@ class ExtendedKeyUsageVerifierTest {
         boolean result = sut.verify(KEY_PURPOSE_NOT_IN_VALID_CERT, KEY_PURPOSE_NOT_IN_VALID_CERT_2);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
 }

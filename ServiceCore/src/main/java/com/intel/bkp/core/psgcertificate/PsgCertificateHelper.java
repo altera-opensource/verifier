@@ -42,7 +42,6 @@ import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidLeafCertificateExc
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidParentCertificatesException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidRootCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.CertificateEntryWrapper;
 import com.intel.bkp.core.psgcertificate.model.PsgCertificateType;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
@@ -55,9 +54,7 @@ import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -125,6 +122,10 @@ public class PsgCertificateHelper {
         return PsgPublicKeyHelper.from(psgCertificateBuilder.getPsgPublicKeyBuilder()).generateFingerprint();
     }
 
+    public static String generateSha256Fingerprint(PsgCertificateRootEntryBuilder psgCertificateBuilder) {
+        return PsgPublicKeyHelper.from(psgCertificateBuilder.getPsgPublicKeyBuilder()).generateSha256Fingerprint();
+    }
+
     private boolean verifyRootCertificateInternal(
         PsgCertificateRootEntryBuilder root, PsgCertificateRootEntryBuilder certObj) {
         return generateFingerprint(root).equals(generateFingerprint(certObj));
@@ -183,7 +184,7 @@ public class PsgCertificateHelper {
 
     public boolean verifyParentsByPubKeyRecursive(CertificateEntryWrapper parentEntry,
                                                   Iterator<CertificateEntryWrapper> certificateChainIterator)
-        throws PsgCertificateException, PsgInvalidSignatureException {
+        throws PsgInvalidSignatureException {
         if (certificateChainIterator.hasNext()) {
             PsgCertificateCommon parsedParentEntry = parseWrappedEntry(parentEntry);
             CertificateEntryWrapper childEntry = certificateChainIterator.next();
@@ -196,7 +197,7 @@ public class PsgCertificateHelper {
         return true;
     }
 
-    private PsgCertificateCommon parseWrappedEntry(CertificateEntryWrapper entry) throws PsgCertificateException {
+    private PsgCertificateCommon parseWrappedEntry(CertificateEntryWrapper entry) {
         if (entry.getType() == PsgCertificateType.ROOT) {
             return new PsgCertificateRootEntryBuilder().parse(entry.getContent()).build();
         } else {
@@ -208,8 +209,7 @@ public class PsgCertificateHelper {
         return child.getPsgSignature().length > 0;
     }
 
-    private byte[] getPsgPublicKeyForSignatureVerification(IPsgCertificateWithPubKey child)
-        throws PsgPubKeyException {
+    private byte[] getPsgPublicKeyForSignatureVerification(IPsgCertificateWithPubKey child) {
         return new PsgPublicKeyBuilder()
             .parse(child.getPsgPublicKey())
             .withActor(EndiannessActor.FIRMWARE)
@@ -232,7 +232,7 @@ public class PsgCertificateHelper {
             final ECPublicKey publicKey = decodeKey((IPsgCertificateWithPubKey) parent);
             final byte[] data = getPsgPublicKeyForSignatureVerification((IPsgCertificateWithPubKey) child);
             return sigVerify(signatureAlgorithm, publicKey, data, curvePoint);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | PublicKeyHelperException | PsgPubKeyException e) {
+        } catch (PublicKeyHelperException e) {
             throw new PsgInvalidSignatureException(FAILED_TO_CHECK_SIGNATURE, e);
         }
     }
@@ -246,22 +246,22 @@ public class PsgCertificateHelper {
         }
     }
 
-    private CurvePoint getCurvePoint(IPsgCertificateWithSignature child) throws PsgInvalidSignatureException {
+    private CurvePoint getCurvePoint(IPsgCertificateWithSignature child) {
         return new PsgSignatureBuilder().parse(child.getPsgSignature()).getCurvePoint();
     }
 
-    private EcSignatureAlgorithm getSignatureAlgorithm(IPsgCertificateWithPubKey entry) throws PsgPubKeyException {
+    private EcSignatureAlgorithm getSignatureAlgorithm(IPsgCertificateWithPubKey entry) {
         final CurvePoint pubKeyPoint = new PsgPublicKeyBuilder().parse(entry.getPsgPublicKey()).getCurvePoint();
         return EcSignatureAlgorithm.fromCurveSpec(pubKeyPoint.getCurveSpec());
     }
 
     private ECPublicKey decodeKey(IPsgCertificateWithPubKey parent)
-        throws InvalidKeySpecException, NoSuchAlgorithmException, PublicKeyHelperException, PsgPubKeyException {
+        throws PublicKeyHelperException {
         return (ECPublicKey) PsgPublicKeyHelper.from(parent.getPsgPublicKey()).toPublic();
     }
 
     public void verifyParentsInChainByPubKey(List<CertificateEntryWrapper> certificateChainList)
-        throws PsgInvalidParentCertificatesException, PsgCertificateException, PsgInvalidSignatureException {
+        throws PsgInvalidParentCertificatesException, PsgInvalidSignatureException {
 
         Iterator<CertificateEntryWrapper> iterator = certificateChainList.iterator();
         if (iterator.hasNext() && !verifyParentsByPubKeyRecursive(iterator.next(), iterator)) {

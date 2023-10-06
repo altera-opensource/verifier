@@ -60,7 +60,7 @@ class FwidHashAlgTest {
             assertThrows(FwidHashAlgNotSupported.class, () -> FwidHashAlg.from(1));
 
         // then
-        assertEquals("FwId Hash Alg of size 1 is not supported.", exception.getMessage());
+        assertEquals("FwId hash algorithm of size 1 is not supported.", exception.getMessage());
     }
 
     @Test

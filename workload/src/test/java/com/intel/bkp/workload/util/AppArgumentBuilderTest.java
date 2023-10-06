@@ -34,8 +34,11 @@
 package com.intel.bkp.workload.util;
 
 import com.intel.bkp.workload.model.CommandType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AppArgumentBuilderTest {
 
@@ -58,12 +61,12 @@ class AppArgumentBuilderTest {
             .build();
 
         // then
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
 
         // Transport id is counted from 0 not 1
-        Assertions.assertEquals(transportId, result.getTransportId());
-        Assertions.assertEquals(command, result.getCommand());
-        Assertions.assertEquals(pufType, result.getPufType());
+        assertEquals(transportId, result.getTransportId());
+        assertEquals(command, result.getCommand());
+        assertEquals(pufType, result.getPufType());
     }
 
     @Test
@@ -77,8 +80,8 @@ class AppArgumentBuilderTest {
             .build();
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertNull(result.getCommand());
+        assertNotNull(result);
+        assertNull(result.getCommand());
     }
 
 }

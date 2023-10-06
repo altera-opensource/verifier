@@ -33,12 +33,15 @@
 
 package com.intel.bkp.fpgacerts.dice.subject;
 
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.exceptions.InvalidDiceCertificateSubjectException;
 import com.intel.bkp.fpgacerts.model.AttFamily;
+import com.intel.bkp.test.CertificateUtils;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DiceCertificateSubjectTest {
 
@@ -54,11 +57,11 @@ class DiceCertificateSubjectTest {
         final var parsedSubject = DiceCertificateSubject.parse(deviceIdSubject);
 
         // then
-        Assertions.assertEquals("Intel", parsedSubject.companyName());
-        Assertions.assertEquals("Agilex", parsedSubject.familyName());
-        Assertions.assertEquals("L0", parsedSubject.level());
-        Assertions.assertEquals("H-e6TM4R12mufV0Z", parsedSubject.additionalData());
-        Assertions.assertEquals("0123456789abcdef", parsedSubject.deviceId());
+        assertEquals("Intel", parsedSubject.companyName());
+        assertEquals("Agilex", parsedSubject.familyName());
+        assertEquals("L0", parsedSubject.level());
+        assertEquals("H-e6TM4R12mufV0Z", parsedSubject.additionalData());
+        assertEquals("0123456789abcdef", parsedSubject.deviceId());
     }
 
     @Test
@@ -71,11 +74,11 @@ class DiceCertificateSubjectTest {
         final var parsedSubject = DiceCertificateSubject.parse(enrollmentSubject);
 
         // then
-        Assertions.assertEquals("Intel", parsedSubject.companyName());
-        Assertions.assertEquals("Agilex", parsedSubject.familyName());
-        Assertions.assertEquals("ER", parsedSubject.level());
-        Assertions.assertEquals("00", parsedSubject.additionalData());
-        Assertions.assertEquals("0123456789abcdef", parsedSubject.deviceId());
+        assertEquals("Intel", parsedSubject.companyName());
+        assertEquals("Agilex", parsedSubject.familyName());
+        assertEquals("ER", parsedSubject.level());
+        assertEquals("00", parsedSubject.additionalData());
+        assertEquals("0123456789abcdef", parsedSubject.deviceId());
     }
 
     @Test
@@ -88,11 +91,11 @@ class DiceCertificateSubjectTest {
         final var parsedSubject = DiceCertificateSubject.parse(iidUdsSubject);
 
         // then
-        Assertions.assertEquals("Intel", parsedSubject.companyName());
-        Assertions.assertEquals("Agilex", parsedSubject.familyName());
-        Assertions.assertEquals("PU", parsedSubject.level());
-        Assertions.assertEquals("DW43eBZHek7h0vG3", parsedSubject.additionalData());
-        Assertions.assertEquals("0123456789abcdef", parsedSubject.deviceId());
+        assertEquals("Intel", parsedSubject.companyName());
+        assertEquals("Agilex", parsedSubject.familyName());
+        assertEquals("PU", parsedSubject.level());
+        assertEquals("DW43eBZHek7h0vG3", parsedSubject.additionalData());
+        assertEquals("0123456789abcdef", parsedSubject.deviceId());
     }
 
     @Test
@@ -101,7 +104,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithInvalidDelimiter = "CN=Intel-Agilex-ER-00-0123456789abcdef";
 
         // when-then
-        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class,
+        assertThrows(InvalidDiceCertificateSubjectException.class,
             () -> DiceCertificateSubject.parse(subjectWithInvalidDelimiter));
     }
 
@@ -111,7 +114,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithTooManyComponents = "CN=Intel:Agilex:PU:DW43eBZHek7h0vG3:0123456789abcdef:blabla";
 
         // when-then
-        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class,
+        assertThrows(InvalidDiceCertificateSubjectException.class,
             () -> DiceCertificateSubject.parse(subjectWithTooManyComponents));
     }
 
@@ -121,7 +124,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithNotEnoughComponents = "CN=Intel:Agilex:PU:DW43eBZHek7h0vG3";
 
         // when-then
-        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class,
+        assertThrows(InvalidDiceCertificateSubjectException.class,
             () -> DiceCertificateSubject.parse(subjectWithNotEnoughComponents));
     }
 
@@ -131,7 +134,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithoutCommonName = "OU=Intel:Agilex:PU:DW43eBZHek7h0vG3";
 
         // when-then
-        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class,
+        assertThrows(InvalidDiceCertificateSubjectException.class,
             () -> DiceCertificateSubject.parse(subjectWithoutCommonName));
     }
 
@@ -141,7 +144,7 @@ class DiceCertificateSubjectTest {
         final String subjectNotADomainName = "not a set of RDNs";
 
         // when-then
-        Assertions.assertThrows(InvalidDiceCertificateSubjectException.class,
+        assertThrows(InvalidDiceCertificateSubjectException.class,
             () -> DiceCertificateSubject.parse(subjectNotADomainName));
     }
 
@@ -151,7 +154,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithUnknownFamilyName = "CN=Intel:NonExistentFamily:ER:01:0123456789abcdef";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithUnknownFamilyName));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithUnknownFamilyName));
     }
 
     @Test
@@ -160,7 +163,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithUnknownLevel = "CN=Intel:Agilex:BK:01:0123456789abcdef";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithUnknownLevel));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithUnknownLevel));
     }
 
     @Test
@@ -169,7 +172,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithInvalidSki = "CN=Intel:Agilex:PU:blabla:0123456789abcdef";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithInvalidSki));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithInvalidSki));
     }
 
     @Test
@@ -178,7 +181,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithSvnOutOfRange = "CN=Intel:Agilex:ER:FF:0123456789abcdef";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithSvnOutOfRange));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithSvnOutOfRange));
     }
 
     @Test
@@ -187,7 +190,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithInvalidDeviceId = "CN=Intel:Agilex:ER:FF:0123";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithInvalidDeviceId));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithInvalidDeviceId));
     }
 
     @Test
@@ -196,7 +199,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithAdditionalRDNsWithSpaces = "O=Intel Corporation, CN=Intel:Agilex:ER:FF:0123, C=US";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithAdditionalRDNsWithSpaces));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithAdditionalRDNsWithSpaces));
     }
 
     @Test
@@ -205,7 +208,7 @@ class DiceCertificateSubjectTest {
         final String subjectWithAdditionalRDNsWithoutSpaces = "O=Intel Corporation,CN=Intel:Agilex:ER:FF:0123,C=US";
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithAdditionalRDNsWithoutSpaces));
+        assertDoesNotThrow(() -> DiceCertificateSubject.parse(subjectWithAdditionalRDNsWithoutSpaces));
     }
 
     @Test
@@ -221,7 +224,7 @@ class DiceCertificateSubjectTest {
         final String actualSubject = DiceCertificateSubject.build(familyName, levelCode, ski, deviceId);
 
         // then
-        Assertions.assertEquals(expectedSubject, actualSubject);
+        assertEquals(expectedSubject, actualSubject);
     }
 
     @Test
@@ -232,7 +235,7 @@ class DiceCertificateSubjectTest {
         final var invalidSki = "blabla";
         final var invalidDeviceId = "blabla";
         // when
-        Assertions.assertDoesNotThrow(() ->
+        assertDoesNotThrow(() ->
             DiceCertificateSubject.build(nonExistentFamilyName, levelCode, invalidSki, invalidDeviceId));
     }
 
@@ -244,7 +247,7 @@ class DiceCertificateSubjectTest {
         final var svnOutOfRange = "20";
         final var deviceId = "0123456789abcdef";
         // when
-        Assertions.assertDoesNotThrow(
+        assertDoesNotThrow(
             () -> DiceCertificateSubject.build(familyName, levelCode, svnOutOfRange, deviceId));
     }
 
@@ -257,11 +260,11 @@ class DiceCertificateSubjectTest {
         final String result = subject.toString();
 
         // then
-        Assertions.assertEquals("CN=company:family:level:data:deviceId", result);
+        assertEquals("CN=company:family:level:data:deviceId", result);
     }
 
     @SneakyThrows
     private String getSubjectOfCertificate(String fileName) {
-        return Utils.readCertificate(TEST_FOLDER, fileName).getSubjectX500Principal().getName();
+        return CertificateUtils.readCertificate(TEST_FOLDER, fileName).getSubjectX500Principal().getName();
     }
 }

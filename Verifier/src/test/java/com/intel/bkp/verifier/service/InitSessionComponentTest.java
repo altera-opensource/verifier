@@ -33,18 +33,19 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.intel.bkp.command.model.CommandLayer;
 import com.intel.bkp.verifier.exceptions.InitSessionFailedException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
+import com.intel.bkp.verifier.protocol.common.service.GetChipIdMessageSender;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.sender.GetChipIdMessageSender;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,7 +78,7 @@ class InitSessionComponentTest {
         byte[] result = sut.initializeSessionForDeviceId(appContext);
 
         // then
-        Assertions.assertArrayEquals(DEVICE_ID, result);
+        assertArrayEquals(DEVICE_ID, result);
     }
 
     @Test
@@ -86,7 +87,7 @@ class InitSessionComponentTest {
         mockAppContext();
 
         // when-then
-        Assertions.assertThrows(InitSessionFailedException.class,
+        assertThrows(InitSessionFailedException.class,
             () -> sut.initializeSessionForDeviceId(appContext));
     }
 

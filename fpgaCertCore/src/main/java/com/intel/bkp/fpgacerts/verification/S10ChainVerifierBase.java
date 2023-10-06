@@ -58,12 +58,12 @@ public abstract class S10ChainVerifierBase {
     private final ExtendedKeyUsageVerifier extendedKeyUsageVerifier;
     private final CrlVerifier crlVerifier;
     private final RootHashVerifier rootHashVerifier;
-    private final String trustedRootHash;
+    private final String[] trustedRootHash;
 
     @Setter
     private byte[] deviceId;
 
-    public S10ChainVerifierBase(ICrlProvider crlProvider, String trustedRootHash) {
+    public S10ChainVerifierBase(ICrlProvider crlProvider, String[] trustedRootHash) {
         this(new ChainVerifier(), new ExtendedKeyUsageVerifier(),
                 new CrlVerifier(crlProvider), new RootHashVerifier(), trustedRootHash);
     }

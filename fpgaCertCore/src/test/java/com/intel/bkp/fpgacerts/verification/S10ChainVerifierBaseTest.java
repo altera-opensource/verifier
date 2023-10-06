@@ -36,7 +36,6 @@ package com.intel.bkp.fpgacerts.verification;
 import com.intel.bkp.crypto.x509.validation.ChainVerifier;
 import com.intel.bkp.crypto.x509.validation.ExtendedKeyUsageVerifier;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +50,9 @@ import java.util.List;
 import static com.intel.bkp.crypto.x509.validation.ExtendedKeyUsageVerifier.KEY_PURPOSE_CODE_SIGNING;
 import static com.intel.bkp.fpgacerts.utils.DeviceIdUtils.getS10CertificateSerialNumber;
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,7 +62,7 @@ class S10ChainVerifierBaseTest {
 
         S10ChainVerifierTestImpl(ChainVerifier chainVerifier, ExtendedKeyUsageVerifier extendedKeyUsageVerifier,
                                  CrlVerifier crlVerifier, RootHashVerifier rootHashVerifier,
-                                 String trustedRootHash) {
+                                 String[] trustedRootHash) {
             super(chainVerifier, extendedKeyUsageVerifier, crlVerifier, rootHashVerifier, trustedRootHash);
         }
 
@@ -105,7 +107,7 @@ class S10ChainVerifierBaseTest {
     @BeforeEach
     void setUp() {
         sut = new S10ChainVerifierTestImpl(chainVerifier, extendedKeyUsageVerifier, crlVerifier, rootHashVerifier,
-                S10_ROOT_HASH);
+                new String[]{S10_ROOT_HASH});
         setUpCertificates();
         sut.setDeviceId(DEVICE_ID);
     }
@@ -120,7 +122,7 @@ class S10ChainVerifierBaseTest {
         mockCrlVerification(true);
 
         // when
-        Assertions.assertDoesNotThrow(() -> sut.verifyChain(certificates));
+        assertDoesNotThrow(() -> sut.verifyChain(certificates));
     }
 
     @Test
@@ -181,8 +183,8 @@ class S10ChainVerifierBaseTest {
     }
 
     private void assertVerifyChainThrowsException(String expectedExceptionMessage) {
-        RuntimeException thrown = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedExceptionMessage, thrown.getMessage());
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedExceptionMessage, thrown.getMessage());
     }
 
     private void setUpCertificates() {
@@ -206,7 +208,7 @@ class S10ChainVerifierBaseTest {
     }
 
     private void mockRootHashVerification(boolean verificationPassed) {
-        when(rootHashVerifier.verifyRootHash(x509RootCert, S10_ROOT_HASH)).thenReturn(verificationPassed);
+        when(rootHashVerifier.verifyRootHash(x509RootCert, new String[]{S10_ROOT_HASH})).thenReturn(verificationPassed);
     }
 
     private void mockCrlVerification(boolean verificationPassed) {

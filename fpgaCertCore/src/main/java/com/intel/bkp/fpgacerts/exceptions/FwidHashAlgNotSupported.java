@@ -33,9 +33,17 @@
 
 package com.intel.bkp.fpgacerts.exceptions;
 
-public class FwidHashAlgNotSupported extends Exception {
+public class FwidHashAlgNotSupported extends RuntimeException {
 
-    public FwidHashAlgNotSupported(int measurementSize) {
-        super("FwId Hash Alg of size %d is not supported.".formatted(measurementSize));
+    private FwidHashAlgNotSupported(String message) {
+        super(message);
+    }
+
+    public static FwidHashAlgNotSupported fromMeasurementSize(int size) {
+        return new FwidHashAlgNotSupported("FwId hash algorithm of size %d is not supported.".formatted(size));
+    }
+
+    public static FwidHashAlgNotSupported fromHashAlgId(int hashAlgId) {
+        return new FwidHashAlgNotSupported("FwId hash algorithm with id %d is not supported.".formatted(hashAlgId));
     }
 }

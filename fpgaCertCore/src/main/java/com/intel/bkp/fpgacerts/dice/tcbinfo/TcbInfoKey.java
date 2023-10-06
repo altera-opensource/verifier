@@ -33,6 +33,9 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -41,6 +44,8 @@ import java.util.Optional;
 import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
 
 @Data
+@Builder
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor
 public class TcbInfoKey {
 

@@ -33,25 +33,29 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.verifier.exceptions.SpdmNotSupportedException;
-import com.intel.bkp.verifier.exceptions.UnknownCommandException;
-import com.intel.bkp.verifier.exceptions.UnsupportedSpdmVersionException;
+import com.intel.bkp.command.exception.JtagUnknownCommandResponseException;
+import com.intel.bkp.command.model.CommandLayer;
+import com.intel.bkp.protocol.spdm.exceptions.SpdmNotSupportedException;
+import com.intel.bkp.protocol.spdm.exceptions.UnsupportedSpdmVersionException;
+import com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.protocol.sigma.service.GpDiceAttestationComponent;
+import com.intel.bkp.verifier.protocol.sigma.service.GpGetCertificateMessageSender;
+import com.intel.bkp.verifier.protocol.sigma.service.GpS10AttestationComponent;
+import com.intel.bkp.verifier.protocol.sigma.service.TeardownMessageSender;
+import com.intel.bkp.verifier.protocol.spdm.jna.SpdmProtocol12Impl;
+import com.intel.bkp.verifier.protocol.spdm.service.SpdmDiceAttestationComponent;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.sender.GpGetCertificateMessageSender;
-import com.intel.bkp.verifier.service.sender.SpdmGetVersionMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.intel.bkp.core.command.model.CertificateRequestType.FIRMWARE;
+import static com.intel.bkp.command.model.CertificateRequestType.FIRMWARE;
 
 @Slf4j
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class GetDeviceAttestationComponent {
 
     private final GpGetCertificateMessageSender gpGetCertificateMessageSender;
@@ -62,30 +66,29 @@ public class GetDeviceAttestationComponent {
     private final SpdmDiceAttestationComponent spdmDiceAttestationComponent;
 
     public GetDeviceAttestationComponent() {
-        this(new GpGetCertificateMessageSender(),
-            new GpS10AttestationComponent(),
-            new GpDiceAttestationComponent(),
-            new SpdmGetVersionMessageSender(),
-            new TeardownMessageSender(),
-            new SpdmDiceAttestationComponent()
-        );
+        this.gpGetCertificateMessageSender = new GpGetCertificateMessageSender();
+        this.gpS10AttestationComponent = new GpS10AttestationComponent();
+        this.gpDiceAttestationComponent = new GpDiceAttestationComponent();
+        this.spdmGetVersionMessageSender = new SpdmGetVersionMessageSender(new SpdmProtocol12Impl());
+        this.teardownMessageSender = new TeardownMessageSender();
+        this.spdmDiceAttestationComponent = new SpdmDiceAttestationComponent();
     }
 
-    public VerifierExchangeResponse perform(String refMeasurement, byte[] deviceId) {
-        return perform(AppContext.instance(), refMeasurement, deviceId);
+    public VerifierExchangeResponse perform(String refMeasurementHex, byte[] deviceId) {
+        return perform(AppContext.instance(), refMeasurementHex, deviceId);
     }
 
-    VerifierExchangeResponse perform(AppContext appContext, String refMeasurement, byte[] deviceId) {
+    VerifierExchangeResponse perform(AppContext appContext, String refMeasurementHex, byte[] deviceId) {
         final TransportLayer transportLayer = appContext.getTransportLayer();
         final CommandLayer commandLayer = appContext.getCommandLayer();
 
         if (appContext.getLibConfig().isRunGpAttestation()) {
             log.debug("Forced GP ATTESTATION.");
-            return runGpAttestation(refMeasurement, deviceId, transportLayer, commandLayer);
+            return runGpAttestation(refMeasurementHex, deviceId, transportLayer, commandLayer);
         } else if (!spdmSupported()) {
-            return runGpAttestation(refMeasurement, deviceId, transportLayer, commandLayer);
+            return runGpAttestation(refMeasurementHex, deviceId, transportLayer, commandLayer);
         } else {
-            return runSpdmAttestation(refMeasurement, deviceId);
+            return runSpdmAttestation(refMeasurementHex, deviceId);
         }
     }
 
@@ -103,23 +106,23 @@ public class GetDeviceAttestationComponent {
         }
     }
 
-    private VerifierExchangeResponse runGpAttestation(String refMeasurement, byte[] deviceId,
+    private VerifierExchangeResponse runGpAttestation(String refMeasurementHex, byte[] deviceId,
                                                       TransportLayer transportLayer, CommandLayer commandLayer) {
         log.debug("Running GP Attestation.");
         teardownMessageSender.send(transportLayer, commandLayer);
 
         try {
             final byte[] response = gpGetCertificateMessageSender.send(transportLayer, commandLayer, FIRMWARE);
-            log.debug("This is FM/DM board.");
-            return gpDiceAttestationComponent.perform(response, refMeasurement, deviceId);
-        } catch (UnknownCommandException e) {
+            log.debug("This board supports DICE certificate chain.");
+            return gpDiceAttestationComponent.perform(response, refMeasurementHex, deviceId);
+        } catch (JtagUnknownCommandResponseException e) {
             log.debug("This is S10 board: {}", e.getMessage());
-            return gpS10AttestationComponent.perform(refMeasurement, deviceId);
+            return gpS10AttestationComponent.perform(refMeasurementHex, deviceId);
         }
     }
 
-    private VerifierExchangeResponse runSpdmAttestation(String refMeasurement, byte[] deviceId) {
+    private VerifierExchangeResponse runSpdmAttestation(String refMeasurementHex, byte[] deviceId) {
         log.debug("Running SPDM Attestation.");
-        return spdmDiceAttestationComponent.perform(refMeasurement, deviceId);
+        return spdmDiceAttestationComponent.perform(refMeasurementHex, deviceId);
     }
 }

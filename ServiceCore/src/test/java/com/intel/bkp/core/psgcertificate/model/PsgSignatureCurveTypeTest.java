@@ -34,8 +34,10 @@
 package com.intel.bkp.core.psgcertificate.model;
 
 import com.intel.bkp.crypto.curve.CurveSpec;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PsgSignatureCurveTypeTest {
 
@@ -48,13 +50,13 @@ class PsgSignatureCurveTypeTest {
         final PsgSignatureCurveType actual = PsgSignatureCurveType.fromMagic(expectedType.getMagic());
 
         // then
-        Assertions.assertEquals(expectedType, actual);
+        assertEquals(expectedType, actual);
     }
 
     @Test
     void fromMagic_WithWrongHashMagic_ThrowsException() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> PsgSignatureCurveType.fromMagic(1555)
         );
     }
@@ -65,13 +67,13 @@ class PsgSignatureCurveTypeTest {
         final PsgSignatureCurveType actual = PsgSignatureCurveType.fromCurveSpec(CurveSpec.C384);
 
         // then
-        Assertions.assertEquals(PsgSignatureCurveType.SECP384R1, actual);
+        assertEquals(PsgSignatureCurveType.SECP384R1, actual);
     }
 
     @Test
     void fromCurveSpec_WithNotSupportedPsgCurveType_ThrowsException() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> PsgSignatureCurveType.fromCurveSpec(CurveSpec.C521)
         );
     }

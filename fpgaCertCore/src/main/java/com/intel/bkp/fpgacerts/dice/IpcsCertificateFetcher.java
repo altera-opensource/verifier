@@ -54,7 +54,7 @@ import java.util.Optional;
 @Slf4j
 public class IpcsCertificateFetcher {
 
-    private final ICertificateFetcher certificateFetcher;
+    private final ICertificateFetcher<X509Certificate> certificateFetcher;
     private final DistributionPointAddressProvider addressProvider;
     private final DiceParamsProvider paramsProvider;
 
@@ -71,7 +71,8 @@ public class IpcsCertificateFetcher {
     private Optional<Optional<DistributionPointCertificate>> ipcsEnrollmentCert;
     private Optional<Optional<DistributionPointCertificate>> ipcsIidUdsCert;
 
-    public IpcsCertificateFetcher(ICertificateFetcher certificateFetcher, String certificateUrlPrefix) {
+    public IpcsCertificateFetcher(ICertificateFetcher<X509Certificate> certificateFetcher,
+                                  String certificateUrlPrefix) {
         this(certificateFetcher,
             new DiceParamsSubjectParser(),
             new DiceParamsIssuerParser(),
@@ -79,7 +80,7 @@ public class IpcsCertificateFetcher {
             new DistributionPointAddressProvider(certificateUrlPrefix));
     }
 
-    IpcsCertificateFetcher(ICertificateFetcher certificateFetcher,
+    IpcsCertificateFetcher(ICertificateFetcher<X509Certificate> certificateFetcher,
                            DiceParamsSubjectParser diceParamsSubjectParser,
                            DiceParamsIssuerParser diceParamsIssuerParser,
                            DiceEnrollmentParamsIssuerParser diceEnrollmentParamsIssuerParser,

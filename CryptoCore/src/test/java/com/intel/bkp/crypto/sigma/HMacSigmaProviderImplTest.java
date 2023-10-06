@@ -34,8 +34,10 @@
 package com.intel.bkp.crypto.sigma;
 
 import com.intel.bkp.crypto.exceptions.HMacProviderException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HMacSigmaProviderImplTest {
 
@@ -47,14 +49,14 @@ public class HMacSigmaProviderImplTest {
     @Test
     public void getHash_ReturnValidObject() throws HMacProviderException {
         // given
-        final byte[] testData = { 1, 2, 3, 4, 5 };
+        final byte[] testData = {1, 2, 3, 4, 5};
 
         // when
         final byte[] result = sut.getHash(testData);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(OUTPUT_KEY_LEN, result.length);
+        assertNotNull(result);
+        assertEquals(OUTPUT_KEY_LEN, result.length);
     }
 
     @Test
@@ -63,7 +65,7 @@ public class HMacSigmaProviderImplTest {
         String result = sut.getAlgorithmType();
 
         // then
-        Assertions.assertEquals("HMAC-SHA384", result);
+        assertEquals("HMAC-SHA384", result);
     }
 
 }

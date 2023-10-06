@@ -33,8 +33,9 @@
 
 package com.intel.bkp.fpgacerts.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DeviceIdUtilTest {
 
@@ -47,6 +48,6 @@ class DeviceIdUtilTest {
         String reversed = DeviceIdUtil.getReversed(DEVICE_ID);
 
         // then
-        Assertions.assertEquals(EXPECTED_DEVICE_ID_REVERSED, reversed);
+        assertEquals(EXPECTED_DEVICE_ID_REVERSED, reversed);
     }
 }

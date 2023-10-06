@@ -34,15 +34,18 @@
 package com.intel.bkp.crypto.impl;
 
 import com.intel.bkp.crypto.CryptoUtils;
-import com.intel.bkp.crypto.TestUtil;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
 import com.intel.bkp.crypto.exceptions.InvalidSignatureException;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.provider.TestProvider;
+import com.intel.bkp.test.KeyLoadUtils;
+import com.intel.bkp.test.SigningUtils;
 import com.intel.bkp.utils.PaddingUtils;
-import org.junit.jupiter.api.Assertions;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -57,11 +60,16 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 
-import static com.intel.bkp.crypto.TestUtil.assertThatArrayIsSubarrayOfAnotherArray;
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.pemToX509Certificate;
+import static com.intel.bkp.test.AssertionUtils.assertThatArrayIsSubarrayOfAnotherArray;
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ECUtilsTest {
 
@@ -136,7 +144,7 @@ class ECUtilsTest {
         provider = new TestProvider(providerName, "1.0", "info");
 
         //when-then
-        Assertions.assertThrows(KeystoreGenericException.class, () -> EcUtils.genEc(provider,
+        assertThrows(KeystoreGenericException.class, () -> EcUtils.genEc(provider,
             CryptoConstants.ECDH_KEY, CryptoConstants.EC_CURVE_SPEC_384));
     }
 
@@ -146,7 +154,7 @@ class ECUtilsTest {
         provider = new TestProvider(providerName, "1.0", "info");
 
         //when-then
-        Assertions.assertThrows(KeystoreGenericException.class, () -> EcUtils.genEc(provider,
+        assertThrows(KeystoreGenericException.class, () -> EcUtils.genEc(provider,
             CryptoConstants.EC_KEY, CryptoConstants.EC_CURVE_SPEC_384));
     }
 
@@ -157,8 +165,8 @@ class ECUtilsTest {
             CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDH_KEY, result.getPrivate().getAlgorithm());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.ECDH_KEY, result.getPrivate().getAlgorithm());
     }
 
     @Test
@@ -168,8 +176,8 @@ class ECUtilsTest {
             CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.EC_KEY, result.getPrivate().getAlgorithm());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.EC_KEY, result.getPrivate().getAlgorithm());
     }
 
     @Test
@@ -191,9 +199,9 @@ class ECUtilsTest {
             firstPublic, CryptoConstants.KEY_AGREEMENT_ALG_TYPE);
 
         // then
-        Assertions.assertNotNull(bytesA);
-        Assertions.assertNotNull(bytesB);
-        Assertions.assertArrayEquals(bytesA, bytesB);
+        assertNotNull(bytesA);
+        assertNotNull(bytesB);
+        assertArrayEquals(bytesA, bytesB);
     }
 
     @Test
@@ -208,7 +216,7 @@ class ECUtilsTest {
         final PublicKey secondPublic = secondKeypair.getPublic();
 
         // when-then
-        Assertions.assertThrows(KeystoreGenericException.class, () ->
+        assertThrows(KeystoreGenericException.class, () ->
             EcUtils.genEcdhSharedSecret(CryptoUtils.getBouncyCastleProvider(), firstPrivate,
                 secondPublic, incorrectAlgorithm));
     }
@@ -225,9 +233,9 @@ class ECUtilsTest {
         ECPublicKeySpec result = EcUtils.getEcKeySpec(affineX, affineY, CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(affineX, result.getW().getAffineX());
-        Assertions.assertEquals(affineY, result.getW().getAffineY());
+        assertNotNull(result);
+        assertEquals(affineX, result.getW().getAffineX());
+        assertEquals(affineY, result.getW().getAffineY());
     }
 
     @Test
@@ -240,8 +248,8 @@ class ECUtilsTest {
         ECPrivateKeySpec result = EcUtils.getEcKeySpec(d, CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(d, result.getS());
+        assertNotNull(result);
+        assertEquals(d, result.getS());
     }
 
     @Test
@@ -250,23 +258,23 @@ class ECUtilsTest {
         org.bouncycastle.math.ec.ECPoint result = EcUtils.getCurveGenerator(CryptoConstants.EC_CURVE_SPEC_384);
 
         // then
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
     }
 
     @Test
     public void signEcData() throws Exception {
         // given
         final byte[] testData = "data to sign\n".getBytes();
-        final PrivateKey privateKey = TestUtil.getEcPrivateKeyFromPem(privateKeyInPem);
-        final PublicKey publicKey = TestUtil.getEcPublicKeyFromPem(publicKeyInPem);
+        final PrivateKey privateKey = KeyLoadUtils.getEcPrivateKeyFromPem(privateKeyInPem);
+        final PublicKey publicKey = KeyLoadUtils.getEcPublicKeyFromPem(publicKeyInPem);
 
         // when
         final byte[] result = EcUtils.signEcData(privateKey, testData,
             CryptoConstants.SHA384_WITH_ECDSA, CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(EcUtils.sigVerify(publicKey, testData, result,
+        assertNotNull(result);
+        assertTrue(EcUtils.sigVerify(publicKey, testData, result,
             CryptoConstants.SHA384_WITH_ECDSA, CryptoUtils.getBouncyCastleProvider()));
     }
 
@@ -275,10 +283,10 @@ class ECUtilsTest {
         // given
         final String mismatchedAlgorithm = CryptoConstants.SHA384_WITH_RSA;
         final byte[] testData = "test".getBytes();
-        final PrivateKey privateKey = TestUtil.getEcPrivateKeyFromPem(privateKeyInPem);
+        final PrivateKey privateKey = KeyLoadUtils.getEcPrivateKeyFromPem(privateKeyInPem);
 
         // when-then
-        Assertions.assertThrows(KeystoreGenericException.class, () ->
+        assertThrows(KeystoreGenericException.class, () ->
             EcUtils.signEcData(privateKey, testData, mismatchedAlgorithm, CryptoUtils.getBouncyCastleProvider()));
     }
 
@@ -289,13 +297,13 @@ class ECUtilsTest {
         final String verifyingAlgorithm = signingAlgorithm;
         final byte[] testData = "Test".getBytes();
         final KeyPair key = CryptoUtils.genEcdsaBC();
-        final byte[] signEcData = TestUtil.signEc(testData, key.getPrivate(), signingAlgorithm);
+        final byte[] signEcData = SigningUtils.signEcData(testData, key.getPrivate(), signingAlgorithm);
         // when
         final boolean result = EcUtils.sigVerify(key.getPublic(), testData, signEcData,
             verifyingAlgorithm, CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -305,9 +313,9 @@ class ECUtilsTest {
         final String verifyingAlgorithm = CryptoConstants.SHA384_WITH_RSA;
         final byte[] testData = "Test".getBytes();
         final KeyPair key = CryptoUtils.genEcdsaBC();
-        final byte[] signEcData = TestUtil.signEc(testData, key.getPrivate(), signingAlgorithm);
+        final byte[] signEcData = SigningUtils.signEcData(testData, key.getPrivate(), signingAlgorithm);
         // when-then
-        Assertions.assertThrows(InvalidSignatureException.class, () ->
+        assertThrows(InvalidSignatureException.class, () ->
             EcUtils.sigVerify(key.getPublic(), testData, signEcData,
                 verifyingAlgorithm, CryptoUtils.getBouncyCastleProvider()));
     }
@@ -326,8 +334,8 @@ class ECUtilsTest {
             matchingAlgorithm, CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertTrue(matchingSignatureResult);
-        Assertions.assertFalse(notMatchingSignatureResult);
+        assertTrue(matchingSignatureResult);
+        assertFalse(notMatchingSignatureResult);
     }
 
     @Test
@@ -337,41 +345,25 @@ class ECUtilsTest {
         final X509Certificate cert = pemToX509Certificate(certInPem);
 
         // when-then
-        Assertions.assertThrows(InvalidSignatureException.class, () ->
+        assertThrows(InvalidSignatureException.class, () ->
             EcUtils.sigVerify(cert, signaturePayload, matchingSignature,
                 mismatchedAlgorithm, CryptoUtils.getBouncyCastleProvider()));
     }
 
-    @Test
-    public void toPrivate() throws KeystoreGenericException, InvalidKeySpecException, NoSuchAlgorithmException {
+    @ParameterizedTest
+    @ValueSource(ints = {47, 48, 49})
+    public void toPrivate_ForDifferentKeySizes_Success(int initialKeySize) throws Exception {
         // given
-        KeyPair key = CryptoUtils.genEcdhBC();
-        byte[] privateBytes = EcUtils.getBytesFromPrivKey((ECPrivateKey) key.getPrivate());
-        byte[] privateBytesWithoutLeadingZero = PaddingUtils.alignLeft(privateBytes, 48);
+        final byte[] privateBytesAlignedToLen48 = generatePrivateKeyBytesOfInitialSizeAlignedTo48(initialKeySize);
 
         // when
-        PrivateKey result = EcUtils.toPrivate(privateBytesWithoutLeadingZero, CryptoConstants.ECDH_KEY,
+        PrivateKey result = EcUtils.toPrivate(privateBytesAlignedToLen48, CryptoConstants.ECDH_KEY,
             CryptoConstants.EC_CURVE_SPEC_384, CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDH_KEY, result.getAlgorithm());
-        assertThatArrayIsSubarrayOfAnotherArray(result.getEncoded(),
-            removeU2Padding(privateBytesWithoutLeadingZero));
-    }
-
-    // BC parses key as signed number in U2 thus it ignores every 'FF' in front
-    // of negative number as it would be a padding for this number
-    private byte[] removeU2Padding(byte[] privateBytes) {
-        byte[] bytesWithoutPadding = Arrays.copyOf(privateBytes, privateBytes.length);
-        for (int index = 0; index < bytesWithoutPadding.length - 2; index++) {
-            if (bytesWithoutPadding[index] == -1 && bytesWithoutPadding[index + 1] < 0) {
-                bytesWithoutPadding[index] = 0;
-            } else {
-                return bytesWithoutPadding;
-            }
-        }
-        return bytesWithoutPadding;
+        assertNotNull(result);
+        assertEquals(CryptoConstants.ECDH_KEY, result.getAlgorithm());
+        assertThatArrayIsSubarrayOfAnotherArray(result.getEncoded(), privateBytesAlignedToLen48);
     }
 
     @Test
@@ -388,8 +380,8 @@ class ECUtilsTest {
             curveType, CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDH_KEY, result.getAlgorithm());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.ECDH_KEY, result.getAlgorithm());
         assertThatArrayIsSubarrayOfAnotherArray(result.getEncoded(), publicKeyBytes);
     }
 
@@ -407,8 +399,8 @@ class ECUtilsTest {
             curveType, CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(CryptoConstants.ECDH_KEY, result.getAlgorithm());
+        assertNotNull(result);
+        assertEquals(CryptoConstants.ECDH_KEY, result.getAlgorithm());
         assertThatArrayIsSubarrayOfAnotherArray(result.getEncoded(), publicKeyBytes);
     }
 
@@ -419,21 +411,32 @@ class ECUtilsTest {
         final byte[] invalidPublicKeyBytes = new byte[96];
 
         // when-then
-        Assertions.assertThrows(EcdhKeyPairException.class, () ->
+        assertThrows(EcdhKeyPairException.class, () ->
             EcUtils.toPublic(invalidPublicKeyBytes, CryptoConstants.ECDH_KEY,
                 curveType, CryptoUtils.getBouncyCastleProvider()));
     }
 
     @Test
-    void generateFingerprint_Success() throws Exception {
+    void generateSha256Fingerprint_Success() throws Exception {
         // given
-        int expectedLen = 2 * CryptoConstants.SHA384_LEN;
+        int expectedLen = 2 * CryptoConstants.SHA256_LEN;
         final KeyPair keyPair = CryptoUtils.genEcdsaBC(CryptoConstants.EC_CURVE_SPEC_384);
 
         // when
-        final String result = EcUtils.generateFingerprint(keyPair.getPublic());
+        final String result = EcUtils.generateSha256Fingerprint(keyPair.getPublic());
 
         // then
-        Assertions.assertEquals(expectedLen, result.length());
+        assertEquals(expectedLen, result.length());
+    }
+
+    @SneakyThrows
+    private static byte[] generatePrivateKeyBytesOfInitialSizeAlignedTo48(int initialKeySize) {
+        byte[] privateBytes;
+        do {
+            final KeyPair key = CryptoUtils.genEcdhBC();
+            privateBytes = EcUtils.getBytesFromPrivKey((ECPrivateKey) key.getPrivate());
+        } while (privateBytes.length != initialKeySize);
+
+        return PaddingUtils.alignLeft(privateBytes, 48);
     }
 }

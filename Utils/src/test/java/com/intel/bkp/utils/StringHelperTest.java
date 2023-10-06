@@ -33,11 +33,12 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StringHelperTest {
 
@@ -139,12 +140,12 @@ class StringHelperTest {
 
     private void function_ReturnsExpected(Function<String, String> function, String str, String expectedResult) {
         // when-then
-        Assertions.assertEquals(expectedResult, function.apply(str));
+        assertEquals(expectedResult, function.apply(str));
     }
 
     private void function_ReturnsExpected(BiFunction<String, Integer, String> function, String str,
                                           Integer desiredLength, String expectedResult) {
         // when-then
-        Assertions.assertEquals(expectedResult, function.apply(str, desiredLength));
+        assertEquals(expectedResult, function.apply(str, desiredLength));
     }
 }

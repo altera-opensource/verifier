@@ -34,17 +34,17 @@
 package com.intel.bkp.utils;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -67,7 +67,7 @@ class X509DateBuilderHelperTest {
 
     @BeforeAll
     static void prepareStaticMock() {
-        instantMockStatic = mockStatic(Instant.class, Mockito.CALLS_REAL_METHODS);
+        instantMockStatic = mockStatic(Instant.class, CALLS_REAL_METHODS);
         when(Instant.now()).thenReturn(NOW_INSTANT);
     }
 
@@ -89,7 +89,7 @@ class X509DateBuilderHelperTest {
         final Date result = X509DateBuilderHelper.notBefore();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -98,7 +98,7 @@ class X509DateBuilderHelperTest {
         final String result = X509DateBuilderHelper.notBeforeDate();
 
         // then
-        Assertions.assertEquals(NOW_DATE, result);
+        assertEquals(NOW_DATE, result);
     }
 
     @Test
@@ -107,7 +107,7 @@ class X509DateBuilderHelperTest {
         Date actualDate = X509DateBuilderHelper.notAfter(5);
 
         // then
-        Assertions.assertEquals(NOW_PLUS_5_YEARS, actualDate);
+        assertEquals(NOW_PLUS_5_YEARS, actualDate);
     }
 
     @Test
@@ -120,7 +120,7 @@ class X509DateBuilderHelperTest {
         Date actualDate = X509DateBuilderHelper.notAfter(startDateNow, 5);
 
         // then
-        Assertions.assertEquals(expectedDate, actualDate);
+        assertEquals(expectedDate, actualDate);
     }
 
     @Test
@@ -132,7 +132,7 @@ class X509DateBuilderHelperTest {
         Date actualDate = X509DateBuilderHelper.notAfter();
 
         // then
-        Assertions.assertEquals(expectedDate, actualDate);
+        assertEquals(expectedDate, actualDate);
     }
 
     @Test
@@ -141,7 +141,7 @@ class X509DateBuilderHelperTest {
         final String result = X509DateBuilderHelper.notAfterDate(PLUS_YEARS);
 
         // then
-        Assertions.assertEquals(NOW_PLUS_5_YEARS_DATE, result);
+        assertEquals(NOW_PLUS_5_YEARS_DATE, result);
     }
 
     @Test
@@ -150,7 +150,7 @@ class X509DateBuilderHelperTest {
         final String result = X509DateBuilderHelper.notAfterDateTime(PLUS_12_HOURS);
 
         // then
-        Assertions.assertEquals(NOW_PLUS_12_HOURS_DATE_TIME, result);
+        assertEquals(NOW_PLUS_12_HOURS_DATE_TIME, result);
     }
 
     @Test
@@ -159,7 +159,7 @@ class X509DateBuilderHelperTest {
         final String result = X509DateBuilderHelper.notAfterDateTime(PLUS_24_HOURS);
 
         // then
-        Assertions.assertEquals(NOW_PLUS_24_HOURS_DATE_TIME, result);
+        assertEquals(NOW_PLUS_24_HOURS_DATE_TIME, result);
     }
 
     @Test
@@ -168,6 +168,6 @@ class X509DateBuilderHelperTest {
         String actualDateString = X509DateBuilderHelper.notAfterDate();
 
         // then
-        Assertions.assertEquals(INFINITE_DATE, actualDateString);
+        assertEquals(INFINITE_DATE, actualDateString);
     }
 }

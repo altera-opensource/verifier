@@ -33,7 +33,6 @@
 
 package com.intel.bkp.core.security.provider;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +42,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @ExtendWith(MockitoExtension.class)
 class HsmBasedProviderTest {
@@ -65,14 +66,14 @@ class HsmBasedProviderTest {
 
     @Test
     void load_withEmptyKeystoreInputPath_ThrowsException() {
-        Assertions.assertDoesNotThrow(() -> sut.load(keystore, null, KEYSTORE_PASSWORD)
+        assertDoesNotThrow(() -> sut.load(keystore, null, KEYSTORE_PASSWORD)
         );
     }
 
 //    @Test
 //    void load_Success() {
 //        // when-then
-//        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+//        assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
 //    }
 //
 //    @Test
@@ -81,7 +82,7 @@ class HsmBasedProviderTest {
 //        sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD);
 //
 //        // when
-//        Assertions.assertDoesNotThrow(() -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+//        assertDoesNotThrow(() -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
 //    }
 
     private File initKeystore() throws Exception {

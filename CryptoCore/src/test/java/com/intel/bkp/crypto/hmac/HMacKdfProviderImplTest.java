@@ -34,8 +34,10 @@
 package com.intel.bkp.crypto.hmac;
 
 import com.intel.bkp.crypto.exceptions.HMacProviderException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HMacKdfProviderImplTest {
 
@@ -44,15 +46,15 @@ public class HMacKdfProviderImplTest {
     @Test
     public void getHash_ReturnValidObject() throws HMacProviderException {
         // given
-        final byte[] masterKey = { 1, 2, 3, 4, 5 };
-        final byte[] testData = { 1, 2, 3, 4, 5 };
+        final byte[] masterKey = {1, 2, 3, 4, 5};
+        final byte[] testData = {1, 2, 3, 4, 5};
 
         // when
         final byte[] result = new HMacKdfProviderImpl(masterKey).getHash(testData);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(OUTPUT_KEY_LEN, result.length);
+        assertNotNull(result);
+        assertEquals(OUTPUT_KEY_LEN, result.length);
     }
 
 }

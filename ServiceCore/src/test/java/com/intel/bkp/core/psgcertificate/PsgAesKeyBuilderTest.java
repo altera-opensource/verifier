@@ -37,12 +37,13 @@ import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.psgcertificate.enumerations.KeyWrappingType;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class PsgAesKeyBuilderTest {
 
@@ -60,8 +61,8 @@ class PsgAesKeyBuilderTest {
             .parse(aesContent);
 
         // then
-        commonAssert(aesContent, builder, StorageType.PUFSS, KeyWrappingType.IID);
-        Assertions.assertEquals(AES_KEY_E2E, toHex(builder.getUserAesRootKey()));
+        commonAssert(aesContent, builder, StorageType.PUFSS, KeyWrappingType.IID_PUF);
+        assertEquals(AES_KEY_E2E, toHex(builder.getUserAesRootKey()));
     }
 
     @Test
@@ -76,7 +77,7 @@ class PsgAesKeyBuilderTest {
 
         // then
         commonAssert(aesContent, builder, StorageType.BBRAM, KeyWrappingType.NOWRAP);
-        Assertions.assertEquals(AES_KEY_E2E, toHex(builder.getUserAesRootKey()));
+        assertEquals(AES_KEY_E2E, toHex(builder.getUserAesRootKey()));
     }
 
     @Test
@@ -91,7 +92,7 @@ class PsgAesKeyBuilderTest {
 
         // then
         commonAssert(aesContent, builder, StorageType.EFUSES, KeyWrappingType.INTERNAL);
-        Assertions.assertEquals(AES_KEY_E2E, toHex(builder.getUserAesRootKey()));
+        assertEquals(AES_KEY_E2E, toHex(builder.getUserAesRootKey()));
     }
 
     @Test
@@ -107,7 +108,7 @@ class PsgAesKeyBuilderTest {
         // then
         commonAssert(aesContent, builder, StorageType.EFUSES, KeyWrappingType.INTERNAL);
 
-        Assertions.assertEquals(AES_KEY_CUSTOM, toHex(builder.getUserAesRootKey()));
+        assertEquals(AES_KEY_CUSTOM, toHex(builder.getUserAesRootKey()));
     }
 
     private byte[] loadExampleAesKey(String filename) throws IOException {
@@ -115,12 +116,12 @@ class PsgAesKeyBuilderTest {
     }
 
     private void commonAssert(byte[] content, PsgAesKeyBuilder builder, StorageType storage, KeyWrappingType keyType) {
-        Assertions.assertNotNull(builder);
-        Assertions.assertEquals(storage, builder.getStorageType());
-        Assertions.assertEquals(keyType, builder.getKeyWrappingType());
+        assertNotNull(builder);
+        assertEquals(storage, builder.getStorageType());
+        assertEquals(keyType, builder.getKeyWrappingType());
 
         final String expected = toHex(content);
         final String actual = toHex(builder.build().array());
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 }

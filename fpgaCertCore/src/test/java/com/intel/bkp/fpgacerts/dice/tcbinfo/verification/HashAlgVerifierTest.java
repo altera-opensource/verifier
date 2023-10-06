@@ -33,10 +33,11 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoTestUtil.parseTcbInfo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HashAlgVerifierTest {
 
@@ -54,7 +55,7 @@ class HashAlgVerifierTest {
         final boolean result = sut.verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -69,7 +70,7 @@ class HashAlgVerifierTest {
         final boolean result = sut.verify(tcbInfo);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -83,6 +84,6 @@ class HashAlgVerifierTest {
         final boolean result = sut.verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 }

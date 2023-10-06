@@ -33,8 +33,12 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MaskedVendorInfoTest {
 
@@ -60,7 +64,7 @@ class MaskedVendorInfoTest {
         sut.setMaskBasedOnVendorInfo();
 
         // then
-        Assertions.assertEquals(expectedMask, sut.getVendorInfoMask());
+        assertEquals(expectedMask, sut.getVendorInfoMask());
     }
 
     @Test
@@ -72,7 +76,7 @@ class MaskedVendorInfoTest {
         sut.setMaskBasedOnVendorInfo();
 
         // then
-        Assertions.assertNull(sut.getVendorInfoMask());
+        assertNull(sut.getVendorInfoMask());
     }
 
     @Test
@@ -81,7 +85,7 @@ class MaskedVendorInfoTest {
         final var sut = new MaskedVendorInfo(VENDOR_INFO, VENDOR_INFO_MASK);
 
         // when-then
-        Assertions.assertTrue(sut.hasMask());
+        assertTrue(sut.hasMask());
     }
 
     @Test
@@ -91,7 +95,7 @@ class MaskedVendorInfoTest {
         sut.setMaskBasedOnVendorInfo();
 
         // when-then
-        Assertions.assertTrue(sut.hasMask());
+        assertTrue(sut.hasMask());
     }
 
     @Test
@@ -100,43 +104,43 @@ class MaskedVendorInfoTest {
         final var sut = new MaskedVendorInfo(VENDOR_INFO);
 
         // when-then
-        Assertions.assertFalse(sut.hasMask());
+        assertFalse(sut.hasMask());
     }
 
     @Test
     void equals_Basics() {
         // then
-        Assertions.assertFalse(sut.equals(null));
-        Assertions.assertTrue(sut.equals(sut));
-        Assertions.assertFalse(sut.equals("ABC"));
+        assertFalse(sut.equals(null));
+        assertTrue(sut.equals(sut));
+        assertFalse(sut.equals("ABC"));
     }
 
     @Test
     void equals_WithOtherNullVendorInfo_ReturnsFalse() {
         // then
-        Assertions.assertFalse(sut.equals(new MaskedVendorInfo(null)));
-        Assertions.assertFalse(new MaskedVendorInfo(null).equals(sut));
+        assertFalse(sut.equals(new MaskedVendorInfo(null)));
+        assertFalse(new MaskedVendorInfo(null).equals(sut));
     }
 
     @Test
     void equals_WithOtherBothSetGood_ReturnsTrue() {
         // then
-        Assertions.assertTrue(sut.equals(other));
-        Assertions.assertTrue(other.equals(sut));
+        assertTrue(sut.equals(other));
+        assertTrue(other.equals(sut));
     }
 
     @Test
     void equals_WithOtherBothSetInvalidInfo_ReturnsFalse() {
         // then
-        Assertions.assertFalse(sut.equals(otherInvalidInfo));
-        Assertions.assertFalse(otherInvalidInfo.equals(sut));
+        assertFalse(sut.equals(otherInvalidInfo));
+        assertFalse(otherInvalidInfo.equals(sut));
     }
 
     @Test
     void equals_WithOtherBothSetInvalidMask_ReturnsFalse() {
         // then
-        Assertions.assertFalse(sut.equals(otherInvalidMask));
-        Assertions.assertFalse(otherInvalidMask.equals(sut));
+        assertFalse(sut.equals(otherInvalidMask));
+        assertFalse(otherInvalidMask.equals(sut));
     }
 
     @Test
@@ -144,8 +148,8 @@ class MaskedVendorInfoTest {
         // then
         final MaskedVendorInfo left = new MaskedVendorInfo(VENDOR_INFO, null);
         final MaskedVendorInfo right = new MaskedVendorInfo(VENDOR_INFO, null);
-        Assertions.assertTrue(left.equals(right));
-        Assertions.assertTrue(right.equals(left));
+        assertTrue(left.equals(right));
+        assertTrue(right.equals(left));
     }
 
     @Test
@@ -153,22 +157,22 @@ class MaskedVendorInfoTest {
         // then
         final MaskedVendorInfo left = new MaskedVendorInfo(null, VENDOR_INFO_MASK);
         final MaskedVendorInfo right = new MaskedVendorInfo(null, VENDOR_INFO_MASK);
-        Assertions.assertTrue(left.equals(right));
-        Assertions.assertTrue(right.equals(left));
+        assertTrue(left.equals(right));
+        assertTrue(right.equals(left));
     }
 
     @Test
     void equals_FromResponse_ValidResponse_ReturnsTrue() {
         // then
-        Assertions.assertTrue(sut.equals(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_VALID)));
-        Assertions.assertTrue(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_VALID).equals(sut));
+        assertTrue(sut.equals(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_VALID)));
+        assertTrue(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_VALID).equals(sut));
     }
 
     @Test
     void equals_FromResponse_InvalidResponse_ReturnsFalse() {
         // then
-        Assertions.assertFalse(sut.equals(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_INVALID)));
-        Assertions.assertFalse(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_INVALID).equals(sut));
+        assertFalse(sut.equals(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_INVALID)));
+        assertFalse(new MaskedVendorInfo(VENDOR_INFO_RESPONSE_INVALID).equals(sut));
     }
 
     @Test
@@ -180,6 +184,6 @@ class MaskedVendorInfoTest {
         final String result = sut.toString();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

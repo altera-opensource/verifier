@@ -34,40 +34,43 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BKPInternalServerExceptionTest {
 
     @Test
     void constructor_WithOnlyErrorCode_ReturnValidError() {
-        final BKPInternalServerException exception = Assertions.assertThrows(BKPInternalServerException.class,
+        final BKPInternalServerException exception = assertThrows(BKPInternalServerException.class,
             this::throwError);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     @Test
     void constructor_WithErrorCodeAndThrowable_ReturnValidError() {
-        final BKPInternalServerException exception = Assertions.assertThrows(BKPInternalServerException.class,
+        final BKPInternalServerException exception = assertThrows(BKPInternalServerException.class,
             this::throwErrorWithCause);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
     }
 
     @Test
     void constructor_WithErrorCodeAndInternalMessage_ReturnValidError() {
         // then
-        final BKPInternalServerException exception = Assertions.assertThrows(BKPInternalServerException.class,
+        final BKPInternalServerException exception = assertThrows(BKPInternalServerException.class,
             this::throwErrorWithInternalMessage);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
-        Assertions.assertEquals("Test internal", exception.getMessage());
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertEquals("Test internal", exception.getMessage());
     }
 
     @Test
     void constructor_WithErrorCodeAndInternalMessageAndCause_ReturnValidError() {
-        final BKPInternalServerException exception = Assertions.assertThrows(BKPInternalServerException.class,
+        final BKPInternalServerException exception = assertThrows(BKPInternalServerException.class,
             this::throwErrorWithCauseAndInternalMessage);
-        Assertions.assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
-        Assertions.assertEquals("Test internal msg", exception.getMessage());
+        assertTrue(new BkpExceptionMatcher(getError()).matchesSafely(exception));
+        assertEquals("Test internal msg", exception.getMessage());
     }
 
     private void throwError() {

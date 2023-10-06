@@ -33,22 +33,23 @@
 
 package com.intel.bkp.workload.service;
 
+import com.intel.bkp.verifier.model.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.verifier.service.VerifierExchangeImpl;
-import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.workload.exceptions.WorkloadAppException;
 import com.intel.bkp.workload.model.CommandType;
 import com.intel.bkp.workload.util.AppArgument;
 import com.intel.bkp.workload.util.WorkloadFileReader;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -88,7 +89,7 @@ class VerifierServiceTest {
         sut.callVerifier(appArgument);
 
         // then
-        Mockito.verify(verifierExchange).createDeviceAttestationSubKey(transportId, context, pufType);
+        verify(verifierExchange).createDeviceAttestationSubKey(transportId, context, pufType);
     }
 
     @Test
@@ -105,7 +106,7 @@ class VerifierServiceTest {
         sut.callVerifier(appArgument);
 
         // then
-        Mockito.verify(verifierExchange).healthCheck(transportId);
+        verify(verifierExchange).healthCheck(transportId);
     }
 
     @Test
@@ -127,7 +128,7 @@ class VerifierServiceTest {
             .build();
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.callVerifier(appArgument));
+        assertDoesNotThrow(() -> sut.callVerifier(appArgument));
     }
 
     @Test
@@ -146,7 +147,7 @@ class VerifierServiceTest {
             .build();
 
         // when-then
-        Assertions.assertThrows(WorkloadAppException.class, () -> sut.callVerifier(appArgument));
+        assertThrows(WorkloadAppException.class, () -> sut.callVerifier(appArgument));
     }
 
     @Test
@@ -155,7 +156,7 @@ class VerifierServiceTest {
         AppArgument appArgument = new AppArgument();
 
         // when
-        Assertions.assertThrows(WorkloadAppException.class, () -> sut.callVerifier(appArgument));
+        assertThrows(WorkloadAppException.class, () -> sut.callVerifier(appArgument));
     }
 
     @Test
@@ -167,6 +168,6 @@ class VerifierServiceTest {
             .build();
 
         // when
-        Assertions.assertThrows(WorkloadAppException.class, () -> sut.callVerifier(appArgument));
+        assertThrows(WorkloadAppException.class, () -> sut.callVerifier(appArgument));
     }
 }

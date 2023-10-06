@@ -33,21 +33,22 @@
 
 package com.intel.bkp.crypto.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EncryptionProviderExceptionTest {
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        Assertions.assertThrows(EncryptionProviderException.class, () -> {
+        assertThrows(EncryptionProviderException.class, () -> {
             throw new EncryptionProviderException("test", new Exception());
         });
     }
 
     @Test
     void constructor_WithMessage_Success() {
-        Assertions.assertThrows(EncryptionProviderException.class, () -> {
+        assertThrows(EncryptionProviderException.class, () -> {
             throw new EncryptionProviderException("test");
         });
     }

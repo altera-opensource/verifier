@@ -42,6 +42,7 @@ public class Properties {
     public static final String TRANSPORT_LAYER_TYPE = "transport-layer-type";
     public static final String REQUIRE_IID_UDS = "require-iid-uds";
     public static final String TEST_MODE_SECRETS = "test-mode-secrets";
+    public static final String ACCEPT_UNSIGNED_CORIM = "accept-unsigned-corim";
     public static final String DISTRIBUTION_POINT_GROUP = "distribution-point";
     public static final String TRUSTED_ROOT_HASH_GROUP = "trusted-root-hash";
     public static final String PROXY_GROUP = "proxy";
@@ -54,10 +55,10 @@ public class Properties {
     public static final String SECURITY_GROUP = "security";
     public static final String KEY_TYPES_GROUP = "key-types";
     public static final String EC_GROUP = "ec";
+    public static final String TRUSTSTORE_GROUP = "truststore";
 
-    public static final String DISTRIBUTION_POINT_PATH_CER = "path-cer";
-    public static final String DISTRIBUTION_POINT_S10_TRUSTED_ROOT = "s10";
-    public static final String DISTRIBUTION_POINT_DICE_TRUSTED_ROOT = "dice";
+    public static final String DISTRIBUTION_POINT_MAIN_PATH = "main-path";
+    public static final String DISTRIBUTION_POINT_ATT_CERT_PATH = "attestation-cert-base-path";
     public static final String DISTRIBUTION_POINT_PROXY_HOST = "host";
     public static final String DISTRIBUTION_POINT_PROXY_PORT = "port";
 
@@ -68,6 +69,10 @@ public class Properties {
     public static final String LIB_SPDM_WRAPPER_LIBRARY_PATH = "wrapper-library-path";
     public static final String LIB_SPDM_CT_EXPONENT = "ct-exponent";
     public static final String LIB_SPDM_MEASUREMENTS_REQUEST_SIGNATURE = "measurements-request-signature";
+
+    public static final String TRUSTSTORE_LOCATION = "location";
+    public static final String TRUSTSTORE_PASSWORD = "password";
+    public static final String TRUSTSTORE_TYPE = "type";
 
     public static final String RUN_GP_ATTESTATION = "run-gp-att";
 }

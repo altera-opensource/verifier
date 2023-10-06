@@ -33,10 +33,10 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.EscapeUtils.escape;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EscapeUtilsTest {
     @Test
@@ -45,7 +45,7 @@ class EscapeUtilsTest {
 
         final String expected = "one \\\\ test \\\\\\\\ string \\\\\\\\\\\\";
 
-        Assertions.assertEquals(expected, escape(given));
+        assertEquals(expected, escape(given));
     }
 
     @Test
@@ -54,7 +54,7 @@ class EscapeUtilsTest {
 
         final String expected = "\\\"This type of code, related to regex etc., should be especially well tested\\\"";
 
-        Assertions.assertEquals(expected, escape(given));
+        assertEquals(expected, escape(given));
     }
 
     @Test
@@ -63,7 +63,7 @@ class EscapeUtilsTest {
 
         final String expected = "one \\n test \\t string \\r\\nsecond line";
 
-        Assertions.assertEquals(expected, escape(given));
+        assertEquals(expected, escape(given));
     }
 
     @Test
@@ -72,6 +72,6 @@ class EscapeUtilsTest {
 
         final String expected = "one \\n\\\"test\\\"\\t \\\\\\\"string\\\"\\\\ \\r\\nsecond line";
 
-        Assertions.assertEquals(expected, escape(given));
+        assertEquals(expected, escape(given));
     }
 }

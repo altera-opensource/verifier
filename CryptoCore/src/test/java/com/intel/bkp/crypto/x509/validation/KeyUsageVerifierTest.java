@@ -33,8 +33,7 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +41,9 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509Certificate;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 public class KeyUsageVerifierTest {
@@ -59,25 +61,25 @@ public class KeyUsageVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        invalidCert = TestUtil.loadCertificate(INVALID_CERT);
-        validCert = TestUtil.loadCertificate(VALID_CERT);
+        invalidCert = FileUtils.loadCertificate(INVALID_CERT);
+        validCert = FileUtils.loadCertificate(VALID_CERT);
     }
 
     @Test
     void verify_CertWithKeyUsageExtension_ContainsKeyUsage_ReturnsTrue() {
         // when-then
-        Assertions.assertTrue(sut.verify(validCert, KeyUsage.DIGITAL_SIGNATURE));
+        assertTrue(sut.verify(validCert, KeyUsage.DIGITAL_SIGNATURE));
     }
 
     @Test
     void verify_CertWithKeyUsageExtension_DoesNotContainKeyUsage_ReturnsFalse() {
         // when-then
-        Assertions.assertFalse(sut.verify(validCert, KeyUsage.KEY_CERT_SIGN));
+        assertFalse(sut.verify(validCert, KeyUsage.KEY_CERT_SIGN));
     }
 
     @Test
     void verify_CertWithoutKeyUsageExtension_ReturnsFalse() {
         // when-then
-        Assertions.assertFalse(sut.verify(invalidCert, KeyUsage.DIGITAL_SIGNATURE));
+        assertFalse(sut.verify(invalidCert, KeyUsage.DIGITAL_SIGNATURE));
     }
 }

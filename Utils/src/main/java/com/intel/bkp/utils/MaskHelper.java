@@ -46,7 +46,7 @@ import static com.intel.bkp.utils.StringHelper.truncateEnding;
 import static com.intel.bkp.utils.StringHelper.zeroExtendEnding;
 import static com.intel.bkp.utils.StringHelper.zeroExtendEndingToEvenLength;
 
-@NoArgsConstructor(access = AccessLevel.NONE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MaskHelper {
 
     /**

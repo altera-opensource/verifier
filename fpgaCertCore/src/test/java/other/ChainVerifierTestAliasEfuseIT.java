@@ -34,8 +34,6 @@
 package other;
 
 import com.intel.bkp.crypto.x509.validation.ChainVerifier;
-import com.intel.bkp.fpgacerts.Utils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +44,9 @@ import java.util.Set;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ChainVerifierTestAliasEfuseIT {
 
@@ -63,13 +64,13 @@ public class ChainVerifierTestAliasEfuseIT {
     private final ChainVerifier sut = new ChainVerifier();
 
     @BeforeAll
-    static void init() throws Exception {
-        aliasCert = Utils.readCertificate(ALIAS_EFUSE_FOLDER, "UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer");
-        firmwareCert = Utils.readCertificate(ALIAS_EFUSE_FOLDER, "FIRMWARE_3AB5A0DC4DE7CB08.cer");
+    static void init() {
+        aliasCert = readCertificate(ALIAS_EFUSE_FOLDER, "UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer");
+        firmwareCert = readCertificate(ALIAS_EFUSE_FOLDER, "FIRMWARE_3AB5A0DC4DE7CB08.cer");
         deviceIdCert =
-            Utils.readCertificate(ALIAS_EFUSE_FOLDER, "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer");
-        productFamilyCert = Utils.readCertificate(COMMON_FOLDER, "IPCS_agilex.cer");
-        rootCert = Utils.readCertificate(COMMON_FOLDER, "DICE_RootCA.cer");
+            readCertificate(ALIAS_EFUSE_FOLDER, "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer");
+        productFamilyCert = readCertificate(COMMON_FOLDER, "IPCS_agilex.cer");
+        rootCert = readCertificate(COMMON_FOLDER, "DICE_RootCA.cer");
     }
 
     @Test
@@ -83,7 +84,7 @@ public class ChainVerifierTestAliasEfuseIT {
                 .verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -95,7 +96,7 @@ public class ChainVerifierTestAliasEfuseIT {
         boolean result = sut.certificates(list).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -109,6 +110,6 @@ public class ChainVerifierTestAliasEfuseIT {
                 .verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 }

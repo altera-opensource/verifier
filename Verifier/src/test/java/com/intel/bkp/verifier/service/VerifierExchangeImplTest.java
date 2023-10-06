@@ -36,11 +36,10 @@ package com.intel.bkp.verifier.service;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.verifier.exceptions.InitSessionFailedException;
 import com.intel.bkp.verifier.exceptions.TransportLayerException;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.model.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,6 +48,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -89,7 +89,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.createSubKeyInternal(appContext, TRANSPORT_ID, context, PufType.EFUSE);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
+        assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
         verify(transportLayer, never()).initialize(TRANSPORT_ID);
     }
 
@@ -105,7 +105,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.createSubKeyInternal(appContext, TRANSPORT_ID, context, PufType.EFUSE);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
+        assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
     }
 
     @Test
@@ -122,7 +122,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.createSubKeyInternal(appContext, TRANSPORT_ID, context, pufType);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK.getCode(), result);
+        assertEquals(VerifierExchangeResponse.OK.getCode(), result);
     }
 
     @Test
@@ -156,8 +156,8 @@ class VerifierExchangeImplTest {
         VerifierExchangeResponseDTO result = sutSpy.getAttestationInternal(appContext, TRANSPORT_ID, refMeasurement);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result.getStatus());
-        Assertions.assertEquals(toHex(deviceId), result.getDeviceId());
+        assertEquals(VerifierExchangeResponse.ERROR.getCode(), result.getStatus());
+        assertEquals(toHex(deviceId), result.getDeviceId());
     }
 
     @Test
@@ -173,8 +173,8 @@ class VerifierExchangeImplTest {
         VerifierExchangeResponseDTO result = sutSpy.getAttestationInternal(appContext, TRANSPORT_ID, refMeasurement);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK.getCode(), result.getStatus());
-        Assertions.assertEquals(toHex(deviceId), result.getDeviceId());
+        assertEquals(VerifierExchangeResponse.OK.getCode(), result.getStatus());
+        assertEquals(toHex(deviceId), result.getDeviceId());
     }
 
     @Test
@@ -204,7 +204,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.healthCheckInternal(appContext, TRANSPORT_ID);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
+        assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
     }
 
     @Test
@@ -217,7 +217,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.healthCheckInternal(appContext, TRANSPORT_ID);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK.getCode(), result);
+        assertEquals(VerifierExchangeResponse.OK.getCode(), result);
     }
 
     @Test
@@ -230,7 +230,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.healthCheckInternal(appContext, TRANSPORT_ID);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
+        assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
     }
 
     @Test
@@ -243,7 +243,7 @@ class VerifierExchangeImplTest {
         int result = sutSpy.healthCheckInternal(appContext, TRANSPORT_ID);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
+        assertEquals(VerifierExchangeResponse.ERROR.getCode(), result);
     }
 
     @Test
