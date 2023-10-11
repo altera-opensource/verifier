@@ -42,7 +42,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509CertificateChain;
-import static com.intel.bkp.verifier.Utils.prepareEfuseChain;
+import static com.intel.bkp.verifier.ChainPrepare.prepareEfuseChain;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

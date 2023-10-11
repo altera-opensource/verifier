@@ -45,6 +45,8 @@ import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
+import com.intel.bkp.test.KeyGenUtils;
+import com.intel.bkp.test.SigningUtils;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -59,8 +61,8 @@ import static com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType.SECP
 
 public class RomExtensionAuthGeneratorUtil {
 
-    KeyPair rootKeyPair = TestUtil.genEcKeys();
-    KeyPair leafKeyPair = TestUtil.genEcKeys();
+    KeyPair rootKeyPair = KeyGenUtils.genEc384();
+    KeyPair leafKeyPair = KeyGenUtils.genEc384();
 
     public byte[] signRomExtension(byte[] dataToSign) {
         byte[] parentKeyChain = getChain(getMultiCertChain());
@@ -86,7 +88,7 @@ public class RomExtensionAuthGeneratorUtil {
         byte[] leafContent = new PsgCertificateEntryBuilder()
             .withSignature(getPsgSignatureBuilder())
             .publicKey(getPsgPublicKeyBuilder(leafKeyPair))
-            .signData(dataToSign -> TestUtil.signEcData(
+            .signData(dataToSign -> SigningUtils.signEcData(
                     dataToSign, rootKeyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA),
                 SECP384R1
             )
@@ -99,7 +101,7 @@ public class RomExtensionAuthGeneratorUtil {
     private byte[] getCancellableBlock0Entry(KeyPair keyPair, byte[] dataToSign) {
         final var builder = new PsgCancellableBlock0EntryBuilder();
         byte[] customDataToSign = builder.getCustomPayloadForSignature(dataToSign);
-        byte[] signedData = TestUtil.signEcData(
+        byte[] signedData = SigningUtils.signEcData(
             customDataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA
         );
         return builder

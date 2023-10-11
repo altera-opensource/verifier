@@ -164,13 +164,14 @@ public class JceSecurityProvider implements ISecurityProvider {
     }
 
     public void login() {
-        log.trace("Login to keystore: {}", keyStoreName);
+        log.trace("Login to keystore: {}, inputStreamParam: {}", keyStoreName, inputStreamParam);
         try {
             if (keyStore == null) {
                 keyStore = KeyStore.getInstance(keyStoreName, provider);
             }
             keystoreManager.load(keyStore, inputStreamParam, securityProperties.getPassword());
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
+            log.trace("Logged in to keystore successfully.");
+        } catch (Exception e) {
             throw new JceSecurityProviderException("Failed to initialize keystore.", e);
         }
     }

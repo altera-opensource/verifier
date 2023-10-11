@@ -33,9 +33,9 @@
 
 package com.intel.bkp.verifier.database;
 
+import com.intel.bkp.verifier.database.model.IMigratable;
 import com.intel.bkp.verifier.database.repository.DiceRevocationCacheEntityService;
 import com.intel.bkp.verifier.database.repository.S10CacheEntityService;
-import com.intel.bkp.verifier.interfaces.IMigratable;
 import com.intel.bkp.verifier.model.DatabaseConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
@@ -88,7 +88,7 @@ public class SQLiteHelper implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         databaseManager.closeDatabase();
         s10CacheEntityService = null;
         diceRevocationCacheEntityService = null;

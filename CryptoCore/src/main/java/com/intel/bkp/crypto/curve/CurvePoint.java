@@ -35,12 +35,14 @@ package com.intel.bkp.crypto.curve;
 
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.interfaces.ICurveSpec;
+import com.intel.bkp.crypto.pem.PemFormatEncoder;
 import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.PaddingUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -107,6 +109,12 @@ public class CurvePoint implements ICurveSpec {
         return from(pointX, pointY, curveSpec);
     }
 
+    public static CurvePoint fromPubKeyPem(byte[] pubKeyPemFile)
+        throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+        final byte[] encodedPubKey = PemFormatEncoder.decode(pubKeyPemFile);
+        return fromPubKeyEncoded(encodedPubKey);
+    }
+
     public static CurvePoint fromPubKeyEncoded(byte[] encodedPublicKey)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
         return from(CryptoUtils.toPublicEncodedBC(encodedPublicKey, EC_KEY));
@@ -123,6 +131,10 @@ public class CurvePoint implements ICurveSpec {
 
     public String generateFingerprint() {
         return CryptoUtils.generateFingerprint(getAlignedDataToSize());
+    }
+
+    public String generateSha256Fingerprint() {
+        return CryptoUtils.generateSha256Fingerprint(getAlignedDataToSize());
     }
 
     public byte[] getAlignedDataToSize() {

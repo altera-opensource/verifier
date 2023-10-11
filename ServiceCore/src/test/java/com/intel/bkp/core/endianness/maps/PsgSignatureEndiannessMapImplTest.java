@@ -34,7 +34,6 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_HASH_MAGIC;
@@ -42,6 +41,7 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_SIZE_R;
 import static com.intel.bkp.core.endianness.StructureField.PSG_SIG_SIZE_S;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PsgSignatureEndiannessMapImplTest {
 
@@ -51,7 +51,7 @@ class PsgSignatureEndiannessMapImplTest {
         PsgSignatureEndiannessMapImpl sut = new PsgSignatureEndiannessMapImpl(EndiannessActor.SERVICE);
 
         // then
-        Assertions.assertEquals(0, sut.getSize());
+        assertEquals(0, sut.getSize());
     }
 
     @Test
@@ -60,10 +60,10 @@ class PsgSignatureEndiannessMapImplTest {
         PsgSignatureEndiannessMapImpl sut = new PsgSignatureEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_SIZE_R));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_SIZE_S));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_SIG_HASH_MAGIC));
-        Assertions.assertEquals(4, sut.getSize());
+        assertEquals(CONVERT, sut.get(PSG_SIG_MAGIC));
+        assertEquals(CONVERT, sut.get(PSG_SIG_SIZE_R));
+        assertEquals(CONVERT, sut.get(PSG_SIG_SIZE_S));
+        assertEquals(CONVERT, sut.get(PSG_SIG_HASH_MAGIC));
+        assertEquals(4, sut.getSize());
     }
 }

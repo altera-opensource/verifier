@@ -35,6 +35,7 @@ package com.intel.bkp.verifier.service.measurements;
 
 import ch.qos.logback.classic.Level;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementHolder;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
@@ -44,7 +45,6 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import com.intel.bkp.verifier.LoggerTestUtil;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.model.evidence.Rim;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,8 +55,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ch.qos.logback.classic.Level.DEBUG;
 import static ch.qos.logback.classic.Level.INFO;
@@ -68,6 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -88,16 +89,10 @@ class EvidenceVerifierTest {
     private final Map<TcbInfoKey, TcbInfoValue> tcbInfoResponseMap = new HashMap<>();
 
     @Mock
-    private Rim rim;
-
-    @Mock
     private TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator;
 
     @Mock
-    private RimParser rimParser;
-
-    @Mock
-    private RimToTcbInfoMeasurementsMapper rimMapper;
+    private RimService rimService;
 
     @InjectMocks
     private EvidenceVerifier sut;
@@ -116,11 +111,8 @@ class EvidenceVerifierTest {
 
     @Test
     void verify_WithEmptyRim_ReturnsOk() {
-        // given
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(mockEmptyRim());
-
         // when
-        final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, REF_MEASUREMENT);
+        final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, "");
 
         // then
         assertEquals(OK, result);
@@ -130,7 +122,7 @@ class EvidenceVerifierTest {
     @Test
     void verify_ThrowsException_ReturnsError() {
         // given
-        doThrow(new IllegalArgumentException()).when(rimParser).parse(REF_MEASUREMENT);
+        doThrow(new IllegalArgumentException()).when(rimService).getMeasurements(REF_MEASUREMENT);
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, REF_MEASUREMENT);
@@ -145,8 +137,7 @@ class EvidenceVerifierTest {
         final var tcbInfo = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO);
         final var key = TcbInfoKey.from(tcbInfo);
         final var value = TcbInfoValue.from(tcbInfo);
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(rim);
-        when(rimMapper.map(rim)).thenReturn(prepareReferenceMeasurements(tcbInfo));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(prepareReferenceMeasurements(tcbInfo));
         mockResponse(tcbInfo);
 
         // when
@@ -157,7 +148,7 @@ class EvidenceVerifierTest {
         verifyLogExists("Verification of measurement: %s".formatted(key), INFO);
         verifyLogExists("Reference value: %s".formatted(value), DEBUG);
         verifyLogExists("Received value: %s".formatted(value), DEBUG);
-        verifyLogExists("Verification passed.", INFO);
+        verifyLogExists("Evidence verification [Passed]", INFO);
     }
 
     @Test
@@ -166,8 +157,8 @@ class EvidenceVerifierTest {
         final var tcbInfo1Masked = prepareTcbInfoWithOwnerSecurityFusesMasked(VENDOR_INFO);
         final var tcbInfo1 = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO);
         final var tcbInfo2 = prepareTcbInfoWithFwId();
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(rim);
-        when(rimMapper.map(rim)).thenReturn(prepareReferenceMeasurements(tcbInfo1Masked));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(prepareReferenceMeasurements(tcbInfo1Masked));
+
         mockResponse(tcbInfo1, tcbInfo2);
 
         // when
@@ -180,12 +171,44 @@ class EvidenceVerifierTest {
     }
 
     @Test
+    void verify_ResponseContainsEndorsedButNoReference_AddedToReference_ReturnsOk() {
+        // given
+        final var tcbInfo1Masked = prepareTcbInfoWithOwnerSecurityFusesMasked(VENDOR_INFO);
+        final var endorsedMeasurements = prepareEndorsedMeasurements(tcbInfo1Masked);
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(endorsedMeasurements);
+
+        // when
+        final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, REF_MEASUREMENT);
+
+        // then
+        verify(tcbInfoMeasurementsAggregator).add(endorsedMeasurements.getEndorsedMeasurements());
+        assertEquals(VerifierExchangeResponse.OK, result);
+        verifyLogExists("List of expected measurements in RIM is empty.", WARN);
+        verifyLogDoesNotExist("*** VERIFYING EVIDENCE AGAINST RIM ***", INFO);
+    }
+
+    @Test
+    void verify_EndorsedAndReferenceSame_WithAggregatorEmpty_ReturnsOk() {
+        // given
+        final var tcbInfo = prepareTcbInfoWithOwnerSecurityFusesMasked(VENDOR_INFO);
+        final var measurementHolder = prepareEndorsedMeasurements(tcbInfo);
+        measurementHolder.add(prepareReferenceMeasurements(tcbInfo));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(measurementHolder);
+
+        // when
+        final VerifierExchangeResponse result = sut.verify(new TcbInfoMeasurementsAggregator(), REF_MEASUREMENT);
+
+        // then
+        assertEquals(VerifierExchangeResponse.OK, result);
+        verifyLogExists("*** VERIFYING EVIDENCE AGAINST RIM ***", INFO);
+    }
+
+    @Test
     void verify_MeasurementInResponseContainsAdditionalValueNotPresentInReferenceMeasurement_ReturnsOk() {
         // given
         final var tcbInfo = prepareTcbInfoWithFwId();
         final var tcbInfoWithAdditionalValue = prepareTcbInfoWithFwIdAndAdditionalVendorInfo();
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(rim);
-        when(rimMapper.map(rim)).thenReturn(prepareReferenceMeasurements(tcbInfo));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(prepareReferenceMeasurements(tcbInfo));
         mockResponse(tcbInfoWithAdditionalValue);
 
         // when
@@ -198,12 +221,32 @@ class EvidenceVerifierTest {
     }
 
     @Test
+    void verify_EndorsedAndReferenceDifferent_WithAggregatorEmpty_ReturnsFail() {
+        // given
+        final var tcbInfo = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO);
+        final var tcbInfoWithDiffValue = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO_INVALID);
+        final var measurementHolder = prepareEndorsedMeasurements(tcbInfo);
+        measurementHolder.add(prepareReferenceMeasurements(tcbInfoWithDiffValue));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(measurementHolder);
+
+        // when
+        final VerifierExchangeResponse result = sut.verify(new TcbInfoMeasurementsAggregator(), REF_MEASUREMENT);
+
+        // then
+        assertEquals(FAIL, result);
+        verifyLogExists("Evidence verification failed.\nReference: %s\nActual:    %s".formatted(
+                TcbInfoValue.from(tcbInfoWithDiffValue),
+                TcbInfoValue.from(tcbInfo)),
+            Level.ERROR);
+    }
+
+    @Test
     void verify_MeasurementInResponseDoesNotContainAdditionalValuePresentInReferenceMeasurement_ReturnsFail() {
         // given
         final var tcbInfo = prepareTcbInfoWithFwId();
         final var tcbInfoWithAdditionalValue = prepareTcbInfoWithFwIdAndAdditionalVendorInfo();
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(rim);
-        when(rimMapper.map(rim)).thenReturn(prepareReferenceMeasurements(tcbInfoWithAdditionalValue));
+        when(rimService.getMeasurements(REF_MEASUREMENT))
+            .thenReturn(prepareReferenceMeasurements(tcbInfoWithAdditionalValue));
         mockResponse(tcbInfo);
 
         // when
@@ -221,15 +264,15 @@ class EvidenceVerifierTest {
     void verify_MissingMeasurementInResponse_ReturnsFail() {
         // given
         final var tcbInfo = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO);
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(rim);
-        when(rimMapper.map(rim)).thenReturn(prepareReferenceMeasurements(tcbInfo));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(prepareReferenceMeasurements(tcbInfo));
 
         // when
         final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, REF_MEASUREMENT);
 
         // then
         assertEquals(FAIL, result);
-        verifyLogExists("Evidence verification failed. Response does not contain expected key.", Level.ERROR);
+        verifyLogExists("Evidence verification [Failed]", Level.ERROR);
+        verifyLogExists("Response does not contain expected key.", Level.ERROR);
     }
 
     @Test
@@ -237,8 +280,7 @@ class EvidenceVerifierTest {
         // given
         final var tcbInfo = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO);
         final var tcbInfoWithDiffValue = prepareTcbInfoWithOwnerSecurityFuses(VENDOR_INFO_INVALID);
-        when(rimParser.parse(REF_MEASUREMENT)).thenReturn(rim);
-        when(rimMapper.map(rim)).thenReturn(prepareReferenceMeasurements(tcbInfo));
+        when(rimService.getMeasurements(REF_MEASUREMENT)).thenReturn(prepareReferenceMeasurements(tcbInfo));
         mockResponse(tcbInfoWithDiffValue);
 
         // when
@@ -252,12 +294,18 @@ class EvidenceVerifierTest {
             Level.ERROR);
     }
 
-    private Rim mockEmptyRim() {
-        return new Rim();
+    private MeasurementHolder prepareReferenceMeasurements(TcbInfo... tcbInfos) {
+        final var holder = new MeasurementHolder();
+        holder.setReferenceMeasurements(Arrays.stream(tcbInfos).map(TcbInfoMeasurement::new)
+            .collect(Collectors.toList()));
+        return holder;
     }
 
-    private List<TcbInfoMeasurement> prepareReferenceMeasurements(TcbInfo... tcbInfos) {
-        return Arrays.stream(tcbInfos).map(TcbInfoMeasurement::new).toList();
+    private MeasurementHolder prepareEndorsedMeasurements(TcbInfo... tcbInfos) {
+        final var holder = new MeasurementHolder();
+        holder.setEndorsedMeasurements(Arrays.stream(tcbInfos).map(TcbInfoMeasurement::new)
+            .collect(Collectors.toList()));
+        return holder;
     }
 
     private void mockResponse(TcbInfo... tcbInfos) {

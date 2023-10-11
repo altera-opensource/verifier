@@ -36,7 +36,6 @@ package com.intel.bkp.fpgacerts.dice.subject;
 import ch.qos.logback.classic.Level;
 import com.intel.bkp.fpgacerts.LoggerTestUtil;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +49,8 @@ import java.util.Locale;
 import java.util.Set;
 
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -90,7 +91,7 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -99,7 +100,7 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(List.of()).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -111,7 +112,7 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -127,7 +128,7 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -141,7 +142,7 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -157,8 +158,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -180,8 +181,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -202,8 +203,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -224,8 +225,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -247,8 +248,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -268,8 +269,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     @Test
@@ -290,8 +291,8 @@ class DiceSubjectVerifierTest {
         final boolean result = sut.certificates(chain).verify();
 
         // then
-        Assertions.assertFalse(result);
-        Assertions.assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
+        assertFalse(result);
+        assertTrue(loggerTestUtil.contains(expectedError, Level.ERROR));
     }
 
     private String generateSubjectWithDefaults() {

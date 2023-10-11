@@ -37,12 +37,14 @@ import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.PsgCancellableBlock0EntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.psgcertificate.romext.RomExtensionSignatureStructureType.BLOCK0;
 import static com.intel.bkp.core.psgcertificate.romext.RomExtensionSignatureStructureType.LEAF;
 import static com.intel.bkp.core.psgcertificate.romext.RomExtensionSignatureStructureType.ROOT;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RomExtractedStructureDataTest {
 
@@ -66,7 +68,7 @@ class RomExtractedStructureDataTest {
     @Test
     void from_WithInvalidMagic_ThrowsException() {
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> RomExtractedStructureData.from(123, SAMPLE_DATA));
     }
 
@@ -75,7 +77,7 @@ class RomExtractedStructureDataTest {
         final var result = RomExtractedStructureData.from(magic, SAMPLE_DATA);
 
         // then
-        Assertions.assertEquals(expectedType, result.type());
-        Assertions.assertArrayEquals(SAMPLE_DATA, result.data());
+        assertEquals(expectedType, result.type());
+        assertArrayEquals(SAMPLE_DATA, result.data());
     }
 }

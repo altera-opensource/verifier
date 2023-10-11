@@ -35,8 +35,9 @@ package com.intel.bkp.crypto.impl;
 
 import com.intel.bkp.crypto.CryptoUtils;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CertificateUtilsTest {
 
@@ -52,7 +53,7 @@ class CertificateUtilsTest {
         X500Name issuer = CryptoUtils.getIssuer(commonName, organizationalUnit);
 
         //then
-        Assertions.assertEquals(x500Name, issuer.toString());
+        assertEquals(x500Name, issuer.toString());
     }
 
     @Test
@@ -65,6 +66,6 @@ class CertificateUtilsTest {
         X500Name issuer = CertificateUtils.getCn(commonName);
 
         //then
-        Assertions.assertEquals(x500Name, issuer.toString());
+        assertEquals(x500Name, issuer.toString());
     }
 }

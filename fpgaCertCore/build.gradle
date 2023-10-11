@@ -35,12 +35,15 @@ plugins {
     alias(libs.plugins.lombok)
     alias(libs.plugins.gradle.versions)
     alias(libs.plugins.modernizer)
+    id 'maven-publish'
     id 'java-library'
     id 'idea'
 }
 
 
-def buildVersion = getBuildVersion()
+apply from: rootProject.file('gradle/common.gradle')
+
+def buildVersion = ext.getBuildVersion()
 
 jar {
     archiveBaseName.set('fpgaCertCore')
@@ -57,7 +60,7 @@ jar {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-group = 'com.intel.bkp'
+group = 'com.intel.bkp.fpgacerts'
 version = buildVersion
 
 tasks.withType(Copy).configureEach {
@@ -73,8 +76,10 @@ dependencies {
     implementation project(':Utils')
 
     implementation libs.bouncycastle
+    api libs.cbor
     implementation libs.slf4j.api
 
+    testImplementation project(':TestLibrary')
     testImplementation platform(libs.junit.bom)
     testImplementation libs.junit.jupiter
     testImplementation libs.bundles.mockito
@@ -82,6 +87,10 @@ dependencies {
     testImplementation libs.jazzer.junit
 }
 
-def getBuildVersion() {
-    return file("${projectDir}/version").text.trim()
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }

@@ -33,8 +33,7 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +42,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class SignatureVerifierTest {
@@ -63,32 +65,32 @@ class SignatureVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        crl = TestUtil.loadCrl(CRL_FILENAME);
-        childCert = TestUtil.loadCertificate(CHILD_CERT_FILENAME);
-        parentCert = TestUtil.loadCertificate(PARENT_CERT_FILENAME);
+        crl = FileUtils.loadCrl(CRL_FILENAME);
+        childCert = FileUtils.loadCertificate(CHILD_CERT_FILENAME);
+        parentCert = FileUtils.loadCertificate(PARENT_CERT_FILENAME);
     }
 
     @Test
     void verify_Cert_MatchingParent_ReturnsTrue() {
         // when-then
-        Assertions.assertTrue(sut.verify(childCert, parentCert));
+        assertTrue(sut.verify(childCert, parentCert));
     }
 
     @Test
     void verify_Cert_InvalidParent_ReturnsFalse() {
         // when-then
-        Assertions.assertFalse(sut.verify(parentCert, childCert));
+        assertFalse(sut.verify(parentCert, childCert));
     }
 
     @Test
     void verify_Crl_MatchingParent_ReturnsTrue() {
         // when
-        Assertions.assertTrue(sut.verify(crl, childCert));
+        assertTrue(sut.verify(crl, childCert));
     }
 
     @Test
     void verify_Crl_InvalidParent_ReturnsFalse() {
         // when-then
-        Assertions.assertFalse(sut.verify(crl, parentCert));
+        assertFalse(sut.verify(crl, parentCert));
     }
 }

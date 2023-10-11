@@ -33,8 +33,7 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +50,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.intel.bkp.crypto.x509.validation.ChainVerifier.COMMON_EXTENSION_OIDS;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
@@ -99,9 +100,9 @@ class ChainVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        attestationCert = TestUtil.loadCertificate(ATTESTATION_CERT_FILENAME);
-        parentCert = TestUtil.loadCertificate(PARENT_CERT_FILENAME);
-        rootCert = TestUtil.loadCertificate(ROOT_CERT_FILENAME);
+        attestationCert = FileUtils.loadCertificate(ATTESTATION_CERT_FILENAME);
+        parentCert = FileUtils.loadCertificate(PARENT_CERT_FILENAME);
+        rootCert = FileUtils.loadCertificate(ROOT_CERT_FILENAME);
     }
 
     @BeforeEach
@@ -120,7 +121,7 @@ class ChainVerifierTest {
         final boolean result = sut.verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
         verify(signatureVerifier).verify(attestationCert, parentCert);
         verify(signatureVerifier).verify(parentCert, rootCert);
         verify(signatureVerifier).verify(rootCert, rootCert);
@@ -172,7 +173,7 @@ class ChainVerifierTest {
         boolean result = sut.verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -185,7 +186,7 @@ class ChainVerifierTest {
         boolean result = sut.verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -197,7 +198,7 @@ class ChainVerifierTest {
         boolean result = sut.verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     private void addToList(X509Certificate... cert) {

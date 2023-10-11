@@ -33,28 +33,29 @@
 
 package com.intel.bkp.crypto.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IHMacProviderExceptionTest {
 
     static final String testMessage = "Some message";
 
     @Test
-    public void constructor_WithMessageAndThrowable_ReturnValidError() throws EcdhKeyPairException {
+    public void constructor_WithMessageAndThrowable_ReturnValidError() {
         // given
         Exception cause = new RuntimeException(testMessage);
 
         // when
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> {
+        assertThrows(EcdhKeyPairException.class, () -> {
             throw new EcdhKeyPairException(testMessage, cause);
         });
     }
 
     @Test
-    public void constructor_WithOnlyMessage_ReturnValidError() throws EcdhKeyPairException {
+    public void constructor_WithOnlyMessage_ReturnValidError() {
         // when
-        Assertions.assertThrows(EcdhKeyPairException.class, () -> {
+        assertThrows(EcdhKeyPairException.class, () -> {
             throw new EcdhKeyPairException(testMessage);
         });
     }

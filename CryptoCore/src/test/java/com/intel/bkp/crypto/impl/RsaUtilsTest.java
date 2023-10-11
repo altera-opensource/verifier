@@ -37,12 +37,15 @@ import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.provider.TestProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
 import java.security.Provider;
 import java.security.PublicKey;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RsaUtilsTest {
 
@@ -56,7 +59,7 @@ class RsaUtilsTest {
         provider = new TestProvider(providerName, "1.0", "info");
 
         // then
-        Assertions.assertThrows(KeystoreGenericException.class, () -> RsaUtils.genRSA(CryptoConstants.RSA_KEY,
+        assertThrows(KeystoreGenericException.class, () -> RsaUtils.genRSA(CryptoConstants.RSA_KEY,
             CryptoConstants.RSA_KEY_SIZE, provider));
     }
 
@@ -68,7 +71,7 @@ class RsaUtilsTest {
 
 
         //then
-        Assertions.assertNotNull(keyPair);
+        assertNotNull(keyPair);
     }
 
     @Test
@@ -82,6 +85,6 @@ class RsaUtilsTest {
             CryptoUtils.getBouncyCastleProvider());
 
         // then
-        Assertions.assertEquals(publicKey, result);
+        assertEquals(publicKey, result);
     }
 }

@@ -33,10 +33,10 @@
 
 package com.intel.bkp.crypto.x509.utils;
 
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +53,10 @@ import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.pemToX509C
 import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.pemToX509Crl;
 import static com.intel.bkp.crypto.x509.utils.X509CrlUtils.getX509CRLEntries;
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,10 +79,10 @@ class X509ExtensionUtilsTest {
 
     @BeforeAll
     static void init() throws Exception {
-        final String certInPem = TestUtil.getResourceAsString("/certs/", CERT_WITHOUT_AKI_AND_SKI);
+        final String certInPem = FileUtils.loadFile(ResourceDir.CERTS, CERT_WITHOUT_AKI_AND_SKI);
         certWithoutAKIandSKI = pemToX509Certificate(certInPem);
 
-        final String crlInPem = TestUtil.getResourceAsString("/certs/", CRL_WITH_REVOKED_SN);
+        final String crlInPem = FileUtils.loadFile(ResourceDir.CERTS, CRL_WITH_REVOKED_SN);
         crl = pemToX509Crl(crlInPem);
     }
 
@@ -92,7 +96,7 @@ class X509ExtensionUtilsTest {
         final boolean result = X509ExtensionUtils.containsExtension(certificate, oid);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
 
     }
 
@@ -107,7 +111,7 @@ class X509ExtensionUtilsTest {
         final boolean result = X509ExtensionUtils.containsExtension(certificate, oid);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -117,7 +121,7 @@ class X509ExtensionUtilsTest {
             X509ExtensionUtils.containsExtension(certWithoutAKIandSKI, Extension.subjectKeyIdentifier);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -130,8 +134,8 @@ class X509ExtensionUtilsTest {
         final var result = X509ExtensionUtils.getExtensionBytes(crl, Extension.authorityKeyIdentifier);
 
         // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertArrayEquals(extensionBytes, result.get());
+        assertTrue(result.isPresent());
+        assertArrayEquals(extensionBytes, result.get());
     }
 
     @Test
@@ -140,7 +144,7 @@ class X509ExtensionUtilsTest {
         final var result = X509ExtensionUtils.getExtensionBytes(crl, Extension.subjectKeyIdentifier);
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -186,7 +190,7 @@ class X509ExtensionUtilsTest {
         final String description = X509ExtensionUtils.getObjDescription(x509Obj);
 
         // then
-        Assertions.assertEquals(expectedDescription, description);
+        assertEquals(expectedDescription, description);
     }
 
     private static class CustomX509ExtensionsObject implements X509Extension {

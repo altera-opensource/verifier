@@ -33,27 +33,31 @@
 
 package com.intel.bkp.verifier.service;
 
-import com.intel.bkp.verifier.exceptions.CommandFailedException;
-import com.intel.bkp.verifier.exceptions.SpdmNotSupportedException;
-import com.intel.bkp.verifier.exceptions.UnknownCommandException;
-import com.intel.bkp.verifier.exceptions.UnsupportedSpdmVersionException;
+import com.intel.bkp.command.exception.JtagResponseException;
+import com.intel.bkp.command.exception.JtagUnknownCommandResponseException;
+import com.intel.bkp.command.model.CommandLayer;
+import com.intel.bkp.protocol.spdm.exceptions.SpdmNotSupportedException;
+import com.intel.bkp.protocol.spdm.exceptions.UnsupportedSpdmVersionException;
+import com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.LibConfig;
+import com.intel.bkp.verifier.protocol.sigma.service.GpDiceAttestationComponent;
+import com.intel.bkp.verifier.protocol.sigma.service.GpGetCertificateMessageSender;
+import com.intel.bkp.verifier.protocol.sigma.service.GpS10AttestationComponent;
+import com.intel.bkp.verifier.protocol.sigma.service.TeardownMessageSender;
+import com.intel.bkp.verifier.protocol.spdm.service.SpdmDiceAttestationComponent;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.sender.GpGetCertificateMessageSender;
-import com.intel.bkp.verifier.service.sender.SpdmGetVersionMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.intel.bkp.core.command.model.CertificateRequestType.FIRMWARE;
-import static com.intel.bkp.verifier.service.sender.SpdmGetVersionMessageSender.SPDM_SUPPORTED_VERSION;
+import static com.intel.bkp.command.model.CertificateRequestType.FIRMWARE;
+import static com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender.SPDM_SUPPORTED_VERSION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -116,7 +120,7 @@ class GetDeviceAttestationComponentTest {
     void perform_GetCertificateFailsWithUnknownCommand_CallS10Attestation() {
         // given
         mockAppContextForGpAttestation();
-        doThrow(new UnknownCommandException("test", 1, 2, 3))
+        doThrow(new JtagUnknownCommandResponseException("test", 1, 2, 3))
             .when(gpGetCertificateMessageSender).send(any(), any(), any());
 
         // when
@@ -131,11 +135,11 @@ class GetDeviceAttestationComponentTest {
     void perform_GetCertificateFailsWithOtherError_Throws() {
         // given
         mockAppContextForGpAttestation();
-        doThrow(new CommandFailedException("test", 1, 2, 3))
+        doThrow(new JtagResponseException("test", 1, 2, 3))
             .when(gpGetCertificateMessageSender).send(any(), any(), any());
 
         // when-then
-        Assertions.assertThrows(CommandFailedException.class,
+        assertThrows(JtagResponseException.class,
             () -> sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
@@ -184,11 +188,11 @@ class GetDeviceAttestationComponentTest {
 
         // when
         final VerifierRuntimeException ex =
-            Assertions.assertThrows(VerifierRuntimeException.class,
+            assertThrows(VerifierRuntimeException.class,
                 () -> sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
-        Assertions.assertEquals(expectedErrorMessage, ex.getMessage());
+        assertEquals(expectedErrorMessage, ex.getMessage());
         verify(spdmDiceAttestationComponent, never()).perform(any(), any());
         verify(gpDiceAttestationComponent, never()).perform(any(), any(), any());
     }
@@ -204,11 +208,11 @@ class GetDeviceAttestationComponentTest {
 
         // when
         final VerifierRuntimeException ex =
-            Assertions.assertThrows(VerifierRuntimeException.class,
+            assertThrows(VerifierRuntimeException.class,
                 () -> sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
-        Assertions.assertEquals(expectedErrorMessage, ex.getMessage());
+        assertEquals(expectedErrorMessage, ex.getMessage());
         verify(spdmDiceAttestationComponent, never()).perform(any(), any());
         verify(gpDiceAttestationComponent, never()).perform(any(), any(), any());
     }

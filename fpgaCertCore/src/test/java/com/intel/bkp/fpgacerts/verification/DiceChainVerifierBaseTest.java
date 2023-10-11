@@ -40,7 +40,6 @@ import com.intel.bkp.fpgacerts.dice.subject.DiceSubjectVerifier;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoVerifier;
 import com.intel.bkp.fpgacerts.dice.ueid.UeidVerifier;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +54,9 @@ import static com.intel.bkp.crypto.x509.validation.ExtendedKeyUsageVerifier.KEY_
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,7 +70,7 @@ class DiceChainVerifierBaseTest {
                                   ChainVerifier chainVerifier, DiceCrlVerifier crlVerifier,
                                   RootHashVerifier rootHashVerifier, UeidVerifier ueidVerifier,
                                   SubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier,
-                                  String trustedRootHash, TcbInfoVerifier tcbInfoVerifier,
+                                  String[] trustedRootHash, TcbInfoVerifier tcbInfoVerifier,
                                   DiceSubjectVerifier diceSubjectVerifier) {
             super(extendedKeyUsageVerifier, chainVerifier, crlVerifier, rootHashVerifier, ueidVerifier,
                 subjectKeyIdentifierVerifier, trustedRootHash, tcbInfoVerifier, diceSubjectVerifier);
@@ -126,7 +128,7 @@ class DiceChainVerifierBaseTest {
     @BeforeEach
     void setUp() {
         sut = new DiceChainVerifierTestImpl(extendedKeyUsageVerifier, chainVerifier, crlVerifier, rootHashVerifier,
-            ueidVerifier, subjectKeyIdentifierVerifier, DICE_ROOT_HASH, tcbInfoVerifier, diceSubjectVerifier);
+            ueidVerifier, subjectKeyIdentifierVerifier, new String[]{DICE_ROOT_HASH}, tcbInfoVerifier, diceSubjectVerifier);
         sut.setDeviceId(DEVICE_ID);
         certificates = new LinkedList<>();
         certificates.add(certificate);
@@ -139,8 +141,8 @@ class DiceChainVerifierBaseTest {
         mockCertificateParentVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -151,8 +153,8 @@ class DiceChainVerifierBaseTest {
         mockUeidVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -164,8 +166,8 @@ class DiceChainVerifierBaseTest {
         mockSkiVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -178,8 +180,8 @@ class DiceChainVerifierBaseTest {
         mockRootHashVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -193,8 +195,8 @@ class DiceChainVerifierBaseTest {
         mockExtendedKeyUsageVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -209,8 +211,8 @@ class DiceChainVerifierBaseTest {
         mockDiceSubjectVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -226,8 +228,8 @@ class DiceChainVerifierBaseTest {
         mockCrlVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        final var ex = assertThrows(RuntimeException.class, () -> sut.verifyChain(certificates));
+        assertEquals(expectedError, ex.getMessage());
     }
 
     @Test
@@ -243,7 +245,7 @@ class DiceChainVerifierBaseTest {
         mockTcbInfoVerification(true);
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verifyChain(certificates));
+        assertDoesNotThrow(() -> sut.verifyChain(certificates));
 
         // then
         verify(chainVerifier).knownExtensionOids(DICE_EXTENSION_OIDS);
@@ -266,9 +268,9 @@ class DiceChainVerifierBaseTest {
         mockTcbInfoVerification(false);
 
         // when-then
-        final var ex = Assertions.assertThrows(RuntimeException.class,
+        final var ex = assertThrows(RuntimeException.class,
             () -> sut.verifyChain(certificates));
-        Assertions.assertEquals(expectedError, ex.getMessage());
+        assertEquals(expectedError, ex.getMessage());
     }
 
     private void mockCertificateParentVerification(boolean verificationPassed) {
@@ -293,7 +295,7 @@ class DiceChainVerifierBaseTest {
     }
 
     private void mockRootHashVerification(boolean verificationPassed) {
-        when(rootHashVerifier.verifyRootHash(certificate, DICE_ROOT_HASH)).thenReturn(verificationPassed);
+        when(rootHashVerifier.verifyRootHash(certificate, new String[]{DICE_ROOT_HASH})).thenReturn(verificationPassed);
     }
 
     private void mockCrlVerification(boolean verificationPassed) {

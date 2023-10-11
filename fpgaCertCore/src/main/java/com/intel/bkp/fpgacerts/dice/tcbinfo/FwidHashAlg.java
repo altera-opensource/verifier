@@ -48,11 +48,11 @@ public enum FwidHashAlg {
     private final int size;
     private final String oid;
 
-    public static FwidHashAlg from(int measurementSize) throws FwidHashAlgNotSupported {
+    public static FwidHashAlg from(int measurementSize) {
         return Arrays.stream(values())
             .filter(alg -> alg.getSize() == measurementSize)
             .findFirst()
-            .orElseThrow(() -> new FwidHashAlgNotSupported(measurementSize));
+            .orElseThrow(() -> FwidHashAlgNotSupported.fromMeasurementSize(measurementSize));
     }
 
     public static boolean isSupported(String oid) {

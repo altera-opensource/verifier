@@ -34,6 +34,7 @@
 package com.intel.bkp.fpgacerts.verification;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
+import com.intel.bkp.test.CertificateUtils;
 import lombok.SneakyThrows;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -71,7 +72,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static com.intel.bkp.crypto.x509.utils.X509ExtensionUtils.getExtensionBytes;
-import static com.intel.bkp.fpgacerts.Utils.readCertificate;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoTestUtil.parseTcbInfo;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
@@ -133,11 +133,11 @@ class DiceCrlVerifierTest {
     }
 
     @BeforeAll
-    static void loadCerts() throws Exception {
-        singleTcbInfoCert = readCertificate("certs/dice/aliasEfuseChain/",
+    static void loadCerts() {
+        singleTcbInfoCert = CertificateUtils.readCertificate("certs/dice/aliasEfuseChain/",
             "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer");
         singleTcbInfoFromCert = getExtensionBytes(singleTcbInfoCert, TCB_INFO_EXTENSION_OID).orElseThrow();
-        multiTcbInfoCert = readCertificate("certs/dice/aliasEfuseSpdmChain/",
+        multiTcbInfoCert = CertificateUtils.readCertificate("certs/dice/aliasEfuseSpdmChain/",
             "deviceId_01458210996be470_spdm.cer");
         multiTcbInfoFromCert = getExtensionBytes(multiTcbInfoCert, MULTI_TCB_INFO_EXTENSION_OID).orElseThrow();
         final List<byte[]> tcbInfosFromMultiTcbInfo = getTcbInfosFromMultiTcbInfo();

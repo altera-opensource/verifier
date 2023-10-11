@@ -33,28 +33,27 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
 import com.intel.bkp.core.psgcertificate.model.PsgRootHashType;
-import com.intel.bkp.crypto.constants.CryptoConstants;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PsgCertificateRootEntryTest {
 
     @Test
-    void build_WithCurveSECP384R1_ReturnsSuccess() throws PsgCertificateException {
+    void build_WithCurveSECP384R1_ReturnsSuccess() {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_384);
-        assert keyPair != null;
+        KeyPair keyPair = KeyGenUtils.genEc384();
 
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, PsgCurveType.SECP384R1);
 
@@ -67,13 +66,13 @@ public class PsgCertificateRootEntryTest {
 
         // then
         verifyCommonParsedAsserts(instance, parsed);
-        Assertions.assertEquals(instance.getRootHashType(), parsed.getRootHashType());
+        assertEquals(instance.getRootHashType(), parsed.getRootHashType());
     }
 
     @Test
-    void build_WithSECP256R1_ReturnsSuccess() throws PsgCertificateException {
+    void build_WithSECP256R1_ReturnsSuccess() {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_256);
+        KeyPair keyPair = KeyGenUtils.genEc256();
         assert keyPair != null;
 
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, PsgCurveType.SECP256R1);
@@ -89,9 +88,9 @@ public class PsgCertificateRootEntryTest {
     }
 
     @Test
-    void buildForFw_ReturnsSuccess() throws PsgCertificateException {
+    void buildForFw_ReturnsSuccess() {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys(CryptoConstants.EC_CURVE_SPEC_384);
+        KeyPair keyPair = KeyGenUtils.genEc384();
         assert keyPair != null;
 
         PsgPublicKeyBuilder psgPublicKeyBuilder = getPsgPublicKeyBuilder(keyPair, PsgCurveType.SECP384R1);
@@ -118,7 +117,7 @@ public class PsgCertificateRootEntryTest {
             + "5532AE948A4045AE0348DD46867197560A2E8453FB31ECE94FC3BC283B449FC45CC39600CDF194B96EE2FF62D14B24D63CF46A"
             + "4AAB090587A7397E8A568AFF603E10B0ACC987E2EBF25D4E7758FCECF11AEECFBB");
 
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> new PsgCertificateRootEntryBuilder().parse(invalidCert));
     }
 
@@ -130,7 +129,7 @@ public class PsgCertificateRootEntryTest {
             + "05532AE948A4045AE0348DD46867197560A2E8453FB31ECE94FC3BC283B449FC45CC39600CDF194B96EE2FF62D14B24D63CF46A"
             + "4AAB090587A7397E8A568AFF603E10B0ACC987E2EBF25D4E7758FCECF11AEECFBB");
 
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> new PsgCertificateRootEntryBuilder().parse(invalidCert));
     }
 
@@ -138,16 +137,16 @@ public class PsgCertificateRootEntryTest {
                                            PsgCertificateRootEntryBuilder parse) {
         PsgPublicKeyBuilder instancePubKey = instance.getPsgPublicKeyBuilder();
         PsgPublicKeyBuilder parsePubKey = parse.getPsgPublicKeyBuilder();
-        Assertions.assertEquals(instance.getLengthOffset(), parse.getLengthOffset());
-        Assertions.assertEquals(instance.getDataLength(), parse.getDataLength());
-        Assertions.assertEquals(instance.getMsbOfPubKey(), parse.getMsbOfPubKey());
-        Assertions.assertEquals(instancePubKey.getSizeX(), parsePubKey.getSizeX());
-        Assertions.assertEquals(instancePubKey.getSizeY(), parsePubKey.getSizeY());
-        Assertions.assertEquals(instancePubKey.getPublicKeyPermissions(), parsePubKey.getPublicKeyPermissions());
-        Assertions.assertEquals(instancePubKey.getPublicKeyCancellation(), parsePubKey.getPublicKeyCancellation());
-        Assertions.assertArrayEquals(instancePubKey.getCurvePoint().getAlignedDataToSize(),
+        assertEquals(instance.getLengthOffset(), parse.getLengthOffset());
+        assertEquals(instance.getDataLength(), parse.getDataLength());
+        assertEquals(instance.getMsbOfPubKey(), parse.getMsbOfPubKey());
+        assertEquals(instancePubKey.getSizeX(), parsePubKey.getSizeX());
+        assertEquals(instancePubKey.getSizeY(), parsePubKey.getSizeY());
+        assertEquals(instancePubKey.getPublicKeyPermissions(), parsePubKey.getPublicKeyPermissions());
+        assertEquals(instancePubKey.getPublicKeyCancellation(), parsePubKey.getPublicKeyCancellation());
+        assertArrayEquals(instancePubKey.getCurvePoint().getAlignedDataToSize(),
             parsePubKey.getCurvePoint().getAlignedDataToSize());
-        Assertions.assertEquals(instancePubKey.getCurvePoint().getCurveSpec(),
+        assertEquals(instancePubKey.getCurvePoint().getCurveSpec(),
             parsePubKey.getCurvePoint().getCurveSpec());
     }
 

@@ -36,26 +36,31 @@ package com.intel.bkp.fpgacerts.verification;
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.fpgacerts.exceptions.X509Exception;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class RootHashVerifier {
 
-    public boolean verifyRootHash(X509Certificate rootCert, String trustedRootHash) {
-        if (StringUtils.isBlank(trustedRootHash)) {
+    public boolean verifyRootHash(X509Certificate rootCert, String[] trustedRootHash) {
+        if (ArrayUtils.isEmpty(trustedRootHash) || Arrays.stream(trustedRootHash).allMatch(String::isBlank)) {
             log.warn("Skipping root hash verification - trusted root hash was not provided.");
             return true;
         }
 
         final String rootHash = getCertificateFingerprint(rootCert);
-        final boolean isRootTrusted = rootHash.equalsIgnoreCase(trustedRootHash);
+        final boolean isRootTrusted = Arrays.stream(trustedRootHash).anyMatch(rootHash::equalsIgnoreCase);
         if (!isRootTrusted) {
-            log.debug("Root fingerprints do not match.\nExpected: {}\nActual:   {}",
-                trustedRootHash.toUpperCase(Locale.ROOT), rootHash.toUpperCase(Locale.ROOT));
+            final var expectedHashes = Arrays.stream(trustedRootHash).map(e -> e.toUpperCase(Locale.ROOT))
+                .collect(Collectors.joining(", "));
+
+            log.debug("Root fingerprints do not match.\nExpected one of following: {}\nActual:   {}", expectedHashes,
+                rootHash.toUpperCase(Locale.ROOT));
         }
 
         return isRootTrusted;

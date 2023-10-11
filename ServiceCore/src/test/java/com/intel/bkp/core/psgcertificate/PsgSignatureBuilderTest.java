@@ -33,21 +33,23 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
 import com.intel.bkp.core.psgcertificate.model.PsgSignature;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureMagic;
 import com.intel.bkp.crypto.constants.CryptoConstants;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
+import com.intel.bkp.test.SigningUtils;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PsgSignatureBuilderTest {
 
@@ -58,9 +60,9 @@ class PsgSignatureBuilderTest {
     @Test
     void build_WithSignature_Success() {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys();
+        KeyPair keyPair = KeyGenUtils.genEc384();
         byte[] testData = "TestDataToSignAndVerify".getBytes();
-        byte[] signed = TestUtil.signEcData(testData, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
+        byte[] signed = SigningUtils.signEcData(testData, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
 
         // when
         final PsgSignature signature = new PsgSignatureBuilder()
@@ -68,12 +70,12 @@ class PsgSignatureBuilderTest {
             .build();
 
         // then
-        Assertions.assertEquals(toHex(PsgSignatureMagic.STANDARD.getValue()),
+        assertEquals(toHex(PsgSignatureMagic.STANDARD.getValue()),
             toHex(signature.getSignatureMagic()));
-        Assertions.assertEquals(toHex(PsgSignatureCurveType.SECP384R1.getMagic()),
+        assertEquals(toHex(PsgSignatureCurveType.SECP384R1.getMagic()),
             toHex(signature.getSignatureHashMagic()));
-        Assertions.assertNotNull(signature.getSignatureR());
-        Assertions.assertNotNull(signature.getSignatureS());
+        assertNotNull(signature.getSignatureR());
+        assertNotNull(signature.getSignatureS());
     }
 
     @Test
@@ -85,21 +87,21 @@ class PsgSignatureBuilderTest {
             .array();
 
         // then
-        Assertions.assertEquals(PSG_EMPTY_SIGNATURE_FIRMWARE, toHex(signature));
+        assertEquals(PSG_EMPTY_SIGNATURE_FIRMWARE, toHex(signature));
     }
 
     @Test
-    void parse_WithEmptySignature_Success() throws PsgInvalidSignatureException {
+    void parse_WithEmptySignature_Success() {
         // when
         final PsgSignatureBuilder builder = new PsgSignatureBuilder()
             .withActor(EndiannessActor.FIRMWARE)
             .parse(fromHex(PSG_EMPTY_SIGNATURE_FIRMWARE));
 
         // then
-        Assertions.assertEquals(PsgSignatureMagic.STANDARD, builder.getMagic());
-        Assertions.assertEquals("0".repeat(96), builder.getCurvePoint().getHexPointA());
-        Assertions.assertEquals("0".repeat(96), builder.getCurvePoint().getHexPointB());
-        Assertions.assertEquals(PsgSignatureCurveType.SECP384R1, PsgSignatureCurveType.fromCurveSpec(
+        assertEquals(PsgSignatureMagic.STANDARD, builder.getMagic());
+        assertEquals("0".repeat(96), builder.getCurvePoint().getHexPointA());
+        assertEquals("0".repeat(96), builder.getCurvePoint().getHexPointB());
+        assertEquals(PsgSignatureCurveType.SECP384R1, PsgSignatureCurveType.fromCurveSpec(
             builder.getCurvePoint().getCurveSpec()
         ));
     }
@@ -107,16 +109,16 @@ class PsgSignatureBuilderTest {
     @Test
     void parse_WithEmptySignature_WithNotValidActor_ThrowsException() {
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> new PsgSignatureBuilder().parse(fromHex(PSG_EMPTY_SIGNATURE_FIRMWARE)));
     }
 
     @Test
     void getTotalSignatureSize_WithSignature_Success() {
         // given
-        KeyPair keyPair = TestUtil.genEcKeys();
+        KeyPair keyPair = KeyGenUtils.genEc384();
         byte[] testData = "TestDataToSignAndVerify".getBytes();
-        byte[] signed = TestUtil.signEcData(testData, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
+        byte[] signed = SigningUtils.signEcData(testData, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
         final int expected = PsgSignatureBuilder.getTotalSignatureSize(PsgSignatureCurveType.SECP384R1);
 
         // when
@@ -125,7 +127,7 @@ class PsgSignatureBuilderTest {
             .getTotalSignatureSize();
 
         // then
-        Assertions.assertEquals(expected, sigSize);
+        assertEquals(expected, sigSize);
     }
 
     @Test
@@ -134,7 +136,7 @@ class PsgSignatureBuilderTest {
         int result = PsgSignatureBuilder.getTotalSignatureSize(PsgSignatureCurveType.SECP384R1);
 
         // then
-        Assertions.assertEquals(112, result);
+        assertEquals(112, result);
     }
 
     @Test
@@ -143,6 +145,6 @@ class PsgSignatureBuilderTest {
         int result = PsgSignatureBuilder.getTotalSignatureSize(PsgSignatureCurveType.SECP256R1);
 
         // then
-        Assertions.assertEquals(80, result);
+        assertEquals(80, result);
     }
 }

@@ -35,7 +35,6 @@ package com.intel.bkp.crypto.aesctr;
 
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
@@ -43,6 +42,7 @@ import java.security.Provider;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AesCounterModeProviderTest {
 
@@ -90,7 +90,7 @@ public class AesCounterModeProviderTest {
         final byte[] result = sut.encrypt(plaintext);
 
         // then
-        Assertions.assertTrue(compareArrays(ciphertext, result));
+        assertTrue(compareArrays(ciphertext, result));
     }
 
     @Test
@@ -99,6 +99,6 @@ public class AesCounterModeProviderTest {
         final byte[] result = sut.decrypt(ciphertext);
 
         // then
-        Assertions.assertTrue(compareArrays(plaintext, result));
+        assertTrue(compareArrays(plaintext, result));
     }
 }

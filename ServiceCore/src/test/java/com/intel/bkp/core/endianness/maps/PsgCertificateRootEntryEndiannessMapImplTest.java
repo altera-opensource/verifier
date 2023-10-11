@@ -34,7 +34,6 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.utils.ByteSwapOrder;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.endianness.EndiannessActor.FIRMWARE;
@@ -45,6 +44,7 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_ROOT_HASH_TYPE;
 import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SHA_LEN;
 import static com.intel.bkp.core.endianness.StructureField.PSG_CERT_ROOT_SIG_LEN;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PsgCertificateRootEntryEndiannessMapImplTest {
 
@@ -54,7 +54,7 @@ class PsgCertificateRootEntryEndiannessMapImplTest {
         PsgCertificateRootEntryEndiannessMapImpl sut = new PsgCertificateRootEntryEndiannessMapImpl(SERVICE);
 
         // then
-        Assertions.assertEquals(0, sut.getSize());
+        assertEquals(0, sut.getSize());
     }
 
     @Test
@@ -63,12 +63,12 @@ class PsgCertificateRootEntryEndiannessMapImplTest {
         PsgCertificateRootEntryEndiannessMapImpl sut = new PsgCertificateRootEntryEndiannessMapImpl(FIRMWARE);
 
         // then
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_MAGIC));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_LENGTH_OFFSET));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_DATA_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_SIG_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_SHA_LEN));
-        Assertions.assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_ROOT_HASH_TYPE));
-        Assertions.assertEquals(6, sut.getSize());
+        assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_MAGIC));
+        assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_LENGTH_OFFSET));
+        assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_DATA_LEN));
+        assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_SIG_LEN));
+        assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_SHA_LEN));
+        assertEquals(ByteSwapOrder.CONVERT, sut.get(PSG_CERT_ROOT_ROOT_HASH_TYPE));
+        assertEquals(6, sut.getSize());
     }
 }

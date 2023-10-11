@@ -33,32 +33,34 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.TestUtil;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgBlock0EntryException;
 import com.intel.bkp.core.psgcertificate.model.PsgBlock0Entry;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
 import com.intel.bkp.crypto.constants.CryptoConstants;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
+import com.intel.bkp.test.SigningUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 
-import static com.intel.bkp.core.TestUtil.genEcKeys;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PsgBlock0EntryBuilderTest {
 
     @Test
-    void build_returnsSuccess() throws PsgBlock0EntryException {
+    void build_returnsSuccess() {
         // given
-        KeyPair keyPair = genEcKeys(null);
+        KeyPair keyPair = KeyGenUtils.genEc384();
         byte[] dataToSign = new byte[1];
 
         // when
         assert keyPair != null;
-        byte[] signedBytes = TestUtil.signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
+        byte[] signedBytes =
+            SigningUtils.signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
 
         PsgBlock0Entry expected = new PsgBlock0EntryBuilder()
             .signature(signedBytes, PsgSignatureCurveType.SECP384R1)
@@ -73,14 +75,15 @@ class PsgBlock0EntryBuilderTest {
     }
 
     @Test
-    void build_WithFirmwareActor_returnsSuccess() throws PsgBlock0EntryException {
+    void build_WithFirmwareActor_returnsSuccess() {
         // given
-        KeyPair keyPair = genEcKeys(null);
+        KeyPair keyPair = KeyGenUtils.genEc384();
         byte[] dataToSign = new byte[1];
 
         // when
         assert keyPair != null;
-        byte[] signedBytes = TestUtil.signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
+        byte[] signedBytes =
+            SigningUtils.signEcData(dataToSign, keyPair.getPrivate(), CryptoConstants.SHA384_WITH_ECDSA);
 
         PsgBlock0Entry expected = new PsgBlock0EntryBuilder()
             .signature(signedBytes, PsgSignatureCurveType.SECP384R1)
@@ -102,12 +105,12 @@ class PsgBlock0EntryBuilderTest {
         final int length = PsgBlock0EntryBuilder.predictFinalLength();
 
         // then
-        Assertions.assertEquals(136, length);
+        assertEquals(136, length);
     }
 
     @Test
     void parse_WithWrongMagic_ThrowsException() {
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> new PsgBlock0EntryBuilder().parse("none".getBytes())
         );
     }
@@ -121,19 +124,19 @@ class PsgBlock0EntryBuilderTest {
         buffer.putInt(1);
 
         // when-then
-        Assertions.assertThrows(ParseStructureException.class,
+        assertThrows(ParseStructureException.class,
             () -> new PsgBlock0EntryBuilder().parse(buffer.array())
         );
     }
 
     private void verifyCommonParsedAsserts(PsgBlock0Entry expected, PsgBlock0Entry actual) {
-        Assertions.assertArrayEquals(expected.getDataLength(), actual.getDataLength());
-        Assertions.assertArrayEquals(expected.getSignatureLength(), actual.getSignatureLength());
-        Assertions.assertArrayEquals(expected.getShaLength(), actual.getShaLength());
-        Assertions.assertArrayEquals(expected.getLengthOffset(), actual.getLengthOffset());
-        Assertions.assertArrayEquals(expected.getMagic(), actual.getMagic());
-        Assertions.assertArrayEquals(expected.getReserved(), actual.getReserved());
-        Assertions.assertArrayEquals(expected.getPsgSignature(), actual.getPsgSignature());
+        assertArrayEquals(expected.getDataLength(), actual.getDataLength());
+        assertArrayEquals(expected.getSignatureLength(), actual.getSignatureLength());
+        assertArrayEquals(expected.getShaLength(), actual.getShaLength());
+        assertArrayEquals(expected.getLengthOffset(), actual.getLengthOffset());
+        assertArrayEquals(expected.getMagic(), actual.getMagic());
+        assertArrayEquals(expected.getReserved(), actual.getReserved());
+        assertArrayEquals(expected.getPsgSignature(), actual.getPsgSignature());
     }
 
 }

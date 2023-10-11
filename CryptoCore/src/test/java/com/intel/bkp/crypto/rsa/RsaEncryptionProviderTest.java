@@ -36,7 +36,6 @@ package com.intel.bkp.crypto.rsa;
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +43,8 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class RsaEncryptionProviderTest {
 
@@ -73,7 +74,7 @@ public class RsaEncryptionProviderTest {
         byte[] result = decryptionProvider.decrypt(encrypted);
 
         // then
-        Assertions.assertArrayEquals(data, result);
+        assertArrayEquals(data, result);
     }
 
 }

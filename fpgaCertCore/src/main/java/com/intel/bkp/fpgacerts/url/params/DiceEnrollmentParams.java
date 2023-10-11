@@ -53,7 +53,8 @@ public class DiceEnrollmentParams extends DiceParams {
 
     @Override
     public String toString() {
-        return String.format("DiceEnrollmentParams(SKI = %s, SVN = %s, UID = %s (in Distribution Point format: %s))",
-                getSki(), getSvn(), getUidInLogsFormat(), getUid());
+        return String.format(
+            "DiceEnrollmentParams(SKI/PDI = %s, SVN = %s, UID = %s (in Distribution Point format: %s))",
+            getId(), getSvn(), getUidInLogsFormat(), getUid());
     }
 }

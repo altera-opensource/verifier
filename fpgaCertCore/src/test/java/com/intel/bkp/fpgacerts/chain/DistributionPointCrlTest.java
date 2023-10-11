@@ -33,7 +33,6 @@
 
 package com.intel.bkp.fpgacerts.chain;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +43,12 @@ import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class DistributionPointCrlTest {
@@ -73,7 +78,7 @@ class DistributionPointCrlTest {
         final var result = DistributionPointCrl.getX509Crls(dpCrls);
 
         // then
-        Assertions.assertIterableEquals(x509Crls, result);
+        assertIterableEquals(x509Crls, result);
     }
 
     @Test
@@ -82,14 +87,14 @@ class DistributionPointCrlTest {
         final var result = DistributionPointCrl.getX509Crls(List.of());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.isEmpty());
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
     void getX509Crls_NullCollection_ThrowsNullPointer() {
         // when-then
-        Assertions.assertThrows(NullPointerException.class, () -> DistributionPointCrl.getX509Crls(null));
+        assertThrows(NullPointerException.class, () -> DistributionPointCrl.getX509Crls(null));
     }
 
     @Test
@@ -101,7 +106,7 @@ class DistributionPointCrlTest {
         final var result = DistributionPointCrl.toMap(dpCrls);
 
         // then
-        Assertions.assertEquals(crlMap, result);
+        assertEquals(crlMap, result);
     }
 
     @Test
@@ -110,13 +115,13 @@ class DistributionPointCrlTest {
         final var result = DistributionPointCrl.toMap(List.of());
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.isEmpty());
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
     void toMap_NullCollection_ThrowsNullPointer() {
         // when-then
-        Assertions.assertThrows(NullPointerException.class, () -> DistributionPointCrl.toMap(null));
+        assertThrows(NullPointerException.class, () -> DistributionPointCrl.toMap(null));
     }
 }

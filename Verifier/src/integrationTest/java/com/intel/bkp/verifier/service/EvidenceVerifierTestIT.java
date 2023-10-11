@@ -33,17 +33,17 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.intel.bkp.command.responses.sigma.GetMeasurementResponse;
+import com.intel.bkp.command.responses.sigma.GetMeasurementResponseBuilder;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoExtensionParser;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
-import com.intel.bkp.verifier.Utils;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponse;
-import com.intel.bkp.verifier.command.responses.attestation.GetMeasurementResponseBuilder;
-import com.intel.bkp.verifier.command.responses.attestation.GpMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.protocol.sigma.model.evidence.GetMeasurementResponseProvider;
+import com.intel.bkp.verifier.protocol.sigma.service.GpMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
-import org.junit.jupiter.api.Assertions;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,18 +53,19 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement.asMeasurements;
-import static com.intel.bkp.verifier.x509.X509UtilsWrapper.toX509;
+import static com.intel.bkp.fpgacerts.utils.X509UtilsWrapper.toX509;
+import static com.intel.bkp.test.FileUtils.readFromResources;
+import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class EvidenceVerifierTestIT {
 
     private static final String TEST_FOLDER_INTEGRATION = "integration/";
-
     private static final String FILENAME_STRATIX_RIM = "signed_spl_hps.rim";
     private static final String FILENAME_STRATIX_RIM_INVALID_IO_SECTION = "signed_spl_hps_invalid_io_section.rim";
     private static final String FILENAME_AGILEX_RIM = "ghrd_sha_384.rim";
     private static final String FILENAME_AGILEX_RIM_INVALID_HPS_SECTION = "ghrd_sha_384_invalid_hps_section.rim";
-
     private static final String FILENAME_STRATIX_RESPONSE = "measurements_response_stratix10.bin";
     private static final String FILENAME_AGILEX_RESPONSE = "measurements_response_agilex.bin";
     private static final String ALIAS_CERT = "alias_certificate.der";
@@ -76,8 +77,8 @@ public class EvidenceVerifierTestIT {
     private static String refMeasurementsAgilex;
     private static String refMeasurementsAgilexInvalidHpsSection;
 
-    private static GetMeasurementResponse responseS10;
-    private static GetMeasurementResponse responseAgilex;
+    private static GetMeasurementResponseProvider responseS10;
+    private static GetMeasurementResponseProvider responseAgilex;
 
     private static X509Certificate aliasCert;
     private static X509Certificate firmwareCert;
@@ -96,8 +97,8 @@ public class EvidenceVerifierTestIT {
         refMeasurementsAgilex = readEvidence(FILENAME_AGILEX_RIM);
         refMeasurementsAgilexInvalidHpsSection = readEvidence(FILENAME_AGILEX_RIM_INVALID_HPS_SECTION);
 
-        responseS10 = readResponse(FILENAME_STRATIX_RESPONSE);
-        responseAgilex = readResponse(FILENAME_AGILEX_RESPONSE);
+        responseS10 = new GetMeasurementResponseProvider(readResponse(FILENAME_STRATIX_RESPONSE));
+        responseAgilex = new GetMeasurementResponseProvider(readResponse(FILENAME_AGILEX_RESPONSE));
 
         aliasCert = toX509(readCertificate(ALIAS_CERT));
         firmwareCert = toX509(readCertificate(FIRMWARE_CERT));
@@ -105,11 +106,11 @@ public class EvidenceVerifierTestIT {
     }
 
     private static String readEvidence(String filename) throws Exception {
-        return new String(Utils.readFromResources(TEST_FOLDER_INTEGRATION, filename));
+        return toHex(readFromResources(TEST_FOLDER_INTEGRATION, filename));
     }
 
     private static GetMeasurementResponse readResponse(String filename) throws Exception {
-        final byte[] response = Utils.readFromResources(TEST_FOLDER_INTEGRATION, filename);
+        final byte[] response = readFromResources(TEST_FOLDER_INTEGRATION, filename);
         return new GetMeasurementResponseBuilder()
             .withActor(EndiannessActor.FIRMWARE)
             .parse(response)
@@ -117,8 +118,9 @@ public class EvidenceVerifierTestIT {
             .build();
     }
 
-    private static byte[] readCertificate(String filename) throws Exception {
-        return Utils.readFromResources(TEST_FOLDER_INTEGRATION, filename);
+    @SneakyThrows
+    private static byte[] readCertificate(String filename) {
+        return readFromResources(TEST_FOLDER_INTEGRATION, filename);
     }
 
     @Test
@@ -130,7 +132,7 @@ public class EvidenceVerifierTestIT {
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsStratix);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK, result);
+        assertEquals(VerifierExchangeResponse.OK, result);
     }
 
     @Test
@@ -142,7 +144,7 @@ public class EvidenceVerifierTestIT {
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsStratixInvalidIoSection);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
+        assertEquals(VerifierExchangeResponse.FAIL, result);
     }
 
     @Test
@@ -154,7 +156,7 @@ public class EvidenceVerifierTestIT {
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilex);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK, result);
+        assertEquals(VerifierExchangeResponse.OK, result);
     }
 
     @Test
@@ -166,7 +168,7 @@ public class EvidenceVerifierTestIT {
         final VerifierExchangeResponse result = sut.verify(tcbInfoAggregator, refMeasurementsAgilexInvalidHpsSection);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
+        assertEquals(VerifierExchangeResponse.FAIL, result);
     }
 
     private void prepareTcbInfoAggregatorForS10() {

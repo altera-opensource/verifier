@@ -33,21 +33,22 @@
 
 package com.intel.bkp.core.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JceSecurityProviderExceptionTest {
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        Assertions.assertThrows(JceSecurityProviderException.class, () -> {
+        assertThrows(JceSecurityProviderException.class, () -> {
             throw new JceSecurityProviderException("test", new Exception());
         });
     }
 
     @Test
     void constructor_WithMessage_Success() {
-        Assertions.assertThrows(JceSecurityProviderException.class, () -> {
+        assertThrows(JceSecurityProviderException.class, () -> {
             throw new JceSecurityProviderException("test");
         });
     }

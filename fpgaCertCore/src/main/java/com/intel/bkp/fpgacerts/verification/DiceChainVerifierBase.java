@@ -69,14 +69,14 @@ public abstract class DiceChainVerifierBase {
     private final RootHashVerifier rootHashVerifier;
     private final UeidVerifier ueidVerifier;
     private final SubjectKeyIdentifierVerifier subjectKeyIdentifierVerifier;
-    private final String trustedRootHash;
+    private final String[] trustedRootHash;
     private final TcbInfoVerifier tcbInfoVerifier;
     private final DiceSubjectVerifier diceSubjectVerifier;
 
     @Setter
     private byte[] deviceId;
 
-    protected DiceChainVerifierBase(ICrlProvider crlProvider, String trustedRootHash, boolean testModeSecrets) {
+    protected DiceChainVerifierBase(ICrlProvider crlProvider, String[] trustedRootHash, boolean testModeSecrets) {
         this(new ExtendedKeyUsageVerifier(), new ChainVerifier(), new DiceCrlVerifier(crlProvider),
             new RootHashVerifier(),
             new UeidVerifier(), new SubjectKeyIdentifierVerifier(), trustedRootHash,

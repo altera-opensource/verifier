@@ -34,16 +34,17 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo;
 
 import com.intel.bkp.utils.MaskHelper;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.upperCase;
 
 @Data
-@AllArgsConstructor
 public class MaskedVendorInfo {
 
     private String vendorInfo;
@@ -53,9 +54,19 @@ public class MaskedVendorInfo {
         this.vendorInfo = vendorInfo;
     }
 
+    public MaskedVendorInfo(String vendorInfo, String vendorInfoMask) {
+        this.vendorInfo = upperCase(vendorInfo, Locale.ROOT);
+        final String mask = isNotBlank(vendorInfoMask) ? vendorInfoMask : getMaskBasedOnVendorInfo(vendorInfo);
+        this.vendorInfoMask = upperCase(mask, Locale.ROOT);
+    }
+
+    private static String getMaskBasedOnVendorInfo(String vendorInfo) {
+        return MaskHelper.getMask(vendorInfo.length());
+    }
+
     public void setMaskBasedOnVendorInfo() {
         if (nonNull(vendorInfo)) {
-            vendorInfoMask = MaskHelper.getMask(vendorInfo.length());
+            vendorInfoMask = getMaskBasedOnVendorInfo(vendorInfo);
         }
     }
 
@@ -84,8 +95,8 @@ public class MaskedVendorInfo {
     @Override
     public String toString() {
         return "MaskedVendorInfo("
-                + includeIfNonNull("vendorInfo", vendorInfo)
-                + includeIfNonNull("vendorInfoMask", vendorInfoMask)
-                + " )";
+            + includeIfNonNull("vendorInfo", vendorInfo)
+            + includeIfNonNull("vendorInfoMask", vendorInfoMask)
+            + " )";
     }
 }

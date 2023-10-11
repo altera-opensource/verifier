@@ -49,12 +49,10 @@ import com.intel.bkp.crypto.constants.SecurityKeyType;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.impl.AesUtils;
 import com.intel.bkp.crypto.impl.EcUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.crypto.SecretKey;
@@ -67,7 +65,13 @@ import java.security.Provider;
 import java.security.Security;
 import java.security.cert.CertificateException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -193,7 +197,7 @@ class JceSecurityProviderTest {
         securityService.login();
 
         // then
-        Assertions.assertTrue(securityService.checkConnection());
+        assertTrue(securityService.checkConnection());
     }
 
     @Test
@@ -202,7 +206,7 @@ class JceSecurityProviderTest {
         when(securityProperties.getPassword()).thenReturn("test");
         prepareKeyStore(false);
 
-        Assertions.assertThrows(JceSecurityProviderException.class, () -> securityService.login());
+        assertThrows(JceSecurityProviderException.class, () -> securityService.login());
     }
 
     @Test
@@ -214,7 +218,7 @@ class JceSecurityProviderTest {
         final boolean result = securityService.checkConnection();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -228,7 +232,7 @@ class JceSecurityProviderTest {
         final Object securityObject = securityService.createSecurityObject(testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(securityObject);
+        assertNotNull(securityObject);
     }
 
     @Test
@@ -242,7 +246,7 @@ class JceSecurityProviderTest {
         final Object secObj = securityService.createSecurityObject(SecurityKeyType.RSA, testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(secObj);
+        assertNotNull(secObj);
     }
 
     @Test
@@ -256,7 +260,7 @@ class JceSecurityProviderTest {
         final Object secObj = securityService.createSecurityObject(SecurityKeyType.AES, testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(secObj);
+        assertNotNull(secObj);
     }
 
     @Test
@@ -270,7 +274,7 @@ class JceSecurityProviderTest {
         final Object securityObject = securityService.createSecurityObject(SecurityKeyType.EC, testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(securityObject);
+        assertNotNull(securityObject);
     }
 
     @Test
@@ -280,7 +284,7 @@ class JceSecurityProviderTest {
         final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.decryptRSA(testKeyAliasPositive, "test".getBytes()));
     }
 
@@ -294,7 +298,7 @@ class JceSecurityProviderTest {
         securityService.deleteSecurityObject(testKeyAliasPositive);
 
         // then
-        Mockito.verify(securityProperties, times(2)).getPassword();
+        verify(securityProperties, times(2)).getPassword();
     }
 
     @Test
@@ -302,7 +306,7 @@ class JceSecurityProviderTest {
         // given
         final var keyStore = prepareKeyStore(false);
         securityService.setKeyStore(keyStore);
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.deleteSecurityObject(testKeyAliasNegative));
     }
 
@@ -316,7 +320,7 @@ class JceSecurityProviderTest {
         final boolean result = securityService.existsSecurityObject(testKeyAliasPositive);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -329,7 +333,7 @@ class JceSecurityProviderTest {
         final boolean result = securityService.existsSecurityObject(testKeyAliasPositive);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -344,7 +348,7 @@ class JceSecurityProviderTest {
 
         // then
         SecretKey result = (SecretKey) keyStore.getKey(testKeyAliasPositive, "".toCharArray());
-        Assertions.assertEquals(secretKey, result);
+        assertEquals(secretKey, result);
     }
 
     @Test
@@ -357,8 +361,8 @@ class JceSecurityProviderTest {
         final byte[] pubKeyFromSecurityObject = securityService.getPubKeyFromSecurityObject(testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(pubKeyFromSecurityObject);
-        Assertions.assertEquals(testKeyAliasPositive, new String(pubKeyFromSecurityObject));
+        assertNotNull(pubKeyFromSecurityObject);
+        assertEquals(testKeyAliasPositive, new String(pubKeyFromSecurityObject));
     }
 
     @Test
@@ -366,7 +370,7 @@ class JceSecurityProviderTest {
         final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.getPubKeyFromSecurityObject(testKeyAliasWrongNullCertificateInChain));
     }
 
@@ -376,7 +380,7 @@ class JceSecurityProviderTest {
         final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.getPubKeyFromSecurityObject(testKeyAliasWrongNullChain));
     }
 
@@ -385,7 +389,7 @@ class JceSecurityProviderTest {
         final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.getPubKeyFromSecurityObject(testKeyAliasWrongEmptyCertificateChain));
     }
 
@@ -394,7 +398,7 @@ class JceSecurityProviderTest {
         final var keyStore = prepareKeyStore(true);
         securityService.setKeyStore(keyStore);
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.getPubKeyFromSecurityObject(testKeyAliasWrongNullPubKey));
     }
 
@@ -413,7 +417,7 @@ class JceSecurityProviderTest {
         byte[] signature = securityService.signObject(content, testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(signature);
+        assertNotNull(signature);
     }
 
     @Test
@@ -423,7 +427,7 @@ class JceSecurityProviderTest {
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.signObject(content, testKeyAliasPositive));
     }
 
@@ -434,7 +438,7 @@ class JceSecurityProviderTest {
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.signObject(content, testKeyAliasNegative));
     }
 
@@ -445,7 +449,7 @@ class JceSecurityProviderTest {
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.signObject(content, testKeyAliasPositive));
     }
 
@@ -457,7 +461,7 @@ class JceSecurityProviderTest {
         securityService.setKeyStore(keyStore);
         final byte[] content = "content".getBytes();
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.signObject(content, testKeyAliasPositive));
     }
 
@@ -472,7 +476,7 @@ class JceSecurityProviderTest {
         securityService.setKeyStore(keyStore);
         final byte[] content = "error_content".getBytes();
 
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.signObject(content, testKeyAliasPositive));
     }
 
@@ -489,12 +493,12 @@ class JceSecurityProviderTest {
         final SecretKey securityObject = securityService.getKeyFromSecurityObject(testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(securityObject);
+        assertNotNull(securityObject);
     }
 
     @Test
     void getKeyFromSecurityObject_WithMissingKeyObject_ThrowsException() {
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.getKeyFromSecurityObject("test"));
     }
 
@@ -512,12 +516,12 @@ class JceSecurityProviderTest {
         final PrivateKey securityObject = securityService.getPrivateKeyFromSecurityObject(testKeyAliasPositive);
 
         // then
-        Assertions.assertNotNull(securityObject);
+        assertNotNull(securityObject);
     }
 
     @Test
     void getPrivateKeyFromSecurityObject_WithMissingKeyObject_ThrowsException() {
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> securityService.getPrivateKeyFromSecurityObject("test"));
     }
 

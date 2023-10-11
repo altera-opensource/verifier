@@ -35,15 +35,21 @@ package com.intel.bkp.utils;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static com.intel.bkp.utils.HexConverter.fromHexSingle;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static com.intel.bkp.utils.HexConverter.toLowerCaseHex;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class HexConverterTest {
 
@@ -70,7 +76,34 @@ public class HexConverterTest {
         final byte[] result = fromHex("01020304");
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
+    }
+
+    @Test
+    public void fromHexSingle_WithSingleHexByte_Success() {
+        // given
+        final byte expected = 0x35;
+
+        // when
+        final byte result = fromHexSingle("0x35");
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "0x3545", "0x3", "0x999", "0x30x5"})
+    void fromHexSingle_ThrowsException(String input) {
+        // when-then
+        assertThrows(IllegalArgumentException.class, () -> fromHexSingle(input));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0x35", "35"})
+    void fromHexSingle_Success(String input) {
+        // when-then
+        assertDoesNotThrow(() -> fromHexSingle(input));
     }
 
     @Test
@@ -82,13 +115,13 @@ public class HexConverterTest {
         final byte[] result = fromHex("");
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
     public void fromHex_InvalidData_Throws() {
         // when-then
-        Assertions.assertThrows(RuntimeException.class, () -> fromHex("XXXXXXXX"));
+        assertThrows(RuntimeException.class, () -> fromHex("XXXXXXXX"));
     }
 
     @Test
@@ -100,7 +133,7 @@ public class HexConverterTest {
         final String result = toHex(0x0A);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -112,7 +145,7 @@ public class HexConverterTest {
         final String result = toHex(0x18C1A213);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -124,7 +157,7 @@ public class HexConverterTest {
         final String result = toHex((long)0x0A);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -136,7 +169,7 @@ public class HexConverterTest {
         final String result = toHex((byte) 0x0a);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -148,7 +181,7 @@ public class HexConverterTest {
         final String result = toHex(new byte[]{1, 2, 3, 4, 10, 11, 12});
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -160,7 +193,7 @@ public class HexConverterTest {
         final String result = toLowerCaseHex(new byte[]{1, 2, 3, 4, 10, 11, 12, 13});
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -172,7 +205,7 @@ public class HexConverterTest {
         final String result = toFormattedHex((byte) 0x0a);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -184,7 +217,7 @@ public class HexConverterTest {
         final String result = toFormattedHex(0x0a);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -196,6 +229,6 @@ public class HexConverterTest {
         final String result = toFormattedHex(new byte[]{1, 2, 3, 4, 10, 11, 12, 13});
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

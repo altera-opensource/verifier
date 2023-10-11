@@ -36,11 +36,10 @@ package com.intel.bkp.verifier.utils;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.model.LibConfig;
-import com.intel.bkp.verifier.model.TransportLayerType;
+import com.intel.bkp.verifier.transport.model.TransportLayerType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URISyntaxException;
@@ -48,9 +47,9 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_PARAMS_GROUP;
-import static com.intel.bkp.verifier.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -58,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,6 +71,7 @@ class LibConfigParserTest {
     private static final String CONFIG_WRONG_CT_EXPONENT = "config_wrong_ct_exponent.properties";
     private static final String CONFIG_MISSING = "config_wrong_missing.properties";
     private static final String CONFIG_IN_CLASSPATH = "config_in_classpath.properties";
+    private static final String CONFIG_ROOT_HASH_WHITESPACES = "config_with_root_hash_whitespaces.properties";
     private static Path configDirectory;
 
     private final LibConfigParser sut = new LibConfigParser();
@@ -83,7 +84,7 @@ class LibConfigParserTest {
     @Test
     void parseFile_WithAllSet_Success() throws Exception {
         // given
-        LibConfigParser spy = Mockito.spy(sut);
+        LibConfigParser spy = spy(sut);
         when(spy.getDirectory()).thenReturn(configDirectory);
 
         // when
@@ -105,11 +106,12 @@ class LibConfigParserTest {
         assertEquals("some-key-name", config.getVerifierKeyParams().getKeyName());
 
         var distributionPoint = config.getDistributionPoint();
-        assertEquals("https://tsci.intel.com/content/IPCS/certs/", distributionPoint.getPathCer());
+        assertEquals("https://tsci.intel.com/", distributionPoint.getMainPath());
+        assertEquals("content/IPCS/certs/", distributionPoint.getAttestationCertBasePath());
         assertEquals("99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F",
-            distributionPoint.getTrustedRootHash().getS10());
+            distributionPoint.getTrustedRootHash()[0]);
         assertEquals("35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B",
-            distributionPoint.getTrustedRootHash().getDice());
+            distributionPoint.getTrustedRootHash()[1]);
         assertEquals("proxy.intel.com", distributionPoint.getProxy().getHost());
         assertEquals(912, distributionPoint.getProxy().getPort());
 
@@ -139,7 +141,7 @@ class LibConfigParserTest {
     @Test
     void parseFile_WithEmptyOptionals_Success() throws Exception {
         // given
-        LibConfigParser spy = Mockito.spy(sut);
+        LibConfigParser spy = spy(sut);
         when(spy.getDirectory()).thenReturn(configDirectory);
 
         // when
@@ -147,7 +149,7 @@ class LibConfigParserTest {
 
         // then
         var distributionPoint = config.getDistributionPoint();
-        assertEquals("", distributionPoint.getTrustedRootHash().getS10());
+        assertEquals("", distributionPoint.getTrustedRootHash()[0]);
         assertEquals("", distributionPoint.getProxy().getHost());
         assertNull(distributionPoint.getProxy().getPort());
         assertTrue(config.getAttestationCertificateFlow().isRequireIidUds());
@@ -161,7 +163,7 @@ class LibConfigParserTest {
     @Test
     void parseFile_WithoutOptionals_Success() throws Exception {
         // given
-        LibConfigParser spy = Mockito.spy(sut);
+        LibConfigParser spy = spy(sut);
         when(spy.getDirectory()).thenReturn(configDirectory);
 
         // when
@@ -176,7 +178,7 @@ class LibConfigParserTest {
     @Test
     void parseFile_NotValidConfiguration_ThrowsException() throws Exception {
         // given
-        LibConfigParser spy = Mockito.spy(sut);
+        LibConfigParser spy = spy(sut);
         when(spy.getDirectory()).thenReturn(configDirectory);
 
         // when - then
@@ -218,6 +220,22 @@ class LibConfigParserTest {
 
         // then
         assertEquals(expectedResult, result);
+    }
+
+    @Test
+    void parseFile_WhitespacesInRootHashArray_Success() throws Exception {
+        // given
+        LibConfigParser spy = spy(sut);
+        when(spy.getDirectory()).thenReturn(configDirectory);
+
+        // when
+        LibConfig config = spy.parseConfigFile(CONFIG_ROOT_HASH_WHITESPACES);
+
+        // then
+        var distributionPoint = config.getDistributionPoint();
+        assertEquals("ABCD", distributionPoint.getTrustedRootHash()[0]);
+        assertEquals("EFGH",
+            distributionPoint.getTrustedRootHash()[1]);
     }
 
     private static Path getExternalDirectoryPathForConfig(String configName) throws URISyntaxException {

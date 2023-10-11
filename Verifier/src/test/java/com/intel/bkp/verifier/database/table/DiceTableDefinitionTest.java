@@ -33,9 +33,10 @@
 
 package com.intel.bkp.verifier.database.table;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DiceTableDefinitionTest {
 
@@ -52,7 +53,7 @@ class DiceTableDefinitionTest {
         final String result = sut.getTableName();
 
         // then
-        Assertions.assertEquals(DiceTableDefinition.TABLE_NAME, result);
+        assertEquals(DiceTableDefinition.TABLE_NAME, result);
     }
 
     @Test
@@ -64,7 +65,7 @@ class DiceTableDefinitionTest {
         sut.getColumnsForCreateTable(stringBuilder);
 
         // then
-        Assertions.assertEquals("deviceid TEXT PRIMARY KEY UNIQUE",
+        assertEquals("deviceid TEXT PRIMARY KEY UNIQUE",
             stringBuilder.toString());
     }
 
@@ -77,7 +78,7 @@ class DiceTableDefinitionTest {
         sut.getColumnsForInsert(stringBuilder);
 
         // then
-        Assertions.assertEquals("deviceid",
+        assertEquals("deviceid",
             stringBuilder.toString());
     }
 
@@ -87,6 +88,6 @@ class DiceTableDefinitionTest {
         final int result = sut.getColumnLength();
 
         // then
-        Assertions.assertEquals(1, result);
+        assertEquals(1, result);
     }
 }

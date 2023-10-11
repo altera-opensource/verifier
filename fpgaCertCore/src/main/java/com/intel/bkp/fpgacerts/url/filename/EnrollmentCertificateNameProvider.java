@@ -35,7 +35,7 @@ package com.intel.bkp.fpgacerts.url.filename;
 
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 
-import static com.intel.bkp.fpgacerts.url.filename.IpcsIssuedCertificateType.ENROLLMENT;
+import static com.intel.bkp.fpgacerts.url.filename.IpcsFileName.ENROLLMENT;
 
 public class EnrollmentCertificateNameProvider extends CertificateNameProviderBase {
 
@@ -48,6 +48,6 @@ public class EnrollmentCertificateNameProvider extends CertificateNameProviderBa
 
     @Override
     protected Object[] getFileNameParameters() {
-        return new Object[]{params.getUid(), params.getSvn(), params.getSki()};
+        return new Object[]{params.getUid(), params.getSvn(), params.getId()};
     }
 }

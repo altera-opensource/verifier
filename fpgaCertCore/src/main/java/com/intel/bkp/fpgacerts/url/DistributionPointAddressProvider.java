@@ -34,21 +34,30 @@
 package com.intel.bkp.fpgacerts.url;
 
 import com.intel.bkp.fpgacerts.model.SmartNicFamily;
+import com.intel.bkp.fpgacerts.model.UdsChoice;
 import com.intel.bkp.fpgacerts.url.filename.DeviceIdCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.EnrollmentCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.ICertificateFileNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.IidUdsCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.NicDeviceIdCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.NicMevDeviceIdCertificateNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.RimCertificateNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.RimSignedDataNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.S10CertificateNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.XrimDataNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.ZipDiceNameProvider;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
 import com.intel.bkp.fpgacerts.url.params.NicDiceParams;
+import com.intel.bkp.fpgacerts.url.params.RimParams;
+import com.intel.bkp.fpgacerts.url.params.RimSignedDataParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
+import com.intel.bkp.fpgacerts.url.params.ZipDiceParams;
 import com.intel.bkp.utils.PathUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.Function;
 
@@ -57,33 +66,79 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class DistributionPointAddressProvider {
 
-    private final String certificateUrlPrefix;
+    private final String ipcsUrlPrefix;
+
+    private final String nicUrlPrefix;
+
+    public DistributionPointAddressProvider(String ipcsUrlPrefix) {
+        this(ipcsUrlPrefix, null);
+    }
+
+    public String getZipUrl(ZipDiceParams zipDiceParams) {
+        return getIpcsUrl(new ZipDiceNameProvider(zipDiceParams));
+    }
 
     public String getAttestationCertUrl(S10Params s10Params) {
-        return getUrl(new S10CertificateNameProvider(s10Params));
+        return getIpcsUrl(new S10CertificateNameProvider(s10Params));
     }
 
     public String getDeviceIdCertUrl(DiceParams diceParams) {
-        return getUrl(new DeviceIdCertificateNameProvider(diceParams));
+        return getIpcsUrl(new DeviceIdCertificateNameProvider(diceParams));
+    }
+
+    public String getDeviceIdCertUrl(UdsChoice udsChoice, DiceParams diceParams) {
+        return getIpcsUrl(udsChoice.getDpSubDirectory(), new DeviceIdCertificateNameProvider(diceParams));
+    }
+
+    public String getRimSigningCertUrl(RimParams rimParams) {
+        return getIpcsUrl(new RimCertificateNameProvider(rimParams));
+    }
+
+    public String getRimSignedDataUrl(RimSignedDataParams rimParams) {
+        return getIpcsUrl(new RimSignedDataNameProvider(rimParams));
+    }
+
+    public String getXrimSignedDataUrl(RimParams rimParams) {
+        return getIpcsUrl(new XrimDataNameProvider(rimParams));
     }
 
     public String getNicDeviceIdCertUrl(NicDiceParams params) {
+        if (StringUtils.isBlank(nicUrlPrefix)) {
+            throw new IllegalStateException("NIC certificate url prefix not configured.");
+        }
+
         final Function<NicDiceParams, ICertificateFileNameProvider> nameProviderCtr =
             SmartNicFamily.MEV.equals(params.getFamily())
             ? NicMevDeviceIdCertificateNameProvider::new
             : NicDeviceIdCertificateNameProvider::new;
-        return getUrl(nameProviderCtr.apply(params));
+        return getNicUrl(nameProviderCtr.apply(params));
     }
 
     public String getEnrollmentCertUrl(DiceEnrollmentParams diceEnrollmentParams) {
-        return getUrl(new EnrollmentCertificateNameProvider(diceEnrollmentParams));
+        return getIpcsUrl(new EnrollmentCertificateNameProvider(diceEnrollmentParams));
+    }
+
+    public String getEnrollmentCertUrl(UdsChoice udsChoice, DiceEnrollmentParams diceEnrollmentParams) {
+        return getIpcsUrl(udsChoice.getDpSubDirectory(), new EnrollmentCertificateNameProvider(diceEnrollmentParams));
     }
 
     public String getIidUdsCertUrl(DiceParams diceParams) {
-        return getUrl(new IidUdsCertificateNameProvider(diceParams));
+        return getIpcsUrl(new IidUdsCertificateNameProvider(diceParams));
     }
 
-    private String getUrl(ICertificateFileNameProvider fileNameProvider) {
-        return PathUtils.buildPath(certificateUrlPrefix, fileNameProvider.getFileName());
+    private String getIpcsUrl(ICertificateFileNameProvider fileNameProvider) {
+        return getUrl(ipcsUrlPrefix, fileNameProvider);
+    }
+
+    private String getIpcsUrl(String subDir, ICertificateFileNameProvider fileNameProvider) {
+        return getUrl(PathUtils.buildPath(ipcsUrlPrefix, subDir), fileNameProvider);
+    }
+
+    private String getNicUrl(ICertificateFileNameProvider fileNameProvider) {
+        return getUrl(nicUrlPrefix, fileNameProvider);
+    }
+
+    private String getUrl(String prefix, ICertificateFileNameProvider fileNameProvider) {
+        return PathUtils.buildPath(prefix, fileNameProvider.getFileName());
     }
 }

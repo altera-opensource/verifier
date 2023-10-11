@@ -40,7 +40,7 @@ import lombok.Getter;
 import java.util.Locale;
 
 /**
- * ski - Subject Key Identifier
+ * id - Subject Key Identifier (for SDM 1.0/1.2) or PDI (for SDM 1.5)
  * uid - same as deviceId/chipId but reversed by 8-bytes, eg. deviceId = 0102030405060708 -> uid = 0807060504030201.
  * This is because FM/DM certificates on Distribution Point have different naming convention than S10.
  */
@@ -48,7 +48,7 @@ import java.util.Locale;
 public class DiceParams {
 
     @Getter
-    private final String ski;
+    private final String id; // :TODO - this is always SKI - PDI is only in certificate name/url
 
     private final String uid;
 
@@ -58,8 +58,8 @@ public class DiceParams {
 
     @Override
     public String toString() {
-        return String.format("DiceParams(SKI = %s, UID = %s (in Distribution Point format: %s))",
-                getSki(), getUidInLogsFormat(), getUid());
+        return String.format("DiceParams(SKI/PDI = %s, UID = %s (in Distribution Point format: %s))",
+                getId(), getUidInLogsFormat(), getUid());
     }
 
     protected final String getUidInLogsFormat() {

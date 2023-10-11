@@ -33,8 +33,12 @@
 
 package com.intel.bkp.workload.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class WorkloadAppExceptionTest {
 
@@ -42,18 +46,18 @@ class WorkloadAppExceptionTest {
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        final WorkloadAppException exception = Assertions.assertThrows(WorkloadAppException.class,
+        final WorkloadAppException exception = assertThrows(WorkloadAppException.class,
             this::throwErrorWithException);
-        Assertions.assertEquals(TEST_MESSAGE, exception.getMessage());
-        Assertions.assertNotNull(exception.getCause());
+        assertEquals(TEST_MESSAGE, exception.getMessage());
+        assertNotNull(exception.getCause());
     }
 
     @Test
     void constructor_WithMessage_Success() {
-        final WorkloadAppException exception = Assertions.assertThrows(WorkloadAppException.class,
+        final WorkloadAppException exception = assertThrows(WorkloadAppException.class,
             this::throwErrorWithOnlyMessage);
-        Assertions.assertEquals(TEST_MESSAGE, exception.getMessage());
-        Assertions.assertNull(exception.getCause());
+        assertEquals(TEST_MESSAGE, exception.getMessage());
+        assertNull(exception.getCause());
     }
 
     private void throwErrorWithException() throws WorkloadAppException {

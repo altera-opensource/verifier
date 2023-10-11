@@ -34,7 +34,6 @@
 package com.intel.bkp.core.security.provider;
 
 import com.intel.bkp.core.exceptions.JceSecurityProviderException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +44,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class FileBasedProviderTest {
@@ -69,26 +71,26 @@ class FileBasedProviderTest {
     @Test
     void load_withEmptyKeystoreInputPath_ThrowsInitializeSecurityException() {
         // then
-        Assertions.assertThrows(JceSecurityProviderException.class,
+        assertThrows(JceSecurityProviderException.class,
             () -> sut.load(keystore, null, KEYSTORE_PASSWORD));
     }
 
     @Test
     void load_WithFileNotExists_PerformInternalStore() {
         // when
-        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+        assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
     void load_WithFileIsDir_PerformInternalStore() {
         // when
-        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+        assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
     void load_WithFileExists_PerformInternalStore() {
         // when
-        Assertions.assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+        assertDoesNotThrow(() -> sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
@@ -97,13 +99,13 @@ class FileBasedProviderTest {
         sut.load(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD);
 
         // when
-        Assertions.assertDoesNotThrow(() -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
+        assertDoesNotThrow(() -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 
     @Test
     void store_WithoutInitializingKeystore_ThrowsException() {
         // when
-        Assertions.assertThrows(KeyStoreException.class,
+        assertThrows(KeyStoreException.class,
             () -> sut.store(keystore, keystoreFile.getAbsolutePath(), KEYSTORE_PASSWORD));
     }
 

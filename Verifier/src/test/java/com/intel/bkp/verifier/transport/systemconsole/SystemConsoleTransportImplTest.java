@@ -34,17 +34,18 @@
 package com.intel.bkp.verifier.transport.systemconsole;
 
 import com.intel.bkp.verifier.exceptions.TransportLayerException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,8 +75,8 @@ class SystemConsoleTransportImplTest {
         sut.initialize(connectionConfig);
 
         // then
-        Mockito.verify(client).initialize(ArgumentMatchers.any(SystemConsoleConfig.class));
-        Mockito.verify(client).sendPacket(anyString());
+        verify(client).initialize(any(SystemConsoleConfig.class));
+        verify(client).sendPacket(anyString());
     }
 
     @Test
@@ -88,8 +89,8 @@ class SystemConsoleTransportImplTest {
         final byte[] result = sut.sendCommand(COMMAND);
 
         // then
-        Mockito.verify(client).sendPacket(anyString());
-        Assertions.assertArrayEquals(RESPONSE, result);
+        verify(client).sendPacket(anyString());
+        assertArrayEquals(RESPONSE, result);
     }
 
     @Test
@@ -98,7 +99,7 @@ class SystemConsoleTransportImplTest {
         doThrow(new TransportLayerException("test")).when(client).sendPacket(anyString());
 
         // when-then
-        Assertions.assertThrows(TransportLayerException.class, () -> sut.sendCommand(COMMAND));
+        assertThrows(TransportLayerException.class, () -> sut.sendCommand(COMMAND));
     }
 
     @Test
@@ -107,6 +108,6 @@ class SystemConsoleTransportImplTest {
         sut.disconnect();
 
         // then
-        Mockito.verify(client).disconnect();
+        verify(client).disconnect();
     }
 }

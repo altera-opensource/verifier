@@ -43,7 +43,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +63,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.intel.bkp.fpgacerts.verification.CrlVerifier.INVALID_NEXT_UPDATE_LOG_MSG;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -149,7 +152,7 @@ class CrlVerifierTest {
         mockLeafCertIsNotRevoked();
 
         // when-then
-        Assertions.assertTrue(() -> sut.verify());
+        assertTrue(() -> sut.verify());
 
         // then
         verify(signatureVerifier).verify(leafCRL, parentCertificate);
@@ -164,7 +167,7 @@ class CrlVerifierTest {
         mockLeafCertIsRevoked();
 
         // when-then
-        Assertions.assertFalse(() -> sut.verify());
+        assertFalse(() -> sut.verify());
 
         // then
         verify(signatureVerifier).verify(leafCRL, parentCertificate);
@@ -181,7 +184,7 @@ class CrlVerifierTest {
         mockParentCertIsRevoked();
 
         // when-then
-        Assertions.assertFalse(() -> sut.verify());
+        assertFalse(() -> sut.verify());
     }
 
     @Test
@@ -194,7 +197,7 @@ class CrlVerifierTest {
         mockParentCrlSignedByRoot();
 
         // when-then
-        Assertions.assertTrue(() -> sut.verify());
+        assertTrue(() -> sut.verify());
 
         // then
         verify(signatureVerifier).verify(leafCRL, parentCertificate);
@@ -210,10 +213,10 @@ class CrlVerifierTest {
         mockLeafCrlNotSignedByAnyCertInChain();
 
         // when-then
-        CrlSignatureException ex = Assertions.assertThrows(CrlSignatureException.class, () -> sut.verify());
+        CrlSignatureException ex = assertThrows(CrlSignatureException.class, () -> sut.verify());
 
         // then
-        Assertions.assertEquals("Failed to verify signature of CRL", ex.getMessage());
+        assertEquals("Failed to verify signature of CRL", ex.getMessage());
         verify(signatureVerifier).verify(leafCRL, parentCertificate);
         verify(signatureVerifier).verify(leafCRL, rootCertificate);
     }
@@ -228,10 +231,10 @@ class CrlVerifierTest {
         mockLeafCertIsNotRevoked();
 
         // when-then
-        Assertions.assertTrue(() -> sut.verify());
+        assertTrue(() -> sut.verify());
 
         // then
-        Assertions.assertTrue(loggerTestUtil.contains(INVALID_NEXT_UPDATE_LOG_MSG, Level.WARN));
+        assertTrue(loggerTestUtil.contains(INVALID_NEXT_UPDATE_LOG_MSG, Level.WARN));
     }
 
     @Test
@@ -245,10 +248,10 @@ class CrlVerifierTest {
         mockLeafCertIsNotRevoked();
 
         // when-then
-        Assertions.assertTrue(() -> sut.verify());
+        assertTrue(() -> sut.verify());
 
         // then
-        Assertions.assertTrue(loggerTestUtil.contains(INVALID_NEXT_UPDATE_LOG_MSG, Level.WARN));
+        assertTrue(loggerTestUtil.contains(INVALID_NEXT_UPDATE_LOG_MSG, Level.WARN));
     }
 
     @Test
@@ -262,10 +265,10 @@ class CrlVerifierTest {
         mockLeafCertIsNotRevoked();
 
         // when-then
-        Assertions.assertTrue(() -> sut.verify());
+        assertTrue(() -> sut.verify());
 
         // then
-        Assertions.assertEquals(0, loggerTestUtil.getSize(Level.WARN));
+        assertEquals(0, loggerTestUtil.getSize(Level.WARN));
     }
 
     @Test
@@ -277,7 +280,7 @@ class CrlVerifierTest {
         mockParentCrlSignedByRoot(false);
 
         // when-then
-        Assertions.assertTrue(() -> sut.doNotRequireCrlForLeafCertificate().verify());
+        assertTrue(() -> sut.doNotRequireCrlForLeafCertificate().verify());
 
         // then
         verify(signatureVerifier).verify(parentCRL, rootCertificate);
@@ -292,7 +295,7 @@ class CrlVerifierTest {
         mockIntermediateCertDoesNotContainUrlToCrl();
 
         // when-then
-        Assertions.assertFalse(() -> sut.doNotRequireCrlForLeafCertificate().verify());
+        assertFalse(() -> sut.doNotRequireCrlForLeafCertificate().verify());
 
         // then
         verifyNoInteractions(signatureVerifier);
@@ -305,7 +308,7 @@ class CrlVerifierTest {
         mockLeafCertDoesNotContainUrlToCrl();
 
         // when-then
-        Assertions.assertFalse(() -> sut.verify());
+        assertFalse(() -> sut.verify());
 
         // then
         verifyNoInteractions(signatureVerifier);

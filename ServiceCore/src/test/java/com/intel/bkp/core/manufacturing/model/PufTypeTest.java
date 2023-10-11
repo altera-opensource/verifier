@@ -33,8 +33,10 @@
 
 package com.intel.bkp.core.manufacturing.model;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PufTypeTest {
 
@@ -47,21 +49,17 @@ public class PufTypeTest {
         final PufType actual = PufType.fromOrdinal(expected.ordinal());
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
     void fromOrdinal_WithWrongEnumOrdinalMax_ThrowsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            PufType.fromOrdinal(999);
-        });
+        assertThrows(IllegalArgumentException.class, () -> PufType.fromOrdinal(999));
     }
 
     @Test
     void fromOrdinal_WithWrongEnumOrdinalMin_ThrowsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            PufType.fromOrdinal(-10);
-        });
+        assertThrows(IllegalArgumentException.class, () -> PufType.fromOrdinal(-10));
     }
 
     @Test
@@ -73,7 +71,7 @@ public class PufTypeTest {
         final PufType result = PufType.fromOrdinal(ordinal);
 
         // then
-        Assertions.assertEquals(PufType.IIDUSER, result);
+        assertEquals(PufType.IIDUSER, result);
     }
 
     @Test
@@ -82,7 +80,7 @@ public class PufTypeTest {
         Integer ordinal = null;
 
         // when-then
-        Assertions.assertThrows(NullPointerException.class, () -> PufType.fromOrdinal(ordinal));
+        assertThrows(NullPointerException.class, () -> PufType.fromOrdinal(ordinal));
     }
 
     @Test
@@ -91,7 +89,7 @@ public class PufTypeTest {
         int ordinal = 150;
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> PufType.fromOrdinal(ordinal));
+        assertThrows(IllegalArgumentException.class, () -> PufType.fromOrdinal(ordinal));
     }
 
     @Test
@@ -100,7 +98,7 @@ public class PufTypeTest {
         String iid = "IID";
 
         // when-then
-        Assertions.assertEquals("00000000", PufType.getPufTypeHex(iid));
+        assertEquals("00000000", PufType.getPufTypeHex(iid));
     }
 
     @Test
@@ -109,7 +107,7 @@ public class PufTypeTest {
         String intelUser = "INTEL_USER";
 
         // when-then
-        Assertions.assertEquals("00000004", PufType.getPufTypeHex(intelUser));
+        assertEquals("00000004", PufType.getPufTypeHex(intelUser));
     }
 
     @Test
@@ -118,7 +116,7 @@ public class PufTypeTest {
         PufType intelUser = PufType.INTEL_USER;
 
         // when-then
-        Assertions.assertEquals("00000004", PufType.getPufTypeHex(intelUser));
+        assertEquals("00000004", PufType.getPufTypeHex(intelUser));
     }
 
     @Test
@@ -127,6 +125,6 @@ public class PufTypeTest {
         String nonexistent = "nonexistent";
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> PufType.getPufTypeHex(nonexistent));
+        assertThrows(IllegalArgumentException.class, () -> PufType.getPufTypeHex(nonexistent));
     }
 }

@@ -34,19 +34,21 @@
 package com.intel.bkp.verifier.transport.tcp;
 
 import com.intel.bkp.verifier.exceptions.TransportLayerException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +68,7 @@ class TcpClientTest {
             .host("testHost").port(12345).build();
 
         // when
-        Assertions.assertThrows(TransportLayerException.class, () -> sut.initialize(config));
+        assertThrows(TransportLayerException.class, () -> sut.initialize(config));
     }
 
     @Test
@@ -74,52 +76,52 @@ class TcpClientTest {
         // given
         sut.setSocketChannel(socketChannel);
         int responseLength = TcpClient.RESPONSE_ALLOCATED_SIZE - 1;
-        when(socketChannel.read(ArgumentMatchers.any(ByteBuffer.class)))
+        when(socketChannel.read(any(ByteBuffer.class)))
             .thenReturn(responseLength);
 
         // when
         byte[] result = sut.sendPacket(COMMAND);
 
         // then
-        Assertions.assertEquals(responseLength, result.length);
+        assertEquals(responseLength, result.length);
     }
 
     @Test
     void sendPacket_WithTooLargeBuffer_Throws() throws IOException {
         // given
         sut.setSocketChannel(socketChannel);
-        when(socketChannel.read(ArgumentMatchers.any(ByteBuffer.class)))
+        when(socketChannel.read(any(ByteBuffer.class)))
             .thenReturn(TcpClient.RESPONSE_ALLOCATED_SIZE);
 
         // when-then
-        Assertions.assertThrows(TransportLayerException.class,
+        assertThrows(TransportLayerException.class,
             () -> sut.sendPacket(new byte[]{0x00, 0x01, 0x02}));
     }
 
     @Test
     void sendPacket_NotInitialized_Throws() throws IOException {
         // when-then
-        Assertions.assertThrows(TransportLayerException.class, () -> sut.sendPacket(COMMAND));
+        assertThrows(TransportLayerException.class, () -> sut.sendPacket(COMMAND));
 
         // then
-        Mockito.verify(socketChannel, never()).write(ArgumentMatchers.any(ByteBuffer.class));
-        Mockito.verify(socketChannel, never()).read(ArgumentMatchers.any(ByteBuffer.class));
+        verify(socketChannel, never()).write(any(ByteBuffer.class));
+        verify(socketChannel, never()).read(any(ByteBuffer.class));
     }
 
     @Test
     void sendPacket_NoResponseBytesReceived_Throws() throws IOException {
         // given
         sut.setSocketChannel(socketChannel);
-        when(socketChannel.read(ArgumentMatchers.any(ByteBuffer.class)))
+        when(socketChannel.read(any(ByteBuffer.class)))
             .thenReturn(-1);
 
         // when-then
-        Assertions.assertThrows(TransportLayerException.class, () -> sut.sendPacket(COMMAND));
+        assertThrows(TransportLayerException.class, () -> sut.sendPacket(COMMAND));
     }
 
     @Test
     void disconnect_NotInitialized_DoesNothing() {
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.disconnect());
+        assertDoesNotThrow(() -> sut.disconnect());
     }
 }

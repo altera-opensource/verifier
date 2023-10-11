@@ -34,8 +34,8 @@
 package com.intel.bkp.workload.service;
 
 import com.intel.bkp.verifier.interfaces.VerifierExchange;
+import com.intel.bkp.verifier.model.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.verifier.service.VerifierExchangeImpl;
-import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
 import com.intel.bkp.workload.exceptions.WorkloadAppException;
 import com.intel.bkp.workload.model.CommandType;
 import com.intel.bkp.workload.util.AppArgument;
@@ -64,7 +64,7 @@ public class VerifierService {
     }
 
     private int perform(AppArgument appArgs, VerifierExchange verifierExchange) {
-        verifyGetParams(appArgs.getCommand() != null, NOT_SUPPORTED_COMMAND_TYPE);
+        verifyParam(appArgs.getCommand() != null, NOT_SUPPORTED_COMMAND_TYPE);
 
         return getPerformCommandMethod(appArgs.getCommand())
             .performCommand(appArgs, verifierExchange);
@@ -87,7 +87,7 @@ public class VerifierService {
         final WorkloadFileReader fileReader = getFileReader();
         final String refMeasurementFilePath = appArgs.getRefMeasurement();
 
-        verifyGetParams(refMeasurementFilePath != null
+        verifyParam(refMeasurementFilePath != null
             && fileReader.exists(refMeasurementFilePath), INVALID_REF_MEASUREMENT);
 
         final VerifierExchangeResponseDTO result = verifierExchange.getDeviceAttestation(
@@ -99,8 +99,8 @@ public class VerifierService {
     }
 
     private int performCreate(AppArgument appArgs, VerifierExchange verifierExchange) {
-        verifyGetParams(appArgs.getContext() != null, INVALID_CONTEXT);
-        verifyGetParams(appArgs.getPufType() != null, INVALID_PUF_TYPE);
+        verifyParam(appArgs.getContext() != null, INVALID_CONTEXT);
+        verifyParam(appArgs.getPufType() != null, INVALID_PUF_TYPE);
 
         final int returnCode = verifierExchange.createDeviceAttestationSubKey(
             appArgs.getTransportId(), appArgs.getContext(), appArgs.getPufType());
@@ -114,7 +114,7 @@ public class VerifierService {
         return returnCode;
     }
 
-    private void verifyGetParams(boolean isValid, String errorMsg) {
+    private void verifyParam(boolean isValid, String errorMsg) {
         if (!isValid) {
             throw new WorkloadAppException(errorMsg);
         }

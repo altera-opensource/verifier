@@ -33,8 +33,8 @@
 
 package com.intel.bkp.crypto.x509.utils;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +56,8 @@ import java.util.List;
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.pemToX509Certificate;
 import static com.intel.bkp.utils.ListUtils.toLinkedList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
@@ -81,8 +83,8 @@ class X509CertificateUtilsTest {
     private PublicKey publicKey;
 
     @BeforeAll
-    static void init() throws Exception {
-        certInPem = TestUtil.getResourceAsString("/certs/", CERT_PEM_FILE);
+    static void init() {
+        certInPem = FileUtils.loadFile(ResourceDir.CERTS, CERT_PEM_FILE);
     }
 
     @Test
@@ -104,7 +106,7 @@ class X509CertificateUtilsTest {
         final boolean result = X509CertificateUtils.isSelfSigned(certificate);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -120,7 +122,7 @@ class X509CertificateUtilsTest {
         final boolean result = X509CertificateUtils.isSelfSigned(certificate);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -134,7 +136,7 @@ class X509CertificateUtilsTest {
         final boolean result = X509CertificateUtils.isSelfSigned(certificate);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test

@@ -34,7 +34,9 @@
 package com.intel.bkp.verifier.model;
 
 import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.core.properties.TrustStore;
 import com.intel.bkp.core.security.SecurityProviderParams;
+import com.intel.bkp.verifier.transport.model.TransportLayerType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,7 +56,9 @@ public class LibConfig {
     private SecurityProviderParams providerParams;
     private VerifierKeyParams verifierKeyParams;
     private DatabaseConfiguration databaseConfiguration;
+    private TrustStore trustStore;
     private LibSpdmParams libSpdmParams;
     private boolean runGpAttestation;
     private boolean testModeSecrets;
+    private boolean acceptUnsignedCorim;
 }

@@ -6,6 +6,12 @@ It is able to retrieve measurements (evidence) from the FPGA device and compare 
 It also retrieves and validates signature and chain of certificates to confirm authenticity and integrity of the
 measurements.
 
+Reference Integrity Manifest can be:
+- generated using Quartus and stored in Glenpass JSON RIM (.rim) format
+- generated and signed by FW build system in CoRIM (.corim) format
+
+CoRIM can be published on Intel Distribution Point, so Verifier could get it as an input parameter to the verifier for comparison with measurements received from the device.
+
 Workload is a sample application that triggers Verifier's interface.
 
 During attestation, communication is done via Hard Processor System (HPS), thus a listening TCP server called 
@@ -28,13 +34,15 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
 
 [Stratix10](https://www.intel.com/content/www/us/en/programmable/documentation/fnt1471308293130.html)
 
-[Agilex](https://www.intel.com/content/www/us/en/programmable/documentation/bmm1553539841763.html)
+[Agilex 7](https://www.intel.com/content/www/us/en/programmable/documentation/bmm1553539841763.html)
+
 
 ### Quartus Prime
 
 [Stratix10](https://www.intel.com/content/www/us/en/programmable/documentation/ndq1483601370898.html)
 
-[Agilex](https://www.intel.com/content/www/us/en/programmable/documentation/jix1627616846940.html)
+[Agilex 7](https://www.intel.com/content/www/us/en/programmable/documentation/jix1627616846940.html)
+
 
 # Prerequisites
 
@@ -50,7 +58,7 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
    available
    to be used during initialization step. Below links to official Quartus Prime user guide:
     1. [Stratix10](https://www.intel.com/content/www/us/en/programmable/documentation/ndq1483601370898.html#qzz1616549507856)
-    2. [Agilex](https://www.intel.com/content/www/us/en/programmable/documentation/jix1627616846940.html#qzz1616549507856)
+    2. [Agilex 7](https://www.intel.com/content/www/us/en/programmable/documentation/jix1627616846940.html#qzz1616549507856)
 
 5. (Recommended) Set up Java Cryptography
    Extension ([JCE](https://docs.oracle.com/en/java/javase/11/security/java-cryptography-architecture-jca-reference-guide.html))
@@ -69,14 +77,14 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
 ### Building SPDM wrapper and its dependencies
 #### Linux build
 1. Download and build latest version of [OpenSSL](https://www.openssl.org/) as described in OpenSSL docs, e.g.:
-    - Download and unpack OpenSSL 1.1.1t
+    - Download and unpack OpenSSL 3.1.1
     - Run OpenSSL build
     ```shell script
     ./config shared -L-fPIC -L-g -L-O0 -fPIC -g -O0
     make -j $(nproc) --silent
     ```
-1. Download and build [libspdm](https://github.com/DMTF/libspdm)
-    - Clone the sources (version 2.3.1 should be used)
+2. Download and build [libspdm](https://github.com/DMTF/libspdm)
+    - Clone the sources (version 3.0.0 should be used)
     - Update cmocka submodule
     - Create build dir and enter it
     - Run cmake. openssl_root_dir variable should be a path to openssl dir from previous step. e.g. /home/user/build/openssl
@@ -85,15 +93,15 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
     git clone https://github.com/DMTF/libspdm.git
     cd libspdm/
     git fetch --all --tags
-    git checkout tags/2.3.1 -b 2.3.1
+    git checkout tags/3.0.0 -b 3.0.0
     git submodule update --init -- unit_test/cmockalib/cmocka
     mkdir build
     cd build
-    cmake -DARCH=x64 -DTOOLCHAIN=GCC -DTARGET=Release -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="-I${openssl_root_dir}/include" -DCOMPILED_LIBCRYPTO_PATH=${openssl_root_dir}/libcrypto.a -DCOMPILED_LIBSSL_PATH=${openssl_root_dir}/libssl.a ..
+    cmake -DARCH=x64 -DTOOLCHAIN=GCC -DTARGET=Release -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="-I${openssl_root_dir}/include -DLIBSPDM_MAX_CERT_CHAIN_BLOCK_LEN=15000 -DLIBSPDM_MAX_CERT_CHAIN_SIZE=18000 -DLIBSPDM_MAX_MEASUREMENT_RECORD_SIZE=15000" -DCOMPILED_LIBCRYPTO_PATH=${openssl_root_dir}/libcrypto.a -DCOMPILED_LIBSSL_PATH=${openssl_root_dir}/libssl.a ..
     make copy_sample_key
     make
     ```
-1. Build SPDM Wrapper
+3. Build SPDM Wrapper
     - Copy openssl and libspdm directories to "dependencies" dir inside spdm_wrapper dir. You can provide custom dependencies directory by calling Cmake in the next step with 
    
    `-DDEPENDENCIES_PATH=/absolute/path/to/dependencies`
@@ -130,12 +138,12 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
     perl.exe configure VC-WIN64A no-asm
     nmake
     ```
-1. Download and build [libspdm] (https://github.com/DMTF/libspdm)
+2. Download and build [libspdm] (https://github.com/DMTF/libspdm)
     - Build process is similar as in Linux. Only the cmake command is different:
     ```shell script
     cmake -DARCH=x64 -DTOOLCHAIN=VS2019 -DTARGET=Release -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="-I${openssl_root_dir}/include" -DCOMPILED_LIBCRYPTO_PATH=${openssl_root_dir}/libcrypto_static.lib -DCOMPILED_LIBSSL_PATH=${openssl_root_dir}/libssl_static.lib ..
     ```
-1. Build SPDM Wrapper
+3. Build SPDM Wrapper
     - Copy openssl and libspdm directories to "dependencies" dir inside spdm_wrapper dir
     ```
     spdm_wrapper/
@@ -312,6 +320,11 @@ all expected data is present in response from device, i.e.:
 > hash) cannot be trusted, therefore it is not parsed from response.
 > Including this measurement block in RIM for S10 will always cause attestation to fail.
 
+# CoRIM local file support
+
+Verifier is capable to use CoRIM unsigned files with `accept-unsigned-corim` flag set to `true`.
+It's possible to use local paths in CoRIM for CoRIM and XCoRIM.
+
 # Logs
 
 Application logs are presented in the console output and saved to file:
@@ -331,54 +344,55 @@ All possible options are presented when called without any parameters:
 
 Configuration file `config.properties` contains parameters that will be parsed by Verifier, not the workload sample app.
 
-| Parameter                                                     |Required| Description                                                                                                                                                                                                                                                                                                                   |Default/available options|Example|
-|:--------------------------------------------------------------| :---: |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| :---: | :--- |
-| **GENERAL**                                                   |
-| transport-layer-type                                          | YES | Identifier of transport layer                                                                                                                                                                                                                                                                                                 | HPS | |
-| require-iid-uds                                               | NO (Agilex only) | If set to true the Verifier shall retrieve and validate IID UDS chain additionally to regular chain. Otherwise, only regular chain.                                                                                                                                          | true (default), false |
-| test-mode-secrets                                             | NO | Option for DICE chain validation for non secure (non real-OWNED) devices. When set to true, TCBInfo verification will pass even if flags field contains a flag set (by default it is not allowed).                                                                                                                            | true, false (default) |
-| **LIB SPDM parameters**                                       |
-| lib-spdm-params.wrapper-library-path                          | NO | Full path to libspdm_wrapper.so or spdm_wrapper.dll                                                                                                                                                                                                                                                                           | - | /path/to/libspdm_wrapper.so or C:\\\\path\\\\to\\\\spdm_wrapper.dll
-| lib-spdm-params.ct-exponent                                   | NO | Shall be exponent of base 2, which is used to calculate SPDM parameter CT. This timing parameter shall be the maximum amount of time the endpoint has to provide any response requiring cryptographic processing, such as the GET_MEASUREMENTS or CHALLENGE request messages. Units: microseconds. Value type: hex integer | 0x0E | 0x12, 0x0E, etc.
-| lib-spdm-params.measurements-request-signature                | NO | Flag indicating if during GET_MEASUREMENTS request the signature shall be requested and verified with Alias public key.                                                                                                                                                                                                       | true (default), false |
-| **SQLite database**                                           |
-| database-configuration.internal-database                      | NO | If set to true, in-memory sqlite cache database will be created. If false, sqlite database will be stored in file <strong>verifier_core.sqlite</strong> in current folder.                                                                                                                                                    | true (default), false |
-| **Verifier Signing Key**                                      |
-| verifier-key-params.verifier-root-qky-chain.single-chain-path | NO | Absolute path to Verifier Signing Key single root certificate chain for **
-Stratix10** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if multi-chain-path is set.                                                                                          | - | /path/to/verifier_chain_single.qky or C:\\\\path\\\\to\\\\verifier_chain_single.qky |
-| verifier-key-params.verifier-root-qky-chain.multi-chain-path  | NO | Absolute path to Verifier Signing Key certificate chain for **
-Agilex** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if single-chain-path is set.                                                                                                        | - | /path/to/verifier_chain_multi.qky or C:\\\\path\\\\to\\\\verifier_chain_multi.qky |
-| verifier-key-params.key-name                                  | NO | Verifier Signing Key alias used for identifying security object in Security Provider - leave empty during first run or if you need rotate Verifier Signing Key.                                                                                                                                                               | - | ced20836-8a55-49d5-862a-510296142a99 |
-| **Certificate Distribution Point**                            |
-| distribution-point.path-cer                                   | YES | Path to certificate distribution point                                                                                                                                                                                                                                                                                        | - | https://tsci.intel.com/content/IPCS/certs/ |
-| distribution-point.trusted-root-hash.s10                      | NO | SHA256 fingerprint of trusted root certificate for Stratix10. To calculate, run: `openssl x509 -in s10_root.cer -noout -fingerprint -sha256`                                                                                                                                                                                  | - | 99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F |
-| distribution-point.trusted-root-hash.dice                     | NO | SHA256 fingerprint of trusted root certificate (DICE) for Agilex. To calculate, run: `openssl x509 -in dice_root.cer -noout -fingerprint -sha256`                                                                                                                                                                             | - | 35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B |
-| distribution-point.proxy.host                                 | NO | Parameter to set proxy host if required.                                                                                                                                                                                                                                                                                      | - | proxy[.]company[.]com |
-| distribution-point.proxy.port                                 | NO | Parameter to set proxy port if required.                                                                                                                                                                                                                                                                                      | - | 911 |
-| **Security provider**                                         |  | __All settings are specific to used security
-provider.__                                                                                                                                                                                                                                                                      |
-| security-provider-params.provider.name                        | YES | Security Provider name registered in system / available in Java classpath.                                                                                                                                                                                                                                                    | - | BC |
-| security-provider-params.provider.file-based                  | YES | Set true if Security Provider is file based (eg.BouncyCastle), set false if HSM based (Luna, nCipher etc.)                                                                                                                                                                                                                    | - | true, false |
-| security-provider-params.provider.class-name                  | YES | Security Provider canonical class name.                                                                                                                                                                                                                                                                                       | - | org.bouncycastle.jce.provider.BouncyCastleProvider |
-| security-provider-params.security.key-store-name              | YES | Name for keystore used to store data.                                                                                                                                                                                                                                                                                         | - | uber |
-| security-provider-params.security.password                    | NO | Password for keystore. **For security, it is advised to set password with environment variable: VERIFIER_SECURITY_PROVIDER_PASSWORD**                                                                                                                                                                                     | - |  |
-| security-provider-params.security.input-stream-param          | YES | Keystore location. E.g., for BouncyCastle it is path to keystore file. For Gemalto Luna it would be slot number or partition name.                                                                                                                                                                                            | - | /path/to/bc-keystore-verifier.jks or C:\\\\path\\\\to\\\\bc-keystore-verifier.jks |
-| security-provider-params.key-types.ec.key-name                | YES | Class name for EC key.                                                                                                                                                                                                                                                                                                        | - | EC |
-| security-provider-params.key-types.ec.curve-spec-384          | YES | P-384 elliptic curve identifier.                                                                                                                                                                                                                                                                                              | - | secp256r1 |
-| security-provider-params.key-types.ec.curve-spec-256          | YES | P-256 elliptic curve identifier.                                                                                                                                                                                                                                                                                              | - | secp384r1 |
-| security-provider-params.key-types.ec.signature-algorithm     | YES | SHA384 with ECDSA signature algorithm identifier.                                                                                                                                                                                                                                                                             | - | SHA384withECDSA |
-|                                                               |  |                                                                                                                                                                                                                                                                                                                               |  |
+| Parameter                                                     |     Required     | Description                                                                                                                                                                                                                                                                                                                | Default/available options | Example                                                                                                                            |
+|:--------------------------------------------------------------|:----------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------|
+| **GENERAL**                                                   |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
+| transport-layer-type                                          |       YES        | Identifier of transport layer                                                                                                                                                                                                                                                                                              |            HPS            |                                                                                                                                    |
+| require-iid-uds                                               | NO (Agilex only) | If set to true the Verifier shall retrieve and validate IID UDS chain additionally to regular chain. Otherwise, only regular chain.                                                                                                                                                                                        |   true (default), false   |                                                                                                                                    |
+| test-mode-secrets                                             |        NO        | Option for DICE chain validation for non secure (non real-OWNED) devices. When set to true, TCBInfo verification will pass even if flags field contains a flag set (by default it is not allowed).                                                                                                                         |   true, false (default)   |                                                                                                                                    |
+| accept-unsigned-corim                                         |        NO        | Accepts unsigned CoRIM/XCoRIM - skip signature verification                                                                                                                                                                                                                                                                |           false           |                                                                                                                                    |
+| **LIB SPDM parameters**                                       |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
+| lib-spdm-params.wrapper-library-path                          |        NO        | Full path to libspdm_wrapper.so or libspdm_wrapper.dll                                                                                                                                                                                                                                                                     |             -             | /path/to/libspdm_wrapper.so or C:\\\\path\\\\to\\\\libspdm_wrapper.dll                                                             |
+| lib-spdm-params.ct-exponent                                   |        NO        | Shall be exponent of base 2, which is used to calculate SPDM parameter CT. This timing parameter shall be the maximum amount of time the endpoint has to provide any response requiring cryptographic processing, such as the GET_MEASUREMENTS or CHALLENGE request messages. Units: microseconds. Value type: hex integer |           0x0E            | 0x12, 0x0E, etc.                                                                                                                   |
+| lib-spdm-params.measurements-request-signature                |        NO        | Flag indicating if during GET_MEASUREMENTS request the signature shall be requested and verified with Alias public key.                                                                                                                                                                                                    |   true (default), false   |                                                                                                                                    |
+| **SQLite database**                                           |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
+| database-configuration.internal-database                      |        NO        | If set to true, in-memory sqlite cache database will be created. If false, sqlite database will be stored in file <strong>verifier_core.sqlite</strong> in current folder.                                                                                                                                                 |   true (default), false   |                                                                                                                                    |
+| **Verifier Signing Key**                                      |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
+| verifier-key-params.verifier-root-qky-chain.single-chain-path |        NO        | Absolute path to Verifier Signing Key single root certificate chain for **Stratix10** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if multi-chain-path is set.                                                                                       |             -             | /path/to/verifier_chain_single.qky or C:\\\\path\\\\to\\\\verifier_chain_single.qky                                                |
+| verifier-key-params.verifier-root-qky-chain.multi-chain-path  |        NO        | Absolute path to Verifier Signing Key certificate chain for **Agilex** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if single-chain-path is set.                                                                                                     |             -             | /path/to/verifier_chain_multi.qky or C:\\\\path\\\\to\\\\verifier_chain_multi.qky                                                  |
+| verifier-key-params.key-name                                  |        NO        | Verifier Signing Key alias used for identifying security object in Security Provider - leave empty during first run or if you need rotate Verifier Signing Key.                                                                                                                                                            |             -             | ced20836-8a55-49d5-862a-510296142a99                                                                                               |
+| **Certificate Distribution Point**                            |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
+| distribution-point.main-path                                  |       YES        | Path to certificate distribution point                                                                                                                                                                                                                                                                                     |             -             | https://tsci.intel.com/                                                                                                            |
+| distribution-point.attestation-cert-base-path                 |       YES        | Path to certs directory on distribution point                                                                                                                                                                                                                                                                              |             -             | content/IPCS/certs/                                                                                                                |
+| distribution-point.trusted-root-hash                          |        NO        | Comma-separated list of SHA256 fingerprints of trusted root certificates for Stratix10 and Agilex. To calculate, run: `openssl x509 -in s10_root.cer -noout -fingerprint -sha256` and `openssl x509 -in dice_root.cer -noout -fingerprint -sha256`, respectively.                                                          |             -             | 99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F, 35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B |
+| distribution-point.proxy.host                                 |        NO        | Parameter to set proxy host if required.                                                                                                                                                                                                                                                                                   |             -             | proxy[.]company[.]com                                                                                                              |
+| distribution-point.proxy.port                                 |        NO        | Parameter to set proxy port if required.                                                                                                                                                                                                                                                                                   |             -             | 911                                                                                                                                |
+| **Security provider**                                         |                  | __All settings are specific to used security provider.__                                                                                                                                                                                                                                                                   |                           |                                                                                                                                    |
+| security-provider-params.provider.name                        |       YES        | Security Provider name registered in system / available in Java classpath.                                                                                                                                                                                                                                                 |             -             | BC                                                                                                                                 |
+| security-provider-params.provider.file-based                  |       YES        | Set true if Security Provider is file based (eg.BouncyCastle), set false if HSM based (Luna, nCipher etc.)                                                                                                                                                                                                                 |             -             | true, false                                                                                                                        |
+| security-provider-params.provider.class-name                  |       YES        | Security Provider canonical class name.                                                                                                                                                                                                                                                                                    |             -             | org.bouncycastle.jce.provider.BouncyCastleProvider                                                                                 |
+| security-provider-params.security.key-store-name              |       YES        | Name for keystore used to store data.                                                                                                                                                                                                                                                                                      |             -             | uber                                                                                                                               |
+| security-provider-params.security.password                    |        NO        | Password for keystore. **For security, it is advised to set password with environment variable: VERIFIER_SECURITY_PROVIDER_PASSWORD**                                                                                                                                                                                      |             -             |                                                                                                                                    |
+| security-provider-params.security.input-stream-param          |       YES        | Keystore location. E.g., for BouncyCastle it is path to keystore file. For Gemalto Luna it would be slot number or partition name.                                                                                                                                                                                         |             -             | /path/to/bc-keystore-verifier.jks or C:\\\\path\\\\to\\\\bc-keystore-verifier.jks                                                  |
+| security-provider-params.key-types.ec.key-name                |       YES        | Class name for EC key.                                                                                                                                                                                                                                                                                                     |             -             | EC                                                                                                                                 |
+| security-provider-params.key-types.ec.curve-spec-384          |       YES        | P-384 elliptic curve identifier.                                                                                                                                                                                                                                                                                           |             -             | secp256r1                                                                                                                          |
+| security-provider-params.key-types.ec.curve-spec-256          |       YES        | P-256 elliptic curve identifier.                                                                                                                                                                                                                                                                                           |             -             | secp384r1                                                                                                                          |
+| security-provider-params.key-types.ec.signature-algorithm     |       YES        | SHA384 with ECDSA signature algorithm identifier.                                                                                                                                                                                                                                                                          |             -             | SHA384withECDSA                                                                                                                    |
+| **Truststore**                                                |                  | __Truststore used to establish mTLS__                                                                                                                                                                                                                                                                                      |             -             |                                                                                                                                    |
+| truststore.location                                           |        NO        | Path to file-based truststore.                                                                                                                                                                                                                                                                                             |             -             | /tmp/verifier-nonprod.p12                                                                                                          |
+| truststore.password                                           |        NO        | Password to file-based truststore.                                                                                                                                                                                                                                                                                         |             -             | donotchange                                                                                                                        |
+| truststore.type                                               |        NO        | Truststore type.                                                                                                                                                                                                                                                                                                           |             -             | PKCS12                                                                                                                             |
 
 # Error Codes
 
 Workload application possible return codes:
 
-|Command|Integer|Error code|Description|
-| :--- | :---: | :---: | :--- |
-| HEALTH | 0 <br/> -1 | PASS <br/> ERROR | Health check success <br/> Health check failed |
-| CREATE |  0 <br/> -1 | PASS <br/> ERROR | Operation successful <br/> Internal error occurred |
-| GET |  0 <br/> -1 <br/> 1 | PASS <br/> ERROR <br/> FAIL | Attestation passed  <br/> Internal error occurred <br/> Attestation failed |
-|  |  |  |  |
+| Command |      Integer       |         Error code          | Description                                                                |
+|:--------|:------------------:|:---------------------------:|:---------------------------------------------------------------------------|
+| HEALTH  |     0 <br/> -1     |      PASS <br/> ERROR       | Health check success <br/> Health check failed                             |
+| CREATE  |     0 <br/> -1     |      PASS <br/> ERROR       | Operation successful <br/> Internal error occurred                         |
+| GET     | 0 <br/> -1 <br/> 1 | PASS <br/> ERROR <br/> FAIL | Attestation passed  <br/> Internal error occurred <br/> Attestation failed |
+|         |                    |                             |                                                                            |
 
 # Signing Key rotation
 
@@ -395,4 +409,12 @@ parameters. If not cleared, during next run the existing files in those location
 e.g.,
 
     existing_chain.qky.backup_9918285401_AABBCCDD
+
+# Release notes
+
+| Version           | Date       | Release note                                                                                                                                                                                                                                                                             |
+|:------------------|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 23.3              | 10/05/2023 | Support for CoRIM and Design CoRIM                                                                                                                                                                                                                                                       |
+| previous versions |            | Both Sigma-based and SPDM-based device attestation. <br/>Communication with device through both Hard Processor System and System Console. Comparison between measurements from FPGA and reference integrity manifest (RIM). RIM certificate chain validation and signature verification. |
+
 

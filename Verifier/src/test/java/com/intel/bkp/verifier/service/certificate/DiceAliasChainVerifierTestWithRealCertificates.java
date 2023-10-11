@@ -34,10 +34,12 @@
 package com.intel.bkp.verifier.service.certificate;
 
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -45,24 +47,58 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static com.intel.bkp.test.CertificateUtils.readCrl;
 import static com.intel.bkp.utils.HexConverter.fromHex;
-import static com.intel.bkp.verifier.Utils.readCertificate;
-import static com.intel.bkp.verifier.Utils.readCrl;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DiceAliasChainVerifierTestWithRealCertificates {
 
+    @Getter
+    @RequiredArgsConstructor
+    private enum ChainParams {
+        FM_BEFORE_SPDM(true, EFUSE_BEFORE_SPDM_FOLDER, "agilex", "3AB5A0DC4DE7CB08",
+            "UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer",
+            "FIRMWARE_3AB5A0DC4DE7CB08.cer",
+            "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer",
+            false),
+        FM(false, EFUSE_FOLDER, "agilex", "70E46B9910824501",
+            "alias_01458210996be470_spdm.cer",
+            "firmware_01458210996be470_spdm.cer",
+            "deviceId_01458210996be470_spdm.cer",
+            false),
+        SM(false, SM_EFUSE_FOLDER, "agilexb", "5AECAC18CCC68207",
+            "alias_0782c6cc18acec5a_sm.cer",
+            "firmware_0782c6cc18acec5a_sm.cer",
+            "ipcs_deviceId_0782c6cc18acec5a_sm.cer",
+            true);
+
+
+        final boolean isProduction;
+        final String folder;
+        final String familyName;
+        final String deviceId;
+        final String aliasCertFileName;
+        final String fwCertFileName;
+        final String deviceIdCertFileName;
+        final boolean testModeSecrets;
+
+    }
+
+    public static final String PRODUCTION_DP_URL = "https://tsci.intel.com";
+    public static final String PRE_PRODUCTION_DP_URL = "https://pre1-tsci.intel.com";
     private static final String DICE_ROOT_HASH = "35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B";
     private static final String DICE_ROOT_HASH_PRE = "9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259";
-
-    private static final String ALIAS_EFUSE_FOLDER = "certs/dice/aliasEfuseChain/";
-    private static final String ALIAS_EFUSE_SPDM_FOLDER = "certs/dice/aliasEfuseSpdmChain/";
+    private static final String EFUSE_BEFORE_SPDM_FOLDER = "certs/dice/aliasEfuseChain/";
+    private static final String EFUSE_FOLDER = "certs/dice/aliasEfuseSpdmChain/";
+    private static final String SM_EFUSE_FOLDER = EFUSE_FOLDER + "sm/";
     private static final String COMMON_FOLDER = "certs/dice/common/";
-    private static final String COMMON_PRE_FOLDER = "certs/dice/common/pre/";
-    private static final String FAMILY_CERT = "IPCS_agilex.cer";
-    private static final String FAMILY_CRL = "IPCS_agilex.crl";
-    private static final String FAMILY_CRL_L1 = "IPCS_agilex_L1.crl";
+    private static final String COMMON_PRE_FOLDER = COMMON_FOLDER + "pre/";
+    private static final String FAMILY_CERT_FORMAT = "IPCS_%s.cer";
+    private static final String FAMILY_CRL_FORMAT = "IPCS_%s.crl";
+    private static final String FAMILY_CRL_L1_FORMAT = "IPCS_%s_L1.crl";
     private static final String ROOT_CERT = "DICE_RootCA.cer";
     private static final String ROOT_CRL = "DICE.crl";
 
@@ -71,83 +107,53 @@ public class DiceAliasChainVerifierTestWithRealCertificates {
 
     private DiceAliasChainVerifier sut;
 
-    @Test
-    void verify_EfuseChain_WithoutSpdm_Success() {
+    @ParameterizedTest
+    @EnumSource(ChainParams.class)
+    void verifyChain_Success(ChainParams chainParams) {
         // given
-        final var chain = prepareAliasEfuseChain();
-        final String deviceId = "3AB5A0DC4DE7CB08";
-        sut = prepareSutForProductionChain();
-        sut.setDeviceId(fromHex(deviceId));
+        final var chain = prepareChain(chainParams);
+        mockCrls(chainParams);
+        sut = prepareSut(chainParams);
+        sut.setDeviceId(fromHex(chainParams.getDeviceId()));
 
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verifyChain(chain));
-    }
-
-    @Test
-    void verify_EfuseChain_WithSpdm_Success() {
-        // given
-        final var chain = prepareAliasEfuseChainWithSpdm();
-        final String deviceId = "70E46B9910824501";
-        sut = prepareSutForPreProductionChain();
-        sut.setDeviceId(fromHex(deviceId));
-
-        // when-then
-        Assertions.assertDoesNotThrow(() -> sut.verifyChain(chain));
+        assertDoesNotThrow(() -> sut.verifyChain(chain));
     }
 
     @SneakyThrows
-    private List<X509Certificate> prepareAliasEfuseChain() {
-        final String folder = ALIAS_EFUSE_FOLDER;
-        final X509Certificate aliasCert = readCertificate(folder, "UDS_EFUSE_ALIAS_3AB5A0DC4DE7CB08.cer");
-        final X509Certificate firmwareCert = readCertificate(folder, "FIRMWARE_3AB5A0DC4DE7CB08.cer");
-        final X509Certificate deviceIdCert = readCertificate(folder,
-            "deviceid_08cbe74ddca0b53a_7eukZEEF-nzSZWoHQrqQf53ru9A.cer");
-        final X509Certificate productFamilyCert = readCertificate(COMMON_FOLDER, FAMILY_CERT);
-        final X509Certificate rootCert = readCertificate(COMMON_FOLDER, ROOT_CERT);
+    private List<X509Certificate> prepareChain(ChainParams chainParams) {
+        final String folder = chainParams.getFolder();
+        final X509Certificate aliasCert = readCertificate(folder, chainParams.getAliasCertFileName());
+        final X509Certificate firmwareCert = readCertificate(folder, chainParams.getFwCertFileName());
+        final X509Certificate deviceIdCert = readCertificate(folder, chainParams.getDeviceIdCertFileName());
+
+        final String commonFolder = chainParams.isProduction() ? COMMON_FOLDER : COMMON_PRE_FOLDER;
+        final String familyCertFileName = FAMILY_CERT_FORMAT.formatted(chainParams.getFamilyName());
+        final X509Certificate productFamilyCert = readCertificate(commonFolder, familyCertFileName);
+        final X509Certificate rootCert = readCertificate(commonFolder, ROOT_CERT);
+
         return List.of(aliasCert, firmwareCert, deviceIdCert, productFamilyCert, rootCert);
     }
 
-    @SneakyThrows
-    private List<X509Certificate> prepareAliasEfuseChainWithSpdm() {
-        final String folder = ALIAS_EFUSE_SPDM_FOLDER;
-        final X509Certificate aliasCert = readCertificate(folder, "alias_01458210996be470_spdm.cer");
-        final X509Certificate firmwareCert = readCertificate(folder, "firmware_01458210996be470_spdm.cer");
-        final X509Certificate deviceIdCert = readCertificate(folder,
-            "deviceId_01458210996be470_spdm.cer");
-        final X509Certificate productFamilyCert = readCertificate(COMMON_PRE_FOLDER, FAMILY_CERT);
-        final X509Certificate rootCert = readCertificate(COMMON_PRE_FOLDER, ROOT_CERT);
-        return List.of(aliasCert, firmwareCert, deviceIdCert, productFamilyCert, rootCert);
+    private DiceAliasChainVerifier prepareSut(ChainParams chainParams) {
+        final var trustedRootHash = chainParams.isProduction() ? DICE_ROOT_HASH : DICE_ROOT_HASH_PRE;
+        return new DiceAliasChainVerifier(crlProvider, new String[]{trustedRootHash}, chainParams.isTestModeSecrets());
     }
 
     @SneakyThrows
-    private DiceAliasChainVerifier prepareSutForProductionChain() {
-        final String folder = COMMON_FOLDER;
-        final X509CRL familyL1Crl = readCrl(folder, FAMILY_CRL_L1);
-        final X509CRL familyCrl = readCrl(folder, FAMILY_CRL);
+    private void mockCrls(ChainParams chainParams) {
+        final String familyName = chainParams.getFamilyName();
+        final String folder = chainParams.isProduction() ? COMMON_FOLDER : COMMON_PRE_FOLDER;
+        final X509CRL familyL1Crl = readCrl(folder, FAMILY_CRL_L1_FORMAT.formatted(familyName));
+        final X509CRL familyCrl = readCrl(folder, FAMILY_CRL_FORMAT.formatted(familyName));
         final X509CRL rootCrl = readCrl(folder, ROOT_CRL);
-        mockCrls(true, familyL1Crl, familyCrl, rootCrl);
-        return new DiceAliasChainVerifier(crlProvider, DICE_ROOT_HASH, false);
-    }
 
-    @SneakyThrows
-    private DiceAliasChainVerifier prepareSutForPreProductionChain() {
-        final String folder = COMMON_PRE_FOLDER;
-        final X509CRL familyL1Crl = readCrl(folder, FAMILY_CRL_L1);
-        final X509CRL familyCrl = readCrl(folder, FAMILY_CRL);
-        final X509CRL rootCrl = readCrl(folder, ROOT_CRL);
-        mockCrls(false, familyL1Crl, familyCrl, rootCrl);
-        return new DiceAliasChainVerifier(crlProvider, DICE_ROOT_HASH_PRE, false);
-    }
-
-    private void mockCrls(boolean isProduction, X509CRL familyL1Crl, X509CRL familyCrl, X509CRL rootCrl) {
-        final String productionDpUrl = "https://tsci.intel.com";
-        final String preProductionDpUrl = "https://pre1-tsci.intel.com";
-        final String dpUrl = isProduction ? productionDpUrl : preProductionDpUrl;
+        final String dpUrl = chainParams.isProduction() ? PRODUCTION_DP_URL : PRE_PRODUCTION_DP_URL;
         // Note that L1 CRL is pointed by firmware certificate issued on FPGA device, so it is always downloaded from
         //  production DP - but to enable test with preproduction chain to pass, preProduction L1 CRL must be returned.
         //  This trick is only for test purpose - in reality chain validation with preProduction certs will fail.
-        mockCrlProvider(productionDpUrl + "/content/IPCS/crls/IPCS_agilex_L1.crl", familyL1Crl);
-        mockCrlProvider(dpUrl + "/content/IPCS/crls/IPCS_agilex.crl", familyCrl);
+        mockCrlProvider(PRODUCTION_DP_URL + "/content/IPCS/crls/IPCS_%s_L1.crl".formatted(familyName), familyL1Crl);
+        mockCrlProvider(dpUrl + "/content/IPCS/crls/IPCS_%s.crl".formatted(familyName), familyCrl);
         mockCrlProvider(dpUrl + "/content/DICE/crls/DICE.crl", rootCrl);
     }
 

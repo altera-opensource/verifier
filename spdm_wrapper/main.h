@@ -55,7 +55,9 @@
     #endif
 #endif
 
-typedef void (*printf_callback)
+const uint32_t MAILBOX_HEADER_SIZE = 4;
+
+typedef void (*print_callback)
         (const char *message);
 
 typedef libspdm_return_t (*mctp_encode_callback)
@@ -75,51 +77,33 @@ typedef libspdm_return_t (*spdm_device_send_message_callback)
 typedef libspdm_return_t (*spdm_device_receive_message_callback)
         (void *spdm_context, size_t *response_size, void **response, uint64_t timeout);
 
-typedef uint32_t (*libspdm_transport_mctp_get_header_size_cust_callback)
-        (void *spdm_context);
-
 typedef libspdm_return_t (*spdm_device_acquire_sender_buffer_callback)
-        (void *context, size_t *max_msg_size, void **msg_buf_ptr);
+        (void *context, void **msg_buf_ptr);
 
 typedef void (*spdm_device_release_sender_buffer_callback)
         (void *context, const void *msg_buf_ptr);
 
 typedef libspdm_return_t (*spdm_device_acquire_receiver_buffer_callback)
-        (void *context, size_t *max_msg_size, void **msg_buf_ptr);
+        (void *context, void **msg_buf_ptr);
 
 typedef void (*spdm_device_release_receiver_buffer_callback)
         (void *context, const void *msg_buf_ptr);
 
-PGM_PLUGIN_DLLEXPORT void
-register_printf_callback(printf_callback callback);
+typedef struct {
+    print_callback printCallback;
+    mctp_encode_callback mctpEncodeCallback;
+    mctp_decode_callback mctpDecodeCallback;
+    spdm_device_send_message_callback spdmDeviceSendMessageCallback;
+    spdm_device_receive_message_callback spdmDeviceReceiveMessageCallback;
+    spdm_device_acquire_sender_buffer_callback spdmDeviceAcquireSenderBufferCallback;
+    spdm_device_release_sender_buffer_callback spdmDeviceReleaseSenderBufferCallback;
+    spdm_device_acquire_receiver_buffer_callback spdmDeviceAcquireReceiverBufferCallback;
+    spdm_device_release_receiver_buffer_callback spdmDeviceReleaseReceiverBufferCallback;
+
+} session_callbacks_t;
 
 PGM_PLUGIN_DLLEXPORT void
-register_mctp_encode_callback(mctp_encode_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_mctp_decode_callback(mctp_decode_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_spdm_device_send_message_callback(spdm_device_send_message_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_spdm_device_receive_message_callback(spdm_device_receive_message_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_libspdm_transport_mctp_get_header_size_cust_callback(
-        libspdm_transport_mctp_get_header_size_cust_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_spdm_device_acquire_sender_buffer(spdm_device_acquire_sender_buffer_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_spdm_device_release_sender_buffer(spdm_device_release_sender_buffer_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_spdm_device_acquire_receiver_buffer(spdm_device_acquire_receiver_buffer_callback callback);
-
-PGM_PLUGIN_DLLEXPORT void
-register_spdm_device_release_receiver_buffer(spdm_device_release_receiver_buffer_callback callback);
+set_callbacks(session_callbacks_t *callbacks);
 
 PGM_PLUGIN_DLLEXPORT void
 libspdm_get_version_w(void *spdm_context_p,
@@ -127,31 +111,31 @@ libspdm_get_version_w(void *spdm_context_p,
 
 PGM_PLUGIN_DLLEXPORT libspdm_return_t
 libspdm_set_data_w8(void *spdm_context,
-                   libspdm_data_type_t data_type,
-                   const libspdm_data_parameter_t *parameter,
-                   uint8_t data,
-                   size_t data_size);
+                    libspdm_data_type_t data_type,
+                    const libspdm_data_parameter_t *parameter,
+                    uint8_t data,
+                    size_t data_size);
 
 PGM_PLUGIN_DLLEXPORT libspdm_return_t
 libspdm_set_data_w32(void *spdm_context,
-                   libspdm_data_type_t data_type,
-                   const libspdm_data_parameter_t *parameter,
-                   uint32_t data,
-                   size_t data_size);
+                     libspdm_data_type_t data_type,
+                     const libspdm_data_parameter_t *parameter,
+                     uint32_t data,
+                     size_t data_size);
 
 PGM_PLUGIN_DLLEXPORT size_t
 libspdm_get_context_size_w();
 
 PGM_PLUGIN_DLLEXPORT libspdm_return_t
-libspdm_prepare_context_w(void *spdm_context);
+libspdm_prepare_context_w(void *spdm_context, uint32_t bufferSize);
 
 PGM_PLUGIN_DLLEXPORT size_t
 libspdm_get_sizeof_required_scratch_buffer_w(void *spdm_context);
 
 PGM_PLUGIN_DLLEXPORT void
 libspdm_set_scratch_buffer_w(void *spdm_context,
-                          void *scratch_buffer,
-                          size_t scratch_buffer_size);
+                             void *scratch_buffer,
+                             size_t scratch_buffer_size);
 
 PGM_PLUGIN_DLLEXPORT libspdm_return_t
 libspdm_init_connection_w(void *spdm_context,
@@ -168,6 +152,7 @@ libspdm_get_certificate_w(void *spdm_context,
                           size_t *cert_chain_size,
                           void *cert_chain);
 
+// :TODO make get_measurement consistent with API
 PGM_PLUGIN_DLLEXPORT libspdm_return_t
 libspdm_get_measurement_w(void *spdm_context,
                           uint32_t *measurement_record_length,
@@ -175,5 +160,12 @@ libspdm_get_measurement_w(void *spdm_context,
                           uint8_t slot_id_measurements,
                           uint8_t request_attribute,
                           void *signature);
+
+PGM_PLUGIN_DLLEXPORT libspdm_return_t
+libspdm_set_certificate_w(void *spdm_context,
+                          const uint32_t *session_id,
+                          uint8_t slot_id,
+                          void *cert_chain,
+                          size_t cert_chain_size);
 
 #endif //SPDM_WRAPPER_MAIN_H

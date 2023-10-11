@@ -59,7 +59,7 @@ class NicDiceParamsSubjectParserTest {
         final var result = sut.getDiceParams(SKI, createDiceSubject(FAMILY_NAME));
 
         // then
-        assertEquals(SKI, result.getSki());
+        assertEquals(SKI, result.getId());
         assertEquals(DEVICE_ID, result.getUid());
         assertEquals(FAMILY, result.getFamily());
         assertEquals(toHex(FAMILY.getFamilyId()), result.getFamilyId());

@@ -33,11 +33,12 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoTestUtil.parseTcbInfo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModelVerifierTest {
 
@@ -62,7 +63,7 @@ class ModelVerifierTest {
         final boolean result = SUT.verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -77,7 +78,7 @@ class ModelVerifierTest {
         final boolean result = SUT.verify(tcbInfo);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -92,7 +93,7 @@ class ModelVerifierTest {
         final boolean result = SUT.verify(tcbInfo);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -107,6 +108,6 @@ class ModelVerifierTest {
         final boolean result = SUT.verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 }

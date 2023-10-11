@@ -37,10 +37,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HexConverter {
@@ -51,6 +53,18 @@ public class HexConverter {
         } catch (DecoderException e) {
             throw new IllegalArgumentException("Failed to decode HEX string", e);
         }
+    }
+
+    public static byte fromHexSingle(String data) {
+        if (StringUtils.isBlank(data)) {
+            throw new IllegalArgumentException("Only single byte can be converted. Empty string provided.");
+        }
+        final String sanitized = data.replaceFirst("0x", "");
+        if (sanitized.length() != 2) {
+            throw new IllegalArgumentException("Only single byte can be converted. Improper data size provided: %d."
+                .formatted(sanitized.length()));
+        }
+        return fromHex(sanitized)[0];
     }
 
     public static String toHex(int number) {
@@ -77,16 +91,27 @@ public class HexConverter {
         return String.format("0x%s", toHex(number));
     }
 
+    public static String toFormattedHex(long number) {
+        return String.format("0x%s", toHex(number));
+    }
+
+    // TODO ADD UT
     public static String toFormattedHex(byte[] data) {
         List<String> bytesList = new ArrayList<>();
         ByteBuffer wrap = ByteBuffer.wrap(data);
         while (wrap.hasRemaining()) {
-            bytesList.add("0x" + String.format("%08x", wrap.getInt()));
+            if (wrap.remaining() >= Integer.BYTES) {
+                bytesList.add("0x" + String.format("%08x", wrap.getInt()));
+            } else {
+                byte[] remainingData = new byte[wrap.remaining()];
+                wrap.get(remainingData);
+                bytesList.add("0x" + String.format("%08x", ByteConverter.toInt(remainingData)));
+            }
         }
         return String.join(" ", bytesList);
     }
 
     public static String toLowerCaseHex(byte[] data) {
-        return Hex.encodeHexString(data);
+        return Hex.encodeHexString(data).toLowerCase(Locale.ROOT);
     }
 }

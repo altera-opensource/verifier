@@ -33,25 +33,25 @@
 
 package com.intel.bkp.verifier.service;
 
+import com.intel.bkp.command.exception.JtagUnknownCommandResponseException;
+import com.intel.bkp.command.model.CommandLayer;
+import com.intel.bkp.command.responses.sigma.CreateAttestationSubKeyResponse;
+import com.intel.bkp.command.responses.sigma.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKey;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponse;
-import com.intel.bkp.verifier.command.responses.subkey.CreateAttestationSubKeyResponseBuilder;
 import com.intel.bkp.verifier.database.model.S10CacheEntity;
 import com.intel.bkp.verifier.exceptions.InternalLibraryException;
-import com.intel.bkp.verifier.exceptions.UnknownCommandException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.protocol.sigma.service.CreateAttestationSubKeyMessageSender;
+import com.intel.bkp.verifier.protocol.sigma.service.S10AttestationRevocationService;
+import com.intel.bkp.verifier.protocol.sigma.service.TeardownMessageSender;
+import com.intel.bkp.verifier.protocol.sigma.verification.CreateAttestationSubKeyVerifier;
+import com.intel.bkp.verifier.protocol.sigma.verification.SigmaM2DeviceIdVerifier;
 import com.intel.bkp.verifier.service.certificate.AppContext;
-import com.intel.bkp.verifier.service.certificate.S10AttestationRevocationService;
-import com.intel.bkp.verifier.service.sender.CreateAttestationSubKeyMessageSender;
-import com.intel.bkp.verifier.service.sender.TeardownMessageSender;
-import com.intel.bkp.verifier.sigma.CreateAttestationSubKeyVerifier;
-import com.intel.bkp.verifier.sigma.SigmaM2DeviceIdVerifier;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,8 +98,8 @@ public class CreateDeviceAttestationSubKeyComponent {
         try {
             subKeyResponseBuilder = createSubKeyMessageSender.send(transportLayer,
                 commandLayer, context, counter, pufType, serviceDhKeyPair);
-        } catch (UnknownCommandException e) {
-            log.error("This is FM/DM board - CreateAttestationSubKey command is not supported.");
+        } catch (JtagUnknownCommandResponseException e) {
+            log.error("This is not S10 board - CreateAttestationSubKey command is not supported.");
             log.debug("Stacktrace: ", e);
             return VerifierExchangeResponse.ERROR;
         }

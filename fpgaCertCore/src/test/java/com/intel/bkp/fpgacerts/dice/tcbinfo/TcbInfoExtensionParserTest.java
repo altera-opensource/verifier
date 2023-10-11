@@ -33,8 +33,6 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import com.intel.bkp.fpgacerts.Utils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +45,9 @@ import static com.intel.bkp.crypto.x509.utils.X509CrlUtils.getX509CRLEntries;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants.VENDOR;
 import static com.intel.bkp.fpgacerts.model.Oid.MEASUREMENT_TYPES;
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static com.intel.bkp.test.CertificateUtils.readCrl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TcbInfoExtensionParserTest {
 
@@ -99,11 +100,11 @@ class TcbInfoExtensionParserTest {
 
     @BeforeAll
     static void init() throws Exception {
-        aliasCert = Utils.readCertificate(TEST_FOLDER, ALIAS_CERT);
-        firmwareCert = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
-        deviceIdEnrollmentCert = Utils.readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
+        aliasCert = readCertificate(TEST_FOLDER, ALIAS_CERT);
+        firmwareCert = readCertificate(TEST_FOLDER, FIRMWARE_CERT);
+        deviceIdEnrollmentCert = readCertificate(TEST_FOLDER, DEVICE_ID_ENROLLMENT_CERT);
 
-        crl = Utils.readCrl(TEST_FOLDER, CRL);
+        crl = readCrl(TEST_FOLDER, CRL);
     }
 
     @BeforeEach
@@ -117,18 +118,18 @@ class TcbInfoExtensionParserTest {
         final List<TcbInfo> tcbInfos = sut.parse(aliasCert);
 
         // then
-        Assertions.assertEquals(2, tcbInfos.size());
+        assertEquals(2, tcbInfos.size());
 
         final TcbInfo tcbInfo = tcbInfos.get(0);
-        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
-        Assertions.assertEquals(ALIAS_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
-        Assertions.assertEquals(ALIAS_EXPECTED_TYPE_1, tcbInfo.get(TcbInfoField.TYPE).get());
+        assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
+        assertEquals(ALIAS_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
+        assertEquals(ALIAS_EXPECTED_TYPE_1, tcbInfo.get(TcbInfoField.TYPE).get());
         assertFwId(tcbInfo, ALIAS_EXPECTED_DIGEST_1);
 
         final TcbInfo tcbInfo2 = tcbInfos.get(1);
-        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo2.get(TcbInfoField.VENDOR).get());
-        Assertions.assertEquals(ALIAS_EXPECTED_LAYER, tcbInfo2.get(TcbInfoField.LAYER).get());
-        Assertions.assertEquals(ALIAS_EXPECTED_TYPE_2, tcbInfo2.get(TcbInfoField.TYPE).get());
+        assertEquals(EXPECTED_VENDOR, tcbInfo2.get(TcbInfoField.VENDOR).get());
+        assertEquals(ALIAS_EXPECTED_LAYER, tcbInfo2.get(TcbInfoField.LAYER).get());
+        assertEquals(ALIAS_EXPECTED_TYPE_2, tcbInfo2.get(TcbInfoField.TYPE).get());
         assertFwId(tcbInfo2, ALIAS_EXPECTED_DIGEST_2);
     }
 
@@ -138,15 +139,15 @@ class TcbInfoExtensionParserTest {
         final List<TcbInfo> tcbInfos = sut.parse(firmwareCert);
 
         // then
-        Assertions.assertEquals(1, tcbInfos.size());
+        assertEquals(1, tcbInfos.size());
 
         final TcbInfo tcbInfo = tcbInfos.get(0);
-        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
-        Assertions.assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
-        Assertions.assertEquals(FIRMWARE_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
-        Assertions.assertEquals(FIRMWARE_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
-        Assertions.assertEquals(FIRMWARE_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
-        Assertions.assertEquals(FIRMWARE_EXPECTED_FLAGS, tcbInfo.get(TcbInfoField.FLAGS).get());
+        assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
+        assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
+        assertEquals(FIRMWARE_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
+        assertEquals(FIRMWARE_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
+        assertEquals(FIRMWARE_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
+        assertEquals(FIRMWARE_EXPECTED_FLAGS, tcbInfo.get(TcbInfoField.FLAGS).get());
         assertFwId(tcbInfo, FIRMWARE_EXPECTED_DIGEST);
     }
 
@@ -156,14 +157,14 @@ class TcbInfoExtensionParserTest {
         final List<TcbInfo> tcbInfos = sut.parse(deviceIdEnrollmentCert);
 
         // then
-        Assertions.assertEquals(1, tcbInfos.size());
+        assertEquals(1, tcbInfos.size());
 
         final TcbInfo tcbInfo = tcbInfos.get(0);
-        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
-        Assertions.assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
-        Assertions.assertEquals(DEVICEID_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
-        Assertions.assertEquals(DEVICEID_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
-        Assertions.assertEquals(DEVICEID_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
+        assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
+        assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
+        assertEquals(DEVICEID_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
+        assertEquals(DEVICEID_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
+        assertEquals(DEVICEID_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
         assertFwId(tcbInfo, DEVICEID_EXPECTED_DIGEST);
     }
 
@@ -179,21 +180,21 @@ class TcbInfoExtensionParserTest {
         final List<TcbInfo> tcbInfos = sut.parse(crlEntry);
 
         // then
-        Assertions.assertEquals(1, tcbInfos.size());
+        assertEquals(1, tcbInfos.size());
 
         final TcbInfo tcbInfo = tcbInfos.get(0);
-        Assertions.assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
-        Assertions.assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
-        Assertions.assertEquals(CRLENTRY_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
-        Assertions.assertEquals(CRLENTRY_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
-        Assertions.assertEquals(CRLENTRY_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
+        assertEquals(EXPECTED_VENDOR, tcbInfo.get(TcbInfoField.VENDOR).get());
+        assertEquals(EXPECTED_MODEL, tcbInfo.get(TcbInfoField.MODEL).get());
+        assertEquals(CRLENTRY_EXPECTED_SVN, tcbInfo.get(TcbInfoField.SVN).get());
+        assertEquals(CRLENTRY_EXPECTED_LAYER, tcbInfo.get(TcbInfoField.LAYER).get());
+        assertEquals(CRLENTRY_EXPECTED_INDEX, tcbInfo.get(TcbInfoField.INDEX).get());
         assertFwId(tcbInfo, CRLENTRY_EXPECTED_DIGEST);
     }
 
     private void assertFwId(TcbInfo tcbInfo, String expectedDigest) {
         final FwIdField fwId = (FwIdField) tcbInfo.get(TcbInfoField.FWIDS)
             .orElseThrow(() -> new RuntimeException("Expected FwId field in TcbInfo, but it does not exist."));
-        Assertions.assertEquals(EXPECTED_HASH_ALG, fwId.getHashAlg());
-        Assertions.assertEquals(expectedDigest, fwId.getDigest());
+        assertEquals(EXPECTED_HASH_ALG, fwId.getHashAlg());
+        assertEquals(expectedDigest, fwId.getDigest());
     }
 }

@@ -33,12 +33,10 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.TestUtil;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgPermissions;
 import com.intel.bkp.core.psgcertificate.model.PsgPublicKeyMagic;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -46,8 +44,10 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.Random;
 
-import static com.intel.bkp.core.AssertArrays.assertThatArrayIsSubarrayOfAnotherArray;
+import static com.intel.bkp.test.AssertionUtils.assertThatArrayIsSubarrayOfAnotherArray;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PsgPublicKeyTest {
 
@@ -60,7 +60,7 @@ public class PsgPublicKeyTest {
         PsgCurveType curveType = PsgCurveType.SECP384R1;
         int permissions = PsgPermissions.SIGN_BKP_DH.getBitPosition();
 
-        KeyPair keyPair = TestUtil.genEcKeys(null);
+        KeyPair keyPair = KeyGenUtils.genEc384();
         assert keyPair != null;
 
         // when
@@ -75,21 +75,21 @@ public class PsgPublicKeyTest {
         PsgPublicKeyBuilder parsed = new PsgPublicKeyBuilder().parse(result);
 
         // then
-        Assertions.assertEquals(magic, parsed.getMagic());
-        Assertions.assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
+        assertEquals(magic, parsed.getMagic());
+        assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
         assertThatArrayIsSubarrayOfAnotherArray(encodedPublicKey, parsed.getCurvePoint().getPointA());
         assertThatArrayIsSubarrayOfAnotherArray(encodedPublicKey, parsed.getCurvePoint().getPointB());
-        Assertions.assertEquals(toHex(parsed.build().array()), parsed.build().toHex());
+        assertEquals(toHex(parsed.build().array()), parsed.build().toHex());
     }
 
     @Test
-    void build_parse_withPublicKey_Success() throws Exception {
+    void build_parse_withPublicKey_Success() {
         // given
         PsgPublicKeyMagic magic = PsgPublicKeyMagic.MANIFEST_MAGIC;
         PsgCurveType curveType = PsgCurveType.SECP384R1;
         int permissions = PsgPermissions.SIGN_BKP_DH.getBitPosition();
 
-        KeyPair keyPair = TestUtil.genEcKeys(null);
+        KeyPair keyPair = KeyGenUtils.genEc384();
         assert keyPair != null;
 
         // when
@@ -104,14 +104,14 @@ public class PsgPublicKeyTest {
         PsgPublicKeyBuilder parsed = new PsgPublicKeyBuilder().parse(result);
 
         // then
-        Assertions.assertEquals(magic, parsed.getMagic());
-        Assertions.assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
+        assertEquals(magic, parsed.getMagic());
+        assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
         assertThatArrayIsSubarrayOfAnotherArray(publicKey.getEncoded(), parsed.getCurvePoint().getPointA());
         assertThatArrayIsSubarrayOfAnotherArray(publicKey.getEncoded(), parsed.getCurvePoint().getPointB());
     }
 
     @Test
-    void build_parse_withPublicKeyXY_Success() throws PsgPubKeyException {
+    void build_parse_withPublicKeyXY_Success() {
         // given
         PsgPublicKeyMagic magic = PsgPublicKeyMagic.MANIFEST_MAGIC;
         PsgCurveType curveType = PsgCurveType.SECP384R1;
@@ -133,9 +133,9 @@ public class PsgPublicKeyTest {
         PsgPublicKeyBuilder parsed = new PsgPublicKeyBuilder().parse(result);
 
         // then
-        Assertions.assertEquals(magic, parsed.getMagic());
-        Assertions.assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
-        Assertions.assertArrayEquals(pubKeyX, parsed.getCurvePoint().getPointA());
-        Assertions.assertArrayEquals(pubKeyY, parsed.getCurvePoint().getPointB());
+        assertEquals(magic, parsed.getMagic());
+        assertEquals(curveType, PsgCurveType.fromCurveSpec(parsed.getCurvePoint().getCurveSpec()));
+        assertArrayEquals(pubKeyX, parsed.getCurvePoint().getPointA());
+        assertArrayEquals(pubKeyY, parsed.getCurvePoint().getPointB());
     }
 }

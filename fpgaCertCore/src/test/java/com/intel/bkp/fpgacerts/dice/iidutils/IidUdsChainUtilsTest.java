@@ -33,7 +33,7 @@
 
 package com.intel.bkp.fpgacerts.dice.iidutils;
 
-import com.intel.bkp.fpgacerts.Utils;
+import com.intel.bkp.test.CertificateUtils;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
@@ -83,6 +83,6 @@ class IidUdsChainUtilsTest {
 
     @SneakyThrows
     private static List<X509Certificate> prepareChain(String filename) {
-        return List.of(Utils.readCertificate(TEST_FOLDER, filename));
+        return List.of(CertificateUtils.readCertificate(TEST_FOLDER, filename));
     }
 }

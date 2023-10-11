@@ -39,7 +39,6 @@ import com.intel.bkp.fpgacerts.exceptions.IpcsCertificateFetcherNotInitializedEx
 import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.database.repository.DiceRevocationCacheEntityService;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +49,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -97,7 +100,7 @@ class EnrollmentFlowDetectorTest {
         mockAppContext();
 
         // when
-        Assertions.assertDoesNotThrow(() -> EnrollmentFlowDetector.instance(DEVICE_ID, certFetcher));
+        assertDoesNotThrow(() -> EnrollmentFlowDetector.instance(DEVICE_ID, certFetcher));
     }
 
     @Test
@@ -109,7 +112,7 @@ class EnrollmentFlowDetectorTest {
         final boolean result = sut.isEnrollmentFlow();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
         verifyNoInteractions(certFetcher);
     }
 
@@ -123,7 +126,7 @@ class EnrollmentFlowDetectorTest {
         final boolean result = sut.isEnrollmentFlow();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -136,7 +139,7 @@ class EnrollmentFlowDetectorTest {
         final boolean result = sut.isEnrollmentFlow();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -146,7 +149,7 @@ class EnrollmentFlowDetectorTest {
         when(certFetcher.fetchIpcsDeviceIdCert()).thenThrow(IpcsCertificateFetcherNotInitializedException.class);
 
         // when - then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.isEnrollmentFlow());
+        assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.isEnrollmentFlow());
     }
 
     private void mockAppContext() {

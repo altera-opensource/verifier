@@ -25,10 +25,10 @@ endif()
 
 if(DEFINED INTERNAL_BUILD)
     if(NOT DEFINED LIBSPDM_VERSION)
-        set(LIBSPDM_VERSION "2.3.1")
+        set(LIBSPDM_VERSION "3.0.0")
     endif()
     if(NOT DEFINED OPENSSL_VERSION)
-        set(OPENSSL_VERSION "1.1.1t")
+        set(OPENSSL_VERSION "3.1.1")
     endif()
 
     include(../../tools/dependency_resolver.cmake)

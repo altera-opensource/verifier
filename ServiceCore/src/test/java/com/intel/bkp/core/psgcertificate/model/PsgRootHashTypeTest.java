@@ -33,8 +33,10 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PsgRootHashTypeTest {
 
@@ -47,20 +49,16 @@ public class PsgRootHashTypeTest {
         final PsgRootHashType actual = PsgRootHashType.fromOrdinal(expected.ordinal());
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
     void fromOrdinal_WithWrongEnumOrdinalMax_ThrowsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            PsgRootHashType.fromOrdinal(999);
-        });
+        assertThrows(IllegalArgumentException.class, () -> PsgRootHashType.fromOrdinal(999));
     }
 
     @Test
     void fromOrdinal_WithWrongEnumOrdinalMin_ThrowsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            PsgRootHashType.fromOrdinal(-10);
-        });
+        assertThrows(IllegalArgumentException.class, () -> PsgRootHashType.fromOrdinal(-10));
     }
 }

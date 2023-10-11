@@ -33,21 +33,22 @@
 
 package com.intel.bkp.core.psgcertificate.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PsgBlock0EntryExceptionTest {
 
     @Test
     void constructor_WithMessage_Success() {
-        Assertions.assertThrows(PsgBlock0EntryException.class, () -> {
+        assertThrows(PsgBlock0EntryException.class, () -> {
             throw new PsgBlock0EntryException("test");
         });
     }
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        Assertions.assertThrows(PsgBlock0EntryException.class, () -> {
+        assertThrows(PsgBlock0EntryException.class, () -> {
             throw new PsgBlock0EntryException("test", new Exception());
         });
     }

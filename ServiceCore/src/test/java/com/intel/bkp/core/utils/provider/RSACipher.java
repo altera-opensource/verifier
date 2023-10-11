@@ -33,27 +33,21 @@
 
 package com.intel.bkp.core.utils.provider;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.CipherSpi;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.ShortBufferException;
 import java.security.AlgorithmParameters;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 
 public class RSACipher extends CipherSpi {
     @Override
-    protected void engineSetMode(String s) throws NoSuchAlgorithmException {
+    protected void engineSetMode(String s) {
 
     }
 
     @Override
-    protected void engineSetPadding(String s) throws NoSuchPaddingException {
+    protected void engineSetPadding(String s) {
 
     }
 
@@ -78,19 +72,18 @@ public class RSACipher extends CipherSpi {
     }
 
     @Override
-    protected void engineInit(int i, Key key, SecureRandom secureRandom) throws InvalidKeyException {
+    protected void engineInit(int i, Key key, SecureRandom secureRandom) {
 
     }
 
     @Override
-    protected void engineInit(int i, Key key, AlgorithmParameterSpec algorithmParameterSpec, SecureRandom secureRandom)
-        throws InvalidKeyException, InvalidAlgorithmParameterException {
+    protected void engineInit(int i, Key key, AlgorithmParameterSpec algorithmParameterSpec,
+                              SecureRandom secureRandom) {
 
     }
 
     @Override
-    protected void engineInit(int i, Key key, AlgorithmParameters algorithmParameters, SecureRandom secureRandom)
-        throws InvalidKeyException, InvalidAlgorithmParameterException {
+    protected void engineInit(int i, Key key, AlgorithmParameters algorithmParameters, SecureRandom secureRandom) {
 
     }
 
@@ -100,12 +93,12 @@ public class RSACipher extends CipherSpi {
     }
 
     @Override
-    protected int engineUpdate(byte[] bytes, int i, int i1, byte[] bytes1, int i2) throws ShortBufferException {
+    protected int engineUpdate(byte[] bytes, int i, int i1, byte[] bytes1, int i2) {
         return 0;
     }
 
     @Override
-    protected byte[] engineDoFinal(byte[] bytes, int i, int i1) throws IllegalBlockSizeException, BadPaddingException {
+    protected byte[] engineDoFinal(byte[] bytes, int i, int i1) throws IllegalBlockSizeException {
         if ((new String(bytes)).equals("not_encrypted")) {
             throw new IllegalBlockSizeException("test");
         }
@@ -113,8 +106,7 @@ public class RSACipher extends CipherSpi {
     }
 
     @Override
-    protected int engineDoFinal(byte[] bytes, int i, int i1, byte[] bytes1, int i2)
-        throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+    protected int engineDoFinal(byte[] bytes, int i, int i1, byte[] bytes1, int i2) {
         return 0;
     }
 }

@@ -33,7 +33,6 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.utils.PublicKeyHelperBase;
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.curve.CurvePoint;
@@ -54,12 +53,16 @@ public class PsgPublicKeyHelper extends PublicKeyHelperBase {
         return new PsgPublicKeyHelper(psgPublicKeyBuilder.getCurvePoint());
     }
 
-    public static PsgPublicKeyHelper from(byte[] data) throws PsgPubKeyException {
+    public static PsgPublicKeyHelper from(byte[] data) {
         return new PsgPublicKeyHelper(new PsgPublicKeyBuilder().parse(data).getCurvePoint());
     }
 
     public String generateFingerprint() {
         return getPoint().generateFingerprint();
+    }
+
+    public String generateSha256Fingerprint() {
+        return getPoint().generateSha256Fingerprint();
     }
 
     public boolean areEqual(ECPublicKey pubKey) {

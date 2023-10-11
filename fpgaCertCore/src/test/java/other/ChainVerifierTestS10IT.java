@@ -34,8 +34,6 @@
 package other;
 
 import com.intel.bkp.crypto.x509.validation.ChainVerifier;
-import com.intel.bkp.fpgacerts.Utils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +43,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class ChainVerifierTestS10IT {
@@ -67,10 +69,10 @@ class ChainVerifierTestS10IT {
     private final ChainVerifier sut = new ChainVerifier();
 
     @BeforeAll
-    static void init() throws Exception {
-        attestationCert = Utils.readCertificate(TEST_FOLDER, ATTESTATION_CERT_FILENAME);
-        parentCert = Utils.readCertificate(TEST_FOLDER, PARENT_CERT_FILENAME);
-        rootCert = Utils.readCertificate(TEST_FOLDER, ROOT_CERT_FILENAME);
+    static void init() {
+        attestationCert = readCertificate(TEST_FOLDER, ATTESTATION_CERT_FILENAME);
+        parentCert = readCertificate(TEST_FOLDER, PARENT_CERT_FILENAME);
+        rootCert = readCertificate(TEST_FOLDER, ROOT_CERT_FILENAME);
     }
 
     @BeforeEach
@@ -88,7 +90,7 @@ class ChainVerifierTestS10IT {
         boolean result = sut.verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -100,7 +102,7 @@ class ChainVerifierTestS10IT {
         boolean result = sut.verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     private void addToList(X509Certificate... cert) {

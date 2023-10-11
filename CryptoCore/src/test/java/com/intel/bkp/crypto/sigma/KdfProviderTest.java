@@ -34,8 +34,10 @@
 package com.intel.bkp.crypto.sigma;
 
 import com.intel.bkp.crypto.exceptions.HMacProviderException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class KdfProviderTest {
 
@@ -47,8 +49,8 @@ public class KdfProviderTest {
         final byte[] result = KdfProvider.derivePMK(MASTER_KEY);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(KdfProvider.PMK_OUTPUT_KEY_LEN, result.length);
+        assertNotNull(result);
+        assertEquals(KdfProvider.PMK_OUTPUT_KEY_LEN, result.length);
     }
 
     @Test
@@ -57,8 +59,8 @@ public class KdfProviderTest {
         final byte[] result = KdfProvider.deriveSEK(MASTER_KEY);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(KdfProvider.SEK_SMK_OUTPUT_KEY_LEN, result.length);
+        assertNotNull(result);
+        assertEquals(KdfProvider.SEK_SMK_OUTPUT_KEY_LEN, result.length);
     }
 
     @Test
@@ -67,8 +69,8 @@ public class KdfProviderTest {
         final byte[] result = KdfProvider.deriveSMK(MASTER_KEY);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(KdfProvider.SEK_SMK_OUTPUT_KEY_LEN, result.length);
+        assertNotNull(result);
+        assertEquals(KdfProvider.SEK_SMK_OUTPUT_KEY_LEN, result.length);
     }
 
     @Test
@@ -78,7 +80,7 @@ public class KdfProviderTest {
             final byte[] label = detail.getLabel();
             final int len = detail.getLen();
 
-            Assertions.assertEquals(len, label.length);
+            assertEquals(len, label.length);
         }
     }
 }

@@ -43,13 +43,18 @@ plugins {
     alias(libs.plugins.lombok)
     alias(libs.plugins.gradle.versions)
     alias(libs.plugins.modernizer)
+    id 'maven-publish'
     id 'java-library'
     id 'idea'
 }
 
+apply from: rootProject.file('gradle/common.gradle')
+
+def buildVersion = ext.getBuildVersion()
+
 jar {
     archiveBaseName.set('ServiceCore')
-    archiveVersion.set(getBuildVersion())
+    archiveVersion.set(buildVersion)
     manifest {
         attributes(
             'Sealed': 'true',
@@ -62,8 +67,8 @@ jar {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-group = 'com.intel.bkp'
-version = getBuildVersion()
+group = 'com.intel.bkp.core'
+version = buildVersion
 
 
 test {
@@ -87,12 +92,17 @@ dependencies {
     implementation libs.jakarta.validation.api
     implementation libs.bundles.jackson
 
+    testImplementation project(':TestLibrary')
     testImplementation platform(libs.junit.bom)
     testImplementation libs.junit.jupiter
     testImplementation libs.bundles.mockito
     testImplementation libs.hamcrest.library
 }
 
-def getBuildVersion() {
-    return file("${projectDir}/version").text.trim()
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }

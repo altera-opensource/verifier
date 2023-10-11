@@ -33,14 +33,16 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.cert.X509Certificate;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class IssuerVerifierTest {
@@ -60,21 +62,21 @@ class IssuerVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        attestationCert = TestUtil.loadCertificate(ATTESTATION_CERT_FILENAME);
-        parentCert = TestUtil.loadCertificate(PARENT_CERT_FILENAME);
-        rootCert = TestUtil.loadCertificate(ROOT_CERT_FILENAME);
+        attestationCert = FileUtils.loadCertificate(ATTESTATION_CERT_FILENAME);
+        parentCert = FileUtils.loadCertificate(PARENT_CERT_FILENAME);
+        rootCert = FileUtils.loadCertificate(ROOT_CERT_FILENAME);
     }
 
     @Test
     void verify_MatchingIssuer_ReturnsTrue() {
         // when-then
-        Assertions.assertTrue(sut.verify(attestationCert, parentCert));
+        assertTrue(sut.verify(attestationCert, parentCert));
     }
 
     @Test
     void verify_MismatchedIssuer_ReturnsFalse() {
         // when-then
-        Assertions.assertFalse(sut.verify(attestationCert, rootCert));
+        assertFalse(sut.verify(attestationCert, rootCert));
     }
 
 }

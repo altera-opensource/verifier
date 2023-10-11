@@ -33,12 +33,14 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
 import java.util.Objects;
 
 @Getter
+@AllArgsConstructor
 public class TcbInfoMeasurement {
 
     private final TcbInfoKey key;

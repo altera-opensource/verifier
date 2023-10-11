@@ -34,9 +34,7 @@
 package com.intel.bkp.fpgacerts.verification;
 
 import com.intel.bkp.crypto.x509.validation.SignatureVerifier;
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +49,8 @@ import java.util.List;
 
 import static com.intel.bkp.crypto.x509.parsing.X509CertificateParser.toX509Certificate;
 import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.toX509Crl;
+import static com.intel.bkp.test.FileUtils.readFromResources;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -74,28 +74,22 @@ public class CrlVerifierTestWithRealCertificates {
     @BeforeAll
     static void init() throws Exception {
         // certificate chain generated based on tutorial https://pki-tutorial.readthedocs.io/en/latest/advanced/
-        intermediateCrl = getCrlFromFile("intermediate-ca.crl");
-        rootCrl = getCrlFromFile("root-ca.crl");
-        leafCert = getCertFromFile("leaf-not-revoked.crt");
-        intermediateCertRevoked = getCertFromFile("intermediate-ca-revoked.crt");
-        rootCert = getCertFromFile("root-ca.crt");
+        intermediateCrl = toX509Crl(readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER,
+            "intermediate-ca.crl"));
+        rootCrl = toX509Crl(readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER,
+            "root-ca.crl"));
+        leafCert = toX509Certificate(readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER,
+            "leaf-not-revoked.crt"));
+        intermediateCertRevoked =
+            toX509Certificate(readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER,
+                "intermediate-ca-revoked.crt"));
+        rootCert = toX509Certificate(readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER,
+            "root-ca.crt"));
     }
 
     @BeforeEach
     void prepareSut() {
         sut = new CrlVerifier(new SignatureVerifier(), crlProvider);
-    }
-
-    private static X509CRL getCrlFromFile(String filename) throws Exception {
-        return toX509Crl(getBytesFromFile(filename));
-    }
-
-    private static X509Certificate getCertFromFile(String filename) throws Exception {
-        return toX509Certificate(getBytesFromFile(filename));
-    }
-
-    private static byte[] getBytesFromFile(String filename) throws Exception {
-        return Utils.readFromResources(TEST_FOLDER + DUMMY_CHAIN_FOLDER, filename);
     }
 
     @Test
@@ -111,6 +105,6 @@ public class CrlVerifierTestWithRealCertificates {
         final boolean result = sut.certificates(list).verify();
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 }

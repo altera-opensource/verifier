@@ -39,8 +39,6 @@ import com.intel.bkp.core.endianness.StructureType;
 import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.interfaces.ISignBytes;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidSignatureException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.PsgCancellation;
 import com.intel.bkp.core.psgcertificate.model.PsgPermissions;
 import com.intel.bkp.core.psgcertificate.model.PsgSignatureCurveType;
@@ -174,10 +172,6 @@ public class PsgCertificateEntryBuilder extends StructureBuilder<PsgCertificateE
             return this;
         } catch (ByteBufferSafeException | PsgCertificateException e) {
             throw new ParseStructureException("Invalid buffer during parsing entry", e);
-        } catch (PsgInvalidSignatureException e) {
-            throw new ParseStructureException("Invalid signature during parsing entry", e);
-        } catch (PsgPubKeyException e) {
-            throw new ParseStructureException("Invalid public key magic during parsing entry", e);
         }
     }
 
@@ -191,11 +185,11 @@ public class PsgCertificateEntryBuilder extends StructureBuilder<PsgCertificateE
         reserved = convertInt(buffer.getInt(), PSG_CERT_RESERVED);
     }
 
-    private void parsePsgPublicKey(ByteBufferSafe buffer) throws PsgPubKeyException {
+    private void parsePsgPublicKey(ByteBufferSafe buffer) {
         psgPublicKeyBuilder = new PsgPublicKeyBuilder().withActor(getActor()).parse(buffer);
     }
 
-    private void parseSignature(ByteBufferSafe buffer) throws PsgInvalidSignatureException {
+    private void parseSignature(ByteBufferSafe buffer) {
         if (signatureLength > 0) {
             psgSignatureBuilder = new PsgSignatureBuilder().withActor(getActor()).parse(buffer);
         }

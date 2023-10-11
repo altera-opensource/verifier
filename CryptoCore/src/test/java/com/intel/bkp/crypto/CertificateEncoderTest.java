@@ -35,11 +35,10 @@ package com.intel.bkp.crypto;
 
 import com.intel.bkp.crypto.constants.SecurityKeyType;
 import com.intel.bkp.crypto.exceptions.CertificateEncoderException;
-import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.pem.PemFormatEncoder;
 import com.intel.bkp.crypto.pem.PemFormatHeader;
+import com.intel.bkp.test.KeyGenUtils;
 import org.apache.commons.codec.binary.Hex;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
@@ -47,6 +46,10 @@ import java.security.PublicKey;
 import java.util.Base64;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CertificateEncoderTest {
 
@@ -56,7 +59,7 @@ public class CertificateEncoderTest {
     @Test
     void toPublicKey_WithRSAKey_Success() throws Exception {
         // given
-        final KeyPair keyPair = TestUtil.genRsaKeys();
+        final KeyPair keyPair = KeyGenUtils.genRsa3072();
         final String pemEncodedPublicKey = PemFormatEncoder.encode(PemFormatHeader.PUBLIC_KEY,
             keyPair.getPublic().getEncoded());
 
@@ -64,21 +67,21 @@ public class CertificateEncoderTest {
         final PublicKey key = CertificateEncoder.toPublicKey(pemEncodedPublicKey, SecurityKeyType.RSA);
 
         // then
-        Assertions.assertEquals(
+        assertEquals(
             Hex.encodeHexString(keyPair.getPublic().getEncoded()),
             Hex.encodeHexString(key.getEncoded())
         );
     }
 
     @Test
-    void toPublicKey_WithDifferentPubKey_ThrowsException() throws KeystoreGenericException {
+    void toPublicKey_WithDifferentPubKey_ThrowsException() {
         // given
-        final KeyPair keyPair = TestUtil.genEcKeys();
+        final KeyPair keyPair = KeyGenUtils.genEc384();
         final String pemEncodedPublicKey = PemFormatEncoder.encode(PemFormatHeader.PUBLIC_KEY,
             keyPair.getPublic().getEncoded());
 
         // when-then
-        Assertions.assertThrows(
+        assertThrows(
             CertificateEncoderException.class,
             () -> CertificateEncoder.toPublicKey(pemEncodedPublicKey, SecurityKeyType.RSA)
         );
@@ -90,7 +93,7 @@ public class CertificateEncoderTest {
         final String pemEncodedPublicKey = "Test";
 
         // when-then
-        Assertions.assertThrows(
+        assertThrows(
             CertificateEncoderException.class,
             () -> CertificateEncoder.toPublicKey(pemEncodedPublicKey, SecurityKeyType.RSA)
         );
@@ -105,8 +108,8 @@ public class CertificateEncoderTest {
         final byte[] result = CertificateEncoder.sanitizeChainPayloadBase64(testKey);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertArrayEquals(EXPECTED_BYTES, result);
+        assertNotNull(result);
+        assertArrayEquals(EXPECTED_BYTES, result);
     }
 
     @Test
@@ -118,7 +121,7 @@ public class CertificateEncoderTest {
         final byte[] result = CertificateEncoder.sanitizeChainPayloadHex(testKey);
 
         // then
-        Assertions.assertNotNull(result);
-        Assertions.assertArrayEquals(EXPECTED_BYTES, result);
+        assertNotNull(result);
+        assertArrayEquals(EXPECTED_BYTES, result);
     }
 }

@@ -33,9 +33,9 @@
 
 package com.intel.bkp.crypto.x509.parsing;
 
-import com.intel.bkp.crypto.TestUtil;
 import com.intel.bkp.crypto.exceptions.X509CrlParsingException;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -47,10 +47,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class X509CrlParserTest {
-
-    private static final String TEST_FOLDER = "/certs/";
 
     // https://tsci.intel.com/content/IPCS/crls/IPCSSigningCA.crl
     private static final String PEM_CRL_FILENAME = "IPCSSigningCA.crl";
@@ -69,10 +71,10 @@ class X509CrlParserTest {
     private static byte[] crlDerEncoded;
 
     @BeforeAll
-    static void init() throws Exception {
-        crlPemString = TestUtil.getResourceAsString(TEST_FOLDER, PEM_CRL_FILENAME);
-        crlPemEncoded = TestUtil.getResourceAsBytes(TEST_FOLDER, PEM_CRL_FILENAME);
-        crlDerEncoded = TestUtil.getResourceAsBytes(TEST_FOLDER, DER_CRL_FILENAME);
+    static void init() {
+        crlPemString = FileUtils.loadFile(ResourceDir.CERTS, PEM_CRL_FILENAME);
+        crlPemEncoded = FileUtils.loadBinary(ResourceDir.CERTS, PEM_CRL_FILENAME);
+        crlDerEncoded = FileUtils.loadBinary(ResourceDir.CERTS, DER_CRL_FILENAME);
     }
 
     @Test
@@ -81,19 +83,19 @@ class X509CrlParserTest {
         final X509CRL result = X509CrlParser.pemToX509Crl(crlPemString);
 
         // then
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.getIssuerX500Principal().getName());
+        assertEquals(PEM_CERT_SUBJECT, result.getIssuerX500Principal().getName());
     }
 
     @Test
     void pemToX509Crl_EmptyString_Throws() {
         // when-then
-        Assertions.assertThrows(X509CrlParsingException.class, () -> X509CrlParser.pemToX509Crl(""));
+        assertThrows(X509CrlParsingException.class, () -> X509CrlParser.pemToX509Crl(""));
     }
 
     @Test
     void pemToX509Crl_InvalidInput_Throws() {
         // when-then
-        Assertions.assertThrows(X509CrlParsingException.class, () -> X509CrlParser.pemToX509Crl("not a crl in pem"));
+        assertThrows(X509CrlParsingException.class, () -> X509CrlParser.pemToX509Crl("not a crl in pem"));
     }
 
     @Test
@@ -102,7 +104,7 @@ class X509CrlParserTest {
         final X509CRL result = X509CrlParser.toX509Crl(crlPemEncoded);
 
         // then
-        Assertions.assertEquals(PEM_CERT_SUBJECT, result.getIssuerX500Principal().getName());
+        assertEquals(PEM_CERT_SUBJECT, result.getIssuerX500Principal().getName());
     }
 
     @Test
@@ -111,13 +113,13 @@ class X509CrlParserTest {
         final X509CRL result = X509CrlParser.toX509Crl(crlDerEncoded);
 
         // then
-        Assertions.assertEquals(DER_CERT_SUBJECT, result.getIssuerX500Principal().getName());
+        assertEquals(DER_CERT_SUBJECT, result.getIssuerX500Principal().getName());
     }
 
     @Test
     void toX509Crl_InvalidInput_Throws() {
         // when-then
-        Assertions.assertThrows(X509CrlParsingException.class, () -> X509CrlParser.toX509Crl(WRONG_DATA_ARG));
+        assertThrows(X509CrlParsingException.class, () -> X509CrlParser.toX509Crl(WRONG_DATA_ARG));
     }
 
     @Test
@@ -131,8 +133,8 @@ class X509CrlParserTest {
 
         // then
         final List<BigInteger> revokedDevices = getRevokedDevice(result);
-        Assertions.assertEquals(totalNumOfRevokedDevices, revokedDevices.size());
-        Assertions.assertTrue(revokedDevices.contains(oneOfTheRevokedDevices));
+        assertEquals(totalNumOfRevokedDevices, revokedDevices.size());
+        assertTrue(revokedDevices.contains(oneOfTheRevokedDevices));
     }
 
     @Test
@@ -141,7 +143,7 @@ class X509CrlParserTest {
         final Optional<X509CRL> result = X509CrlParser.tryToX509(crlDerEncoded);
 
         // then
-        Assertions.assertTrue(result.isPresent());
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -151,7 +153,7 @@ class X509CrlParserTest {
         final Optional<X509CRL> result = X509CrlParser.tryToX509(WRONG_DATA_ARG);
 
         // then
-        Assertions.assertFalse(result.isPresent());
+        assertFalse(result.isPresent());
     }
 
     private BigInteger convertDeviceIdToSerialNumber(String deviceId) {

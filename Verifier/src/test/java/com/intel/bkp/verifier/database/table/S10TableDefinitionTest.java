@@ -33,9 +33,10 @@
 
 package com.intel.bkp.verifier.database.table;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class S10TableDefinitionTest {
 
@@ -52,7 +53,7 @@ class S10TableDefinitionTest {
         final String result = sut.getTableName();
 
         // then
-        Assertions.assertEquals(S10TableDefinition.TABLE_NAME, result);
+        assertEquals(S10TableDefinition.TABLE_NAME, result);
     }
 
     @Test
@@ -64,8 +65,8 @@ class S10TableDefinitionTest {
         sut.getColumnsForCreateTable(stringBuilder);
 
         // then
-        Assertions.assertEquals("deviceid TEXT PRIMARY KEY UNIQUE,context TEXT,counter INTEGER NOT NULL,"
-                + "puftype TEXT NOT NULL,alias TEXT", stringBuilder.toString());
+        assertEquals("deviceid TEXT PRIMARY KEY UNIQUE,context TEXT,counter INTEGER NOT NULL,"
+            + "puftype TEXT NOT NULL,alias TEXT", stringBuilder.toString());
     }
 
     @Test
@@ -77,7 +78,7 @@ class S10TableDefinitionTest {
         sut.getColumnsForInsert(stringBuilder);
 
         // then
-        Assertions.assertEquals("deviceid,context,counter,puftype,alias", stringBuilder.toString());
+        assertEquals("deviceid,context,counter,puftype,alias", stringBuilder.toString());
     }
 
     @Test
@@ -86,6 +87,6 @@ class S10TableDefinitionTest {
         final int result = sut.getColumnLength();
 
         // then
-        Assertions.assertEquals(5, result);
+        assertEquals(5, result);
     }
 }

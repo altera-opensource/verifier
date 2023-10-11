@@ -40,28 +40,39 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 @AllArgsConstructor
 @Getter
 public enum AttFamily implements IFamily {
-    AGILEX("agilex", (byte) 0x34),
-    EASIC_N5X("easic_n5x", (byte) 0x35);
+    AGILEX(Family.AGILEX),
+    EASIC_N5X(Family.EASIC_N5X),
+    AGILEX_B(Family.AGILEX_B);
 
-    private final String familyName;
-    private final byte familyId;
+    private final Family family;
 
     public static AttFamily from(byte familyId) {
         return Arrays.stream(values())
-            .filter(family -> family.familyId == familyId)
+            .filter(family -> family.getFamilyId() == familyId)
             .findFirst()
             .orElseThrow(UnknownFamilyIdException::new);
     }
 
     public static AttFamily from(String familyName) {
         return Arrays.stream(values())
-            .filter(family -> family.familyName.equals(familyName)
-                || StringUtils.capitalize(family.familyName).equals(familyName))
+            .filter(family -> family.getFamilyName().equals(familyName)
+                || StringUtils.capitalize(family.getFamilyName()).equals(familyName))
             .findFirst()
             .orElseThrow(UnknownFamilyIdException::new);
+    }
+
+    @Override
+    public String getFamilyName() {
+        return family.getFamilyName().toLowerCase(Locale.ROOT);
+    }
+
+    @Override
+    public byte getFamilyId() {
+        return family.getFamilyId();
     }
 }

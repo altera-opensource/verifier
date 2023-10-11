@@ -35,7 +35,7 @@ package com.intel.bkp.fpgacerts.url.filename;
 
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
 
-import static com.intel.bkp.fpgacerts.url.filename.IpcsIssuedCertificateType.DEVICE_ID;
+import static com.intel.bkp.fpgacerts.url.filename.IpcsFileName.DEVICE_ID;
 
 public class DeviceIdCertificateNameProvider extends CertificateNameProviderBase {
 
@@ -48,6 +48,6 @@ public class DeviceIdCertificateNameProvider extends CertificateNameProviderBase
 
     @Override
     protected Object[] getFileNameParameters() {
-        return new Object[]{params.getUid(), params.getSki()};
+        return new Object[]{params.getUid(), params.getId()};
     }
 }

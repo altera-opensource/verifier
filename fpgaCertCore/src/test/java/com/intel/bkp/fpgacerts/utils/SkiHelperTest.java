@@ -33,9 +33,8 @@
 
 package com.intel.bkp.fpgacerts.utils;
 
-import com.intel.bkp.fpgacerts.Utils;
+import com.intel.bkp.test.CertificateUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +42,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SkiHelperTest {
 
@@ -56,37 +56,55 @@ class SkiHelperTest {
     private static X509Certificate certificate;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
-        certificate = Utils.readCertificate(TEST_FOLDER, CERT_WITH_SKI_SHA384);
+    public static void setUpClass() {
+        certificate = CertificateUtils.readCertificate(TEST_FOLDER, CERT_WITH_SKI_SHA384);
     }
 
     @Test
-    void getFirst20BytesOfSkiInBase64Url_WithX509Certificate_Success() {
-        // when
-        final String result = SkiHelper.getFirst20BytesOfSkiInBase64Url(certificate);
-
-        // then
-        Assertions.assertEquals(EXPECTED_SKI_BASE64URL, result);
-    }
-
-    @Test
-    void getFirst12BytesOfSkiInBase64Url_WithPublicKey_Success() {
+    void getSkiInBase64UrlForDiceSubject_WithPublicKey_Success() {
         // given
         final PublicKey publicKey = certificate.getPublicKey();
 
         // when
-        final String result = SkiHelper.getFirst12BytesOfSkiInBase64Url(publicKey);
+        final String result = SkiHelper.getSkiInBase64UrlForDiceSubject(publicKey);
 
         // then
-        Assertions.assertEquals(StringUtils.left(EXPECTED_SKI_BASE64URL, 16), result);
+        assertEquals(StringUtils.left(EXPECTED_SKI_BASE64URL, 16), result);
     }
 
     @Test
-    void getFirst20BytesOfSkiInBase64Url_WithXyBytes_Success() {
+    void getSkiInBase64UrlForUrl_WithXyBytes_Success() {
         // when
-        final String result = SkiHelper.getFirst20BytesOfSkiInBase64Url(fromHex(PUBLIC_KEY_XY_BYTES));
+        final String result = SkiHelper.getSkiInBase64UrlForUrl(fromHex(PUBLIC_KEY_XY_BYTES));
 
         // then
-        Assertions.assertEquals(EXPECTED_SKI_BASE64URL, result);
+        assertEquals(EXPECTED_SKI_BASE64URL, result);
+    }
+
+    @Test
+    void getFwIdInBase64UrlForUrl_Success() {
+        // given
+        final String FW_ID_DIGEST = "32883E2526F54EA21FBF99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F"
+            + "65723C0C1C66EA";
+        final String EXPECTED_FW_ID_BASE64URL = "Mog-JSb1TqIfv5lkKo9W54egMZ0d";
+
+        // when
+        final String result = SkiHelper.getFwIdInBase64UrlForUrl(fromHex(FW_ID_DIGEST));
+
+        // then
+        assertEquals(EXPECTED_FW_ID_BASE64URL, result);
+    }
+
+    @Test
+    void getPdiForUrlFrom_Success() {
+        // given
+        final String deviceIdentityHex = "A8E6A021035207CA82BA15FCFA11476F17A7836976A2046A030C06F816BF6751";
+        final String expectedPdiUrlEncoded = "qOagIQNSB8qCuhX8-hFHbxeng2k";
+
+        // when
+        final String result = SkiHelper.getPdiForUrlFrom(fromHex(deviceIdentityHex));
+
+        // then
+        assertEquals(expectedPdiUrlEncoded, result);
     }
 }

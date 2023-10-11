@@ -44,7 +44,7 @@ import java.security.SignatureSpi;
 
 public class Sha384WithEcdsa extends SignatureSpi {
     @Override
-    protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
+    protected void engineInitVerify(PublicKey publicKey) {
 
     }
 
@@ -58,12 +58,12 @@ public class Sha384WithEcdsa extends SignatureSpi {
     private byte[] data = null;
 
     @Override
-    protected void engineUpdate(byte b) throws SignatureException {
+    protected void engineUpdate(byte b) {
 
     }
 
     @Override
-    protected void engineUpdate(byte[] b, int off, int len) throws SignatureException {
+    protected void engineUpdate(byte[] b, int off, int len) {
         data = b;
     }
 
@@ -107,7 +107,7 @@ public class Sha384WithEcdsa extends SignatureSpi {
     }
 
     @Override
-    protected boolean engineVerify(byte[] sigBytes) throws SignatureException {
+    protected boolean engineVerify(byte[] sigBytes) {
         return false;
     }
 

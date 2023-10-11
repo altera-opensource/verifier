@@ -33,12 +33,13 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo.verification;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.verification.TcbInfoTestUtil.parseTcbInfo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class FlagsVerifierTest {
@@ -55,7 +56,7 @@ class FlagsVerifierTest {
         final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -70,7 +71,7 @@ class FlagsVerifierTest {
         final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -85,7 +86,7 @@ class FlagsVerifierTest {
         final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -100,7 +101,7 @@ class FlagsVerifierTest {
         final boolean result = new FlagsVerifier(false).verify(tcbInfo);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -115,6 +116,6 @@ class FlagsVerifierTest {
         final boolean result = new FlagsVerifier(true).verify(tcbInfo);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 }

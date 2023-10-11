@@ -33,18 +33,22 @@
 
 package com.intel.bkp.verifier.service.certificate;
 
-import com.intel.bkp.core.properties.TrustedRootHash;
+import com.intel.bkp.command.MailboxCommandLayer;
+import com.intel.bkp.command.model.CommandLayer;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.core.properties.Proxy;
+import com.intel.bkp.core.properties.TrustStore;
 import com.intel.bkp.core.security.ISecurityProvider;
-import com.intel.bkp.verifier.command.MailboxCommandLayer;
-import com.intel.bkp.verifier.command.messages.subkey.VerifierKeyManager;
+import com.intel.bkp.fpgacerts.dp.DistributionPointConnector;
+import com.intel.bkp.utils.PathUtils;
 import com.intel.bkp.verifier.config.JceSecurityConfiguration;
 import com.intel.bkp.verifier.database.SQLiteHelper;
-import com.intel.bkp.verifier.dp.DistributionPointConnector;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
-import com.intel.bkp.verifier.interfaces.CommandLayer;
-import com.intel.bkp.verifier.interfaces.TransportLayer;
 import com.intel.bkp.verifier.model.LibConfig;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
+import com.intel.bkp.verifier.protocol.sigma.service.VerifierKeyManager;
+import com.intel.bkp.verifier.security.X509TrustManagerManager;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import com.intel.bkp.verifier.utils.LibConfigParser;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -67,6 +71,7 @@ public class AppContext implements AutoCloseable {
     private VerifierKeyParams verifierKeyParams;
     private VerifierKeyManager verifierKeyManager;
     private DistributionPointConnector dpConnector;
+    private TrustStore trustStore;
 
     private static AppContext INSTANCE;
 
@@ -84,11 +89,12 @@ public class AppContext implements AutoCloseable {
         final LibConfig libConfig = prepareLibConfig();
         final ISecurityProvider securityProvider = prepareSecurityProvider(libConfig);
         final VerifierKeyParams verifierKeyParams = prepareVerifierKeyParams(libConfig);
+        final TrustStore trustStore = prepareTrustStore(libConfig);
 
         return new AppContext(libConfig, prepareCommandLayer(), securityProvider,
             prepareSqLiteHelper(libConfig), verifierKeyParams,
             prepareVerifierKeyManager(securityProvider, verifierKeyParams.getKeyName()),
-            prepareDistributionPointConnector(libConfig));
+            prepareDistributionPointConnector(libConfig, trustStore), trustStore);
     }
 
     private static void logAppInfo() {
@@ -126,8 +132,15 @@ public class AppContext implements AutoCloseable {
         return new SQLiteHelper(libConfig.getDatabaseConfiguration());
     }
 
-    private static DistributionPointConnector prepareDistributionPointConnector(LibConfig libConfig) {
-        return new DistributionPointConnector(libConfig.getDistributionPoint().getProxy());
+    private static TrustStore prepareTrustStore(LibConfig libConfig) {
+        return libConfig.getTrustStore();
+    }
+
+    private static DistributionPointConnector prepareDistributionPointConnector(LibConfig libConfig,
+                                                                                TrustStore trustStore) {
+        final Proxy proxy = libConfig.getDistributionPoint().getProxy();
+        return new DistributionPointConnector(proxy.getHost(), proxy.getPort(),
+            new X509TrustManagerManager(trustStore).getTrustManagers());
     }
 
     /**
@@ -144,17 +157,23 @@ public class AppContext implements AutoCloseable {
         return libConfig.getTransportLayerType().getTransportLayer();
     }
 
-    public TrustedRootHash getDpTrustedRootHash() {
+    public String[] getDpTrustedRootHashes() {
         return libConfig.getDistributionPoint().getTrustedRootHash();
     }
 
     public String getDpPathCer() {
-        return libConfig.getDistributionPoint().getPathCer();
+        final DistributionPoint dp = libConfig.getDistributionPoint();
+        return PathUtils.buildPath(dp.getMainPath(), dp.getAttestationCertBasePath());
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         sqLiteHelper.close();
+        try {
+            dpConnector.close();
+        } catch (Exception e) {
+            log.error("Failed to close active DP connections.");
+        }
         INSTANCE = null;
     }
 }

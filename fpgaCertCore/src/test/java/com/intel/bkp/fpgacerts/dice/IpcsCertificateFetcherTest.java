@@ -42,7 +42,6 @@ import com.intel.bkp.fpgacerts.url.params.DiceParams;
 import com.intel.bkp.fpgacerts.url.params.parsing.DiceEnrollmentParamsIssuerParser;
 import com.intel.bkp.fpgacerts.url.params.parsing.DiceParamsIssuerParser;
 import com.intel.bkp.fpgacerts.url.params.parsing.DiceParamsSubjectParser;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +53,8 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,7 +79,7 @@ class IpcsCertificateFetcherTest {
     @Mock
     private X509Certificate fetchedCert;
     @Mock
-    private ICertificateFetcher certificateFetcher;
+    private ICertificateFetcher<X509Certificate> certificateFetcher;
     @Mock
     private DiceParamsSubjectParser diceParamsSubjectParser;
     @Mock
@@ -103,7 +104,7 @@ class IpcsCertificateFetcherTest {
     @Test
     public void fetchDeviceIdCert_NoCerts_Throws() {
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsDeviceIdCert());
+        assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsDeviceIdCert());
     }
 
     @Test
@@ -118,7 +119,7 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
-        Assertions.assertTrue(result.isPresent());
+        assertTrue(result.isPresent());
         assertEquals(fetchedDpCert, result.get());
     }
 
@@ -135,7 +136,7 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
-        Assertions.assertTrue(result.isPresent());
+        assertTrue(result.isPresent());
         assertEquals(fetchedDpCert, result.get());
     }
 
@@ -151,7 +152,7 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
-        Assertions.assertTrue(result.isPresent());
+        assertTrue(result.isPresent());
         assertEquals(fetchedDpCert, result.get());
     }
 
@@ -184,13 +185,13 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsDeviceIdCert();
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
     public void fetchEnrollmentCert_NoCerts_Throws() {
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+        assertThrows(IpcsCertificateFetcherNotInitializedException.class,
             () -> sut.fetchIpcsEnrollmentCert());
     }
 
@@ -200,7 +201,7 @@ class IpcsCertificateFetcherTest {
         sut.setFirmwareCert(firmwareCert);
 
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+        assertThrows(IpcsCertificateFetcherNotInitializedException.class,
             () -> sut.fetchIpcsEnrollmentCert());
     }
 
@@ -217,7 +218,7 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsEnrollmentCert();
 
         // then
-        Assertions.assertTrue(result.isPresent());
+        assertTrue(result.isPresent());
         assertEquals(fetchedDpCert, result.get());
     }
 
@@ -229,7 +230,7 @@ class IpcsCertificateFetcherTest {
 
         // when-then
         final IpcsCertificateFetcherNotInitializedException ex =
-            Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+            assertThrows(IpcsCertificateFetcherNotInitializedException.class,
                 () -> sut.fetchIpcsEnrollmentCert());
 
         assertEquals("DeviceIdEnrollment certificate was not provided - failed to determine URL params.",
@@ -267,13 +268,13 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsEnrollmentCert();
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
     public void fetchIidUdsCert_NoCerts_Throws() {
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsIidUdsCert());
+        assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsIidUdsCert());
     }
 
     @Test
@@ -282,7 +283,7 @@ class IpcsCertificateFetcherTest {
         sut.setFirmwareCert(firmwareCert);
 
         // when-then
-        Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsIidUdsCert());
+        assertThrows(IpcsCertificateFetcherNotInitializedException.class, () -> sut.fetchIpcsIidUdsCert());
     }
 
     @Test
@@ -298,7 +299,7 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsIidUdsCert();
 
         // then
-        Assertions.assertTrue(result.isPresent());
+        assertTrue(result.isPresent());
         assertEquals(fetchedDpCert, result.get());
     }
 
@@ -310,7 +311,7 @@ class IpcsCertificateFetcherTest {
 
         // when-then
         final IpcsCertificateFetcherNotInitializedException ex =
-            Assertions.assertThrows(IpcsCertificateFetcherNotInitializedException.class,
+            assertThrows(IpcsCertificateFetcherNotInitializedException.class,
                 () -> sut.fetchIpcsIidUdsCert());
 
         assertEquals("DeviceIdEnrollment certificate was not provided - failed to determine URL params.",
@@ -348,7 +349,7 @@ class IpcsCertificateFetcherTest {
         final var result = sut.fetchIpcsIidUdsCert();
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     private void mockParsingParamsFromFirmwareCert() {

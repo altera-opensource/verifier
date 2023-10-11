@@ -45,7 +45,8 @@ import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 @AllArgsConstructor
 public enum PsgPublicKeyMagic {
     MANIFEST_MAGIC(0x40656643),
-    M1_MAGIC(0x58700660);
+    M1_MAGIC(0x58700660),
+    EMPTY(0x00);
 
     @Getter
     private final int value;

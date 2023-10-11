@@ -34,10 +34,13 @@
 package com.intel.bkp.verifier.transport.systemconsole;
 
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class SystemConsoleHexConverterTest {
@@ -48,7 +51,7 @@ class SystemConsoleHexConverterTest {
         String result = SystemConsoleHexConverter.toString(new byte[0]);
 
         // then
-        Assertions.assertEquals("", result);
+        assertEquals("", result);
     }
 
     @Test
@@ -57,7 +60,7 @@ class SystemConsoleHexConverterTest {
         String result = SystemConsoleHexConverter.toString(new byte[]{1, 2, 3, 4});
 
         // then
-        Assertions.assertEquals("0x04030201", result);
+        assertEquals("0x04030201", result);
     }
 
     @Test
@@ -66,13 +69,13 @@ class SystemConsoleHexConverterTest {
         String result = SystemConsoleHexConverter.toString(new byte[]{1, 2, 3, 4, 5, 6, 7, 8});
 
         // then
-        Assertions.assertEquals("0x04030201 0x08070605", result);
+        assertEquals("0x04030201 0x08070605", result);
     }
 
     @Test
     void toString_WithInvalidArrayLen_Throws() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.toString(new byte[]{1, 2}));
+        assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.toString(new byte[]{1, 2}));
     }
 
     @Test
@@ -84,7 +87,7 @@ class SystemConsoleHexConverterTest {
         byte[] result = SystemConsoleHexConverter.fromString(response);
 
         // then
-        Assertions.assertArrayEquals(new byte[0], result);
+        assertArrayEquals(new byte[0], result);
     }
 
     @Test
@@ -96,7 +99,7 @@ class SystemConsoleHexConverterTest {
         byte[] result = SystemConsoleHexConverter.fromString(response);
 
         // then
-        Assertions.assertArrayEquals(new byte[] { 1, 2, 3, 4 }, result);
+        assertArrayEquals(new byte[]{1, 2, 3, 4}, result);
     }
 
     @Test
@@ -108,7 +111,7 @@ class SystemConsoleHexConverterTest {
         byte[] result = SystemConsoleHexConverter.fromString(response);
 
         // then
-        Assertions.assertArrayEquals(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }, result);
+        assertArrayEquals(new byte[]{1, 2, 3, 4, 5, 6, 7, 8}, result);
     }
 
     @Test
@@ -117,7 +120,7 @@ class SystemConsoleHexConverterTest {
         String response = "0x04030201 0x0807";
 
         // when-then
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> SystemConsoleHexConverter.fromString(response));
+        assertThrows(ByteBufferSafeException.class, () -> SystemConsoleHexConverter.fromString(response));
     }
 
     @Test
@@ -126,7 +129,7 @@ class SystemConsoleHexConverterTest {
         String response = "0x04030201 0x0807060504030201";
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.fromString(response));
+        assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.fromString(response));
     }
 
     @Test
@@ -135,7 +138,7 @@ class SystemConsoleHexConverterTest {
         String response = "0xZZZZZZZZ";
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.fromString(response));
+        assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.fromString(response));
     }
 
     @Test
@@ -144,7 +147,7 @@ class SystemConsoleHexConverterTest {
         String response = "0xZZZ";
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.fromString(response));
+        assertThrows(IllegalArgumentException.class, () -> SystemConsoleHexConverter.fromString(response));
     }
 
 }

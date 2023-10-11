@@ -36,6 +36,7 @@ plugins {
     alias(libs.plugins.gradle.versions)
     alias(libs.plugins.modernizer)
     alias(libs.plugins.sqlite)
+    id 'maven-publish'
     id 'java-library'
     id 'idea'
 }
@@ -71,7 +72,7 @@ jar {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-group = 'com.intel.bkp'
+group = 'com.intel.bkp.verifier'
 version = buildVersion
 
 sourceSets {
@@ -109,11 +110,18 @@ test {
     useJUnitPlatform()
 }
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 dependencies {
     implementation project(':Utils')
     implementation project(':CryptoCore')
     implementation project(':fpgaCertCore')
     implementation project(':ServiceCore')
+    implementation project(":CommandCore")
+    implementation project(":ProtocolCore")
 
     implementation libs.jna
     implementation libs.apache.commons.dbutils
@@ -122,6 +130,7 @@ dependencies {
     implementation libs.sqlite.jdbc
     implementation libs.bouncycastle
 
+    testImplementation project(":TestLibrary")
     testImplementation platform(libs.junit.bom)
     testImplementation libs.junit.jupiter
     testImplementation libs.bundles.mockito
@@ -129,6 +138,15 @@ dependencies {
     testImplementation libs.jazzer.junit
 
     integrationTestImplementation libs.jazzer.junit
+    integrationTestImplementation project(":TestLibrary")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
 
 task createSqliteDatabase {
@@ -142,7 +160,7 @@ task createSqliteDatabase {
 }
 
 task deploy(dependsOn: jar, type: Copy) {
-    from layout.buildDirectory.dir("${buildDir}/libs"), layout.buildDirectory.dir("${buildDir}/resources/main"), "${projectDir}/../spdm_wrapper/build/Release"
+    from layout.buildDirectory.dir("${buildDir}/libs"), layout.buildDirectory.dir("${buildDir}/resources/main"), "${projectDir}/../spdm_wrapper"
     include "*.jar", "config.properties", "libspdm_wrapper.so", "libspdm_wrapper.dll"
     into "${projectDir}/../out"
 }
@@ -150,9 +168,9 @@ task deploy(dependsOn: jar, type: Copy) {
 compileJava.dependsOn createSqliteDatabase
 processResources.dependsOn createSqliteDatabase
 
-task copyJarToOtherProjects {
-    copy {
-        from layout.buildDirectory.dir("${buildDir}/libs")
-        into "${projectDir}/../workload/libs/"
-    }
+// copyJarToOther projects is utility which allows to monitor version of built verifier in workload application.
+// Without pre-build jar workload will not show proper verifier version
+task copyJarToOtherProjects(type: Copy) {
+    from layout.buildDirectory.dir("${buildDir}/libs")
+    into "${projectDir}/../workload/libs/"
 }

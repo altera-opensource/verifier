@@ -179,7 +179,9 @@ public class EcUtils {
     public static PrivateKey toPrivate(byte[] privateKeyBytes, String algorithm, String ecCurve384spec,
                                        Provider bouncyCastleProvider)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
-
+        if (new BigInteger(privateKeyBytes).compareTo(BigInteger.ONE) < 0) {
+            privateKeyBytes = PaddingUtils.padLeft(privateKeyBytes, privateKeyBytes.length + 1);
+        }
         ECPrivateKeySpec keySpec = getEcKeySpec(new BigInteger(privateKeyBytes), ecCurve384spec);
         KeyFactory kf = KeyFactory.getInstance(algorithm, bouncyCastleProvider);
         return kf.generatePrivate(keySpec);
@@ -234,11 +236,11 @@ public class EcUtils {
         return 2 * getPubKeyXYLenFromCurveType(((ECNamedCurveSpec) publicKey.getParams()).getName());
     }
 
-    public static String generateFingerprint(PublicKey publicKey)
+    public static String generateSha256Fingerprint(PublicKey publicKey)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
         final ECPublicKey ecPubKey = (ECPublicKey) toPublicEncodedBC(publicKey.getEncoded(), SecurityKeyType.EC.name());
         final byte[] bytesFromPubKey = getBytesFromPubKey(ecPubKey, getPubKeyXYLenForPubKey(ecPubKey));
-        return HashUtils.generateFingerprint(bytesFromPubKey);
+        return HashUtils.generateSha256Fingerprint(bytesFromPubKey);
     }
 
     private static ECParameterSpec getEcParameterSpec(String curveType) {

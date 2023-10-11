@@ -34,10 +34,12 @@
 package com.intel.bkp.core.psgcertificate.model;
 
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PsgSignatureMagicTest {
 
@@ -53,17 +55,17 @@ class PsgSignatureMagicTest {
         final String actualList = PsgSignatureMagic.getAllowedMagics();
 
         // then
-        Assertions.assertEquals(ALLOWED_MAGICS, actualList);
+        assertEquals(ALLOWED_MAGICS, actualList);
     }
 
     @Test
     void from_Success() {
         // when-then
-        Assertions.assertDoesNotThrow(() -> PsgSignatureMagic.from(PsgSignatureMagic.STANDARD.getValue()));
+        assertDoesNotThrow(() -> PsgSignatureMagic.from(PsgSignatureMagic.STANDARD.getValue()));
     }
 
     @Test
     void from_WithInvalidMagic_Throws() {
-        Assertions.assertThrows(ParseStructureException.class, () -> PsgSignatureMagic.from(0));
+        assertThrows(ParseStructureException.class, () -> PsgSignatureMagic.from(0));
     }
 }

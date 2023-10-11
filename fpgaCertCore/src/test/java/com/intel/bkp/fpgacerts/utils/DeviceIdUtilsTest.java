@@ -33,12 +33,13 @@
 
 package com.intel.bkp.fpgacerts.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DeviceIdUtilsTest {
 
@@ -53,9 +54,9 @@ class DeviceIdUtilsTest {
         final String actual = toHex(bigInteger.toByteArray());
 
         // then
-        Assertions.assertNotNull(bigInteger);
-        Assertions.assertEquals((Long.BYTES + 1) * 2, actual.length());
-        Assertions.assertEquals("01" + DEVICE_ID_NEGATIVE_VALUE, actual);
+        assertNotNull(bigInteger);
+        assertEquals((Long.BYTES + 1) * 2, actual.length());
+        assertEquals("01" + DEVICE_ID_NEGATIVE_VALUE, actual);
     }
 
     @Test
@@ -64,9 +65,9 @@ class DeviceIdUtilsTest {
         final BigInteger bigInteger = DeviceIdUtils.getS10CertificateSerialNumber(DEVICE_ID_POSITIVE_VALUE);
         final String actual = toHex(bigInteger.toByteArray());
         // then
-        Assertions.assertNotNull(bigInteger);
-        Assertions.assertEquals((Long.BYTES + 1) * 2, actual.length());
-        Assertions.assertEquals("01" + DEVICE_ID_POSITIVE_VALUE, toHex(bigInteger.toByteArray()));
+        assertNotNull(bigInteger);
+        assertEquals((Long.BYTES + 1) * 2, actual.length());
+        assertEquals("01" + DEVICE_ID_POSITIVE_VALUE, toHex(bigInteger.toByteArray()));
     }
 
     @Test
@@ -76,8 +77,8 @@ class DeviceIdUtilsTest {
         final String actual = toHex(bigInteger.toByteArray());
 
         // then
-        Assertions.assertNotNull(bigInteger);
-        Assertions.assertEquals((Long.BYTES + 1) * 2, actual.length());
-        Assertions.assertEquals("01" + DEVICE_ID_VALUE_WITH_0000, actual);
+        assertNotNull(bigInteger);
+        assertEquals((Long.BYTES + 1) * 2, actual.length());
+        assertEquals("01" + DEVICE_ID_VALUE_WITH_0000, actual);
     }
 }

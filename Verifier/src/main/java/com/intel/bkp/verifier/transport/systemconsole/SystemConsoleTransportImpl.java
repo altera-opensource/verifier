@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.transport.systemconsole;
 
-import com.intel.bkp.verifier.interfaces.TransportLayer;
+import com.intel.bkp.verifier.transport.model.TransportLayer;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 

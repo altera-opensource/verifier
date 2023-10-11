@@ -33,14 +33,13 @@
 
 package com.intel.bkp.verifier.database.repository;
 
+import com.intel.bkp.verifier.database.model.IMigratable;
+import com.intel.bkp.verifier.database.model.ITableDefinition;
 import com.intel.bkp.verifier.exceptions.DatabaseException;
-import com.intel.bkp.verifier.interfaces.IMigratable;
-import com.intel.bkp.verifier.interfaces.ITableDefinition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -56,7 +55,6 @@ public abstract class CacheEntityServiceBase implements IMigratable {
     protected final Connection connection;
     protected final ITableDefinition tableDefinition;
     protected final QueryRunner runner = new QueryRunner();
-    protected final ScalarHandler<Integer> scalarHandler = new ScalarHandler<>();
 
     @Override
     public void migrate(int oldVersion, int newVersion) {
@@ -90,7 +88,7 @@ public abstract class CacheEntityServiceBase implements IMigratable {
 
     protected void insert(Object[] params) {
         try {
-            runner.insert(connection, tableDefinition.getInsertSQL(), scalarHandler, params);
+            runner.update(connection, tableDefinition.getInsertSQL(), params);
         } catch (SQLException e) {
             throw new DatabaseException("Failed to create row in: " + tableDefinition.getTableName(), e);
         }

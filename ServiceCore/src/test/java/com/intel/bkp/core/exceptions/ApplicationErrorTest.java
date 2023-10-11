@@ -34,8 +34,9 @@
 package com.intel.bkp.core.exceptions;
 
 import com.intel.bkp.core.interfaces.IErrorCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ApplicationErrorTest {
 
@@ -61,8 +62,8 @@ class ApplicationErrorTest {
         ApplicationError applicationError = new ApplicationError(errorCode, txId);
 
         // then
-        Assertions.assertEquals(codeNumber, applicationError.getStatus().getCode());
-        Assertions.assertEquals(txId, applicationError.getStatus().getTransactionId());
-        Assertions.assertEquals(testMessage, applicationError.getStatus().getMessage());
+        assertEquals(codeNumber, applicationError.getStatus().getCode());
+        assertEquals(txId, applicationError.getStatus().getTransactionId());
+        assertEquals(testMessage, applicationError.getStatus().getMessage());
     }
 }

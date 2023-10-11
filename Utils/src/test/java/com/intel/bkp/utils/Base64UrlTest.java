@@ -33,10 +33,10 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Base64UrlTest {
 
@@ -49,21 +49,21 @@ class Base64UrlTest {
 
     @Test
     void encodeWithoutPadding_Success() {
-        Assertions.assertEquals(DATA_IN_BASE64URL_NO_PADDING, Base64Url.encodeWithoutPadding(DATA));
+        assertEquals(DATA_IN_BASE64URL_NO_PADDING, Base64Url.encodeWithoutPadding(DATA));
     }
 
     @Test
     void encodeWithoutPadding_WithDoublePadding_Success() {
-        Assertions.assertEquals(DATA_IN_BASE64URL_NO_PADDING_2, Base64Url.encodeWithoutPadding(DATA_2));
+        assertEquals(DATA_IN_BASE64URL_NO_PADDING_2, Base64Url.encodeWithoutPadding(DATA_2));
     }
 
     @Test
     void encode_Success() {
-        Assertions.assertEquals(DATA_IN_BASE64URL, Base64Url.encode(DATA));
+        assertEquals(DATA_IN_BASE64URL, Base64Url.encode(DATA));
     }
 
     @Test
     void encode_WithDoublePadding_Success() {
-        Assertions.assertEquals(DATA_IN_BASE64URL_2, Base64Url.encode(DATA_2));
+        assertEquals(DATA_IN_BASE64URL_2, Base64Url.encode(DATA_2));
     }
 }

@@ -35,8 +35,9 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.parsing;
 
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OperationalFlagsFieldParserTest {
 
@@ -68,6 +69,6 @@ class OperationalFlagsFieldParserTest {
         final String result = sut.parse(taggedObj);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

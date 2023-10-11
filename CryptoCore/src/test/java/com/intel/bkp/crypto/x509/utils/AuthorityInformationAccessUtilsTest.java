@@ -33,13 +33,15 @@
 
 package com.intel.bkp.crypto.x509.utils;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.security.cert.X509Certificate;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AuthorityInformationAccessUtilsTest {
 
@@ -53,8 +55,8 @@ class AuthorityInformationAccessUtilsTest {
 
     @BeforeAll
     static void init() throws Exception {
-        certWithAia = TestUtil.loadCertificate(CERT_WITH_AIA_EXTENSION);
-        certWithoutAia = TestUtil.loadCertificate(CERT_WITHOUT_AIA_EXTENSION);
+        certWithAia = FileUtils.loadCertificate(CERT_WITH_AIA_EXTENSION);
+        certWithoutAia = FileUtils.loadCertificate(CERT_WITHOUT_AIA_EXTENSION);
     }
 
     @Test
@@ -63,7 +65,7 @@ class AuthorityInformationAccessUtilsTest {
         final Optional<String> result = AuthorityInformationAccessUtils.getIssuerCertUrl(certWithoutAia);
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -72,8 +74,8 @@ class AuthorityInformationAccessUtilsTest {
         final Optional<String> result = AuthorityInformationAccessUtils.getIssuerCertUrl(certWithAia);
 
         // then
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(ISSUER_URL, result.get());
+        assertTrue(result.isPresent());
+        assertEquals(ISSUER_URL, result.get());
     }
 
 }

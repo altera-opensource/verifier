@@ -33,7 +33,6 @@
 
 package com.intel.bkp.verifier.database;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Spy;
@@ -43,6 +42,8 @@ import org.mockito.quality.Strictness;
 
 import java.sql.Connection;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,12 +62,12 @@ class DatabaseManagerTest {
         final Connection connection = sut.getConnection();
 
         // then
-        Assertions.assertNotNull(connection);
+        assertNotNull(connection);
     }
 
     @Test
     void closeBD() {
         // when-then
-        Assertions.assertDoesNotThrow(() -> sut.closeDatabase());
+        assertDoesNotThrow(() -> sut.closeDatabase());
     }
 }

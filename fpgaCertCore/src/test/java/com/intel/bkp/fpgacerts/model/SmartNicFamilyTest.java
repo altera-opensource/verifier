@@ -34,7 +34,6 @@
 package com.intel.bkp.fpgacerts.model;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -104,7 +103,7 @@ class SmartNicFamilyTest {
         final SmartNicFamily actual = SmartNicFamily.from(familyNameCapitalized);
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -117,7 +116,7 @@ class SmartNicFamilyTest {
         final SmartNicFamily actual = SmartNicFamily.from(familyNameWithEachWordCapitalized);
 
         // then
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -127,7 +126,7 @@ class SmartNicFamilyTest {
         final String familyNameInLowercase = expected.getFamilyName().toLowerCase(Locale.ROOT);
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SmartNicFamily.from(familyNameInLowercase));
+        assertThrows(IllegalArgumentException.class, () -> SmartNicFamily.from(familyNameInLowercase));
     }
 
     @Test
@@ -136,7 +135,7 @@ class SmartNicFamilyTest {
         final String familyNameInUppercase = SmartNicFamily.LKV.getFamilyName().toUpperCase(Locale.ROOT);
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SmartNicFamily.from(familyNameInUppercase));
+        assertThrows(IllegalArgumentException.class, () -> SmartNicFamily.from(familyNameInUppercase));
     }
 
     @Test
@@ -145,6 +144,6 @@ class SmartNicFamilyTest {
         final String unknownFamilyName = "blabla";
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> SmartNicFamily.from(unknownFamilyName));
+        assertThrows(IllegalArgumentException.class, () -> SmartNicFamily.from(unknownFamilyName));
     }
 }

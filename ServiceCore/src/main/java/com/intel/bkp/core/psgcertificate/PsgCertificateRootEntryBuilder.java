@@ -38,7 +38,6 @@ import com.intel.bkp.core.endianness.StructureBuilder;
 import com.intel.bkp.core.endianness.StructureType;
 import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateException;
-import com.intel.bkp.core.psgcertificate.exceptions.PsgPubKeyException;
 import com.intel.bkp.core.psgcertificate.model.PsgCurveType;
 import com.intel.bkp.core.psgcertificate.model.PsgRootCertMagic;
 import com.intel.bkp.core.psgcertificate.model.PsgRootHashType;
@@ -160,7 +159,7 @@ public class PsgCertificateRootEntryBuilder extends StructureBuilder<PsgCertific
             parsePsgMetadata(buffer);
             parsePsgPublicKey(buffer);
             return this;
-        } catch (ByteBufferSafeException | PsgPubKeyException | PsgCertificateException e) {
+        } catch (ByteBufferSafeException | PsgCertificateException e) {
             throw new ParseStructureException("Invalid buffer during parsing entry", e);
         }
     }
@@ -180,7 +179,7 @@ public class PsgCertificateRootEntryBuilder extends StructureBuilder<PsgCertific
         reserved = convertInt(buffer.getInt(), PSG_CERT_ROOT_RESERVED);
     }
 
-    private void parsePsgPublicKey(ByteBufferSafe buffer) throws PsgPubKeyException {
+    private void parsePsgPublicKey(ByteBufferSafe buffer) {
         psgPublicKeyBuilder = new PsgPublicKeyBuilder().withActor(getActor()).parse(buffer);
     }
 

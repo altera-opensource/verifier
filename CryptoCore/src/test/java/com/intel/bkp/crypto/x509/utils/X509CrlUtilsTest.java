@@ -33,8 +33,8 @@
 
 package com.intel.bkp.crypto.x509.utils;
 
-import com.intel.bkp.crypto.TestUtil;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +45,9 @@ import java.security.cert.X509CRL;
 import java.util.List;
 
 import static com.intel.bkp.crypto.x509.parsing.X509CrlParser.pemToX509Crl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class X509CrlUtilsTest {
@@ -59,7 +62,7 @@ class X509CrlUtilsTest {
 
     @BeforeAll
     public static void beforeClass() throws Exception {
-        crlInPem = TestUtil.getResourceAsString("/certs/", CRL_WITH_REVOKED_SERIAL_NUMBERS);
+        crlInPem = FileUtils.loadFile(ResourceDir.CERTS, CRL_WITH_REVOKED_SERIAL_NUMBERS);
         crl = pemToX509Crl(crlInPem);
     }
 
@@ -69,7 +72,7 @@ class X509CrlUtilsTest {
         final BigInteger revokedSerialNumber = new BigInteger(REVOKED_SERIAL_NUMBER, 16);
 
         // when-then
-        Assertions.assertTrue(X509CrlUtils.isRevoked(crl, revokedSerialNumber));
+        assertTrue(X509CrlUtils.isRevoked(crl, revokedSerialNumber));
     }
 
     @Test
@@ -78,7 +81,7 @@ class X509CrlUtilsTest {
         final BigInteger notRevokedSerialNumber = BigInteger.ONE;
 
         // when-then
-        Assertions.assertFalse(X509CrlUtils.isRevoked(crl, notRevokedSerialNumber));
+        assertFalse(X509CrlUtils.isRevoked(crl, notRevokedSerialNumber));
     }
 
     @Test
@@ -87,8 +90,8 @@ class X509CrlUtilsTest {
         final List<String> result = X509CrlUtils.getRevokedSerialNumbersInHex(crl);
 
         // then
-        Assertions.assertEquals(REVOKED_SERIAL_NUMBERS_COUNT, result.size());
-        Assertions.assertTrue(result.contains(REVOKED_SERIAL_NUMBER));
+        assertEquals(REVOKED_SERIAL_NUMBERS_COUNT, result.size());
+        assertTrue(result.contains(REVOKED_SERIAL_NUMBER));
     }
 
     @Test
@@ -97,7 +100,7 @@ class X509CrlUtilsTest {
         final BigInteger crlNumber = X509CrlUtils.getCrlNumber(crl);
 
         // then
-        Assertions.assertEquals(CRL_NUMBER, crlNumber);
+        assertEquals(CRL_NUMBER, crlNumber);
     }
 
     @Test
@@ -106,6 +109,6 @@ class X509CrlUtilsTest {
         final String result = X509CrlUtils.toPem(crl);
 
         // then
-        Assertions.assertEquals(crlInPem, result);
+        assertEquals(crlInPem, result);
     }
 }

@@ -40,6 +40,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DiceParamsSubjectParser extends DiceParamsParserBase<DiceParams> {
 
+    public static DiceParamsSubjectParser instance() {
+        return new DiceParamsSubjectParser();
+    }
+
     public DiceParamsSubjectParser() {
         super(new CertificateSubjectMapper());
     }

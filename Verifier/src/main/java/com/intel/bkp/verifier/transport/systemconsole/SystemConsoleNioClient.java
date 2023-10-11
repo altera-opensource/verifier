@@ -63,7 +63,7 @@ public class SystemConsoleNioClient extends TcpClient {
 
     private String processResponse(String response) {
         final String replacePattern = "puts stdout|\"|tcl>|return\\s(.*)|COMMAND\\s=\\s(.*)|COMMAND_RESULT\\s=\\s";
-        return Arrays.stream(response.split("\n"))
+        return Arrays.stream(response.split(System.lineSeparator()))
             .map(s -> s.replaceAll(replacePattern, "").trim())
             .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining());

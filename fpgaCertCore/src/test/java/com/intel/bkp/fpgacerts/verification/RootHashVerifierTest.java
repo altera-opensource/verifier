@@ -34,7 +34,6 @@
 package com.intel.bkp.fpgacerts.verification;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -43,6 +42,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +52,7 @@ class RootHashVerifierTest {
     private static final byte[] CERT_ENCODED = new byte[]{1, 2};
     private static final String VALID_HASH = DigestUtils.sha256Hex(CERT_ENCODED);
     private static final String INVALID_HASH = "INVALID";
+    private static final String INVALID_HASH_LONG = "abcd123456ABCD1234";
 
     @Mock
     private X509Certificate certificate;
@@ -60,10 +62,40 @@ class RootHashVerifierTest {
     @Test
     void verifyRootHash_WithBlankHash_Skip() {
         // when
-        final boolean result = sut.verifyRootHash(certificate, "");
+        final boolean result = sut.verifyRootHash(certificate, new String[]{"          ",""});
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
+    }
+
+    @Test
+    void verifyRootHash_WithNullHash_Skip() {
+        // when
+        final boolean result = sut.verifyRootHash(certificate, null);
+
+        // then
+        assertTrue(result);
+    }
+
+    @Test
+    void verifyRootHash_WithEmptyAndMatchingHash_ReturnsTrue() throws CertificateEncodingException {
+        // given
+        when(certificate.getEncoded()).thenReturn(CERT_ENCODED);
+
+        // when
+        final boolean result = sut.verifyRootHash(certificate, new String[]{"", VALID_HASH});
+
+        // then
+        assertTrue(result);
+    }
+
+    @Test
+    void verifyRootHash_WithEmptyArray_Skip() {
+        // when
+        final boolean result = sut.verifyRootHash(certificate, new String[]{});
+
+        // then
+        assertTrue(result);
     }
 
     @Test
@@ -72,10 +104,10 @@ class RootHashVerifierTest {
         when(certificate.getEncoded()).thenReturn(CERT_ENCODED);
 
         // when
-        final boolean result = sut.verifyRootHash(certificate, VALID_HASH);
+        final boolean result = sut.verifyRootHash(certificate, new String[]{VALID_HASH});
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -84,9 +116,9 @@ class RootHashVerifierTest {
         when(certificate.getEncoded()).thenReturn(CERT_ENCODED);
 
         // when
-        final boolean result = sut.verifyRootHash(certificate, INVALID_HASH);
+        final boolean result = sut.verifyRootHash(certificate, new String[]{INVALID_HASH, INVALID_HASH_LONG});
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 }

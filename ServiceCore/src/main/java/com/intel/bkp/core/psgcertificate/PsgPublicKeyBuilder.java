@@ -61,12 +61,14 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_Y;
 public class PsgPublicKeyBuilder extends StructureBuilder<PsgPublicKeyBuilder, PsgPublicKey> {
 
     private PsgPublicKeyMagic magic = PsgPublicKeyMagic.M1_MAGIC;
+    public static final int PSG_SHA384_FORMAT_LEN = 120;
     private static final int PUBKEY_METADATA_SIZE = 6 * Integer.BYTES;
     private int publicKeyPermissions = ModifyBitsBuilder.fromNone().build();
     private int publicKeyCancellation = ModifyBitsBuilder.fromAll().build();
     private int sizeX = 0;
     private int sizeY = 0;
     private CurvePoint curvePoint;
+    private boolean empty;
 
     public PsgPublicKeyBuilder() {
         super(StructureType.PSG_PUBLIC_KEY);
@@ -84,6 +86,12 @@ public class PsgPublicKeyBuilder extends StructureBuilder<PsgPublicKeyBuilder, P
 
     public PsgPublicKeyBuilder magic(PsgPublicKeyMagic magic) {
         this.magic = magic;
+        return this;
+    }
+
+    public PsgPublicKeyBuilder empty() {
+        this.empty = true;
+        magic(PsgPublicKeyMagic.EMPTY);
         return this;
     }
 
@@ -124,7 +132,12 @@ public class PsgPublicKeyBuilder extends StructureBuilder<PsgPublicKeyBuilder, P
 
     @Override
     public PsgPublicKey build() {
-        PsgPublicKey psgPublicKey = new PsgPublicKey();
+        final var psgPublicKey = new PsgPublicKey();
+
+        if (PsgPublicKeyMagic.EMPTY == magic) {
+            return buildEmpty(psgPublicKey);
+        }
+
         psgPublicKey.setMagic(convert(magic.getValue(), PSG_PUB_KEY_MAGIC));
         psgPublicKey.setSizeX(convert(sizeX, PSG_PUB_KEY_SIZE_X));
         psgPublicKey.setSizeY(convert(sizeY, PSG_PUB_KEY_SIZE_Y));
@@ -137,15 +150,33 @@ public class PsgPublicKeyBuilder extends StructureBuilder<PsgPublicKeyBuilder, P
         return psgPublicKey;
     }
 
+    private PsgPublicKey buildEmpty(PsgPublicKey psgPublicKey) {
+        final byte[] emptyInteger = new byte[Integer.BYTES];
+        psgPublicKey.setMagic(emptyInteger);
+        psgPublicKey.setSizeX(emptyInteger);
+        psgPublicKey.setSizeY(emptyInteger);
+        psgPublicKey.setCurveMagic(emptyInteger);
+        psgPublicKey.setPermissions(emptyInteger);
+        psgPublicKey.setCancellation(emptyInteger);
+        int emptySize = (PSG_SHA384_FORMAT_LEN - PUBKEY_METADATA_SIZE) / 2;
+        psgPublicKey.setPointX(new byte[emptySize]);
+        psgPublicKey.setPointY(new byte[emptySize]);
+        return psgPublicKey;
+    }
+
     public PsgPublicKeyBuilder parse(ByteBufferSafe buffer) throws ParseStructureException {
         magic = PsgPublicKeyMagic.from(convertInt(buffer.getInt(), PSG_PUB_KEY_MAGIC));
+        if (PsgPublicKeyMagic.EMPTY == magic) {
+            buffer.skip(PSG_SHA384_FORMAT_LEN - Integer.BYTES);
+            return this;
+        }
         sizeX = convertInt(buffer.getInt(), PSG_PUB_KEY_SIZE_X);
         sizeY = convertInt(buffer.getInt(), PSG_PUB_KEY_SIZE_Y);
         final PsgCurveType curveType = PsgCurveType.fromMagic(convertInt(buffer.getInt(),
             PSG_PUB_KEY_CURVE_MAGIC));
         publicKeyPermissions = convertInt(buffer.getInt(), PSG_PUB_KEY_PERMISSIONS);
         publicKeyCancellation = convertInt(buffer.getInt(), PSG_PUB_KEY_CANCELLATION);
-        this.curvePoint = CurvePoint.from(buffer, curveType.getCurveSpec());
+        curvePoint = CurvePoint.from(buffer, curveType.getCurveSpec());
         return this;
     }
 }

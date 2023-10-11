@@ -33,8 +33,9 @@
 
 package com.intel.bkp.core.psgcertificate.model;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PsgPermissionsTest {
     @Test
@@ -43,6 +44,6 @@ public class PsgPermissionsTest {
         final int bitPosition = PsgPermissions.SIGN_CERT.getBitPosition();
 
         // then
-        Assertions.assertEquals(16, bitPosition);
+        assertEquals(16, bitPosition);
     }
 }

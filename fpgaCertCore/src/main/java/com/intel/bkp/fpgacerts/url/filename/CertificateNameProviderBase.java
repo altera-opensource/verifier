@@ -35,15 +35,15 @@ package com.intel.bkp.fpgacerts.url.filename;
 
 abstract class CertificateNameProviderBase implements ICertificateFileNameProvider {
 
-    private final IpcsIssuedCertificateType type;
+    private final String fileNameTemplate;
 
-    public CertificateNameProviderBase(IpcsIssuedCertificateType type) {
-        this.type = type;
+    public CertificateNameProviderBase(IpcsFileName ipcsFileName) {
+        this.fileNameTemplate = ipcsFileName.getFileNameTemplate();
     }
 
     protected abstract Object[] getFileNameParameters();
 
     public String getFileName() {
-        return String.format(type.getFileName(), getFileNameParameters());
+        return String.format(fileNameTemplate, getFileNameParameters());
     }
 }

@@ -34,11 +34,14 @@
 package com.intel.bkp.utils;
 
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.ByteSwapOrder.B2L;
 import static com.intel.bkp.utils.ByteSwapOrder.L2B;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ByteSwapTest {
 
@@ -52,7 +55,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArray(data, B2L);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -65,7 +68,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArray(data, L2B);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -78,7 +81,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArray(data, B2L);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -91,7 +94,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArray(data, L2B);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -104,7 +107,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArray(data, B2L);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -117,7 +120,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArray(data, L2B);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -130,7 +133,7 @@ class ByteSwapTest {
         short result = ByteSwap.getSwappedShort(data, B2L);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -143,7 +146,7 @@ class ByteSwapTest {
         short result = ByteSwap.getSwappedShort(data, L2B);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -156,7 +159,7 @@ class ByteSwapTest {
         short result = ByteSwap.getSwappedShort(data, B2L);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -169,7 +172,7 @@ class ByteSwapTest {
         short result = ByteSwap.getSwappedShort(data, L2B);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -182,7 +185,7 @@ class ByteSwapTest {
         int result = ByteSwap.getSwappedInt(data, B2L);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -195,7 +198,7 @@ class ByteSwapTest {
         int result = ByteSwap.getSwappedInt(data, L2B);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -208,7 +211,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArrayByInt(data, B2L);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -220,7 +223,7 @@ class ByteSwapTest {
         final byte[] destination = ByteSwap.getSwappedArrayByInt(arrayToSwap, B2L);
 
         // then
-        Assertions.assertArrayEquals(expectedSwappedArray, destination);
+        assertArrayEquals(expectedSwappedArray, destination);
     }
 
     @Test
@@ -232,7 +235,7 @@ class ByteSwapTest {
         final byte[] destination = ByteSwap.getSwappedArrayByInt(arrayToSwap, L2B);
 
         // then
-        Assertions.assertArrayEquals(expectedSwappedArray, destination);
+        assertArrayEquals(expectedSwappedArray, destination);
     }
 
     @Test
@@ -245,7 +248,7 @@ class ByteSwapTest {
         byte[] result = ByteSwap.getSwappedArrayByLong(data, B2L);
 
         // then
-        Assertions.assertArrayEquals(expected, result);
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -254,7 +257,7 @@ class ByteSwapTest {
         byte[] data = new byte[8];
 
         // when
-        Assertions.assertDoesNotThrow(() -> {
+        assertDoesNotThrow(() -> {
             ByteSwap.getSwappedArrayByInt(data, B2L);
         });
     }
@@ -264,6 +267,6 @@ class ByteSwapTest {
         // given
         byte[] data = new byte[9];
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> ByteSwap.getSwappedArrayByInt(data, B2L));
+        assertThrows(ByteBufferSafeException.class, () -> ByteSwap.getSwappedArrayByInt(data, B2L));
     }
 }

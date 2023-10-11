@@ -33,7 +33,7 @@
 
 package com.intel.bkp.verifier.interfaces;
 
-import com.intel.bkp.verifier.service.dto.VerifierExchangeResponseDTO;
+import com.intel.bkp.verifier.model.dto.VerifierExchangeResponseDTO;
 
 public interface VerifierExchange {
 
@@ -56,12 +56,12 @@ public interface VerifierExchange {
      * @param transportId device identifier config for communication specific to transport layer:
      *     "host:[HPS hostname or IP]; port:[HPS port number]"
      *     i.e. "host:127.0.0.1; port:50001"
-     * @param refMeasurement path to Reference Integrity Manifest (RIM) file, which describes which part of evidence
-     *     received from device should match with provided reference evidence
+     * @param refMeasurementHex hex content of Reference Integrity Manifest (RIM) file,
+     *     which describes which part of evidence received from device should match with provided reference evidence
      *
      * @return DTO with result where 0 is SUCCESS, 1 is FAIL, -1 is ERROR along with deviceId of the platform attested
      */
-    VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurement);
+    VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurementHex);
 
     /**
      * Perform health check to test chosen transfer layer implementation.

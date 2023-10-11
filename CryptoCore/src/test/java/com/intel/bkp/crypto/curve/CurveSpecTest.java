@@ -33,14 +33,15 @@
 
 package com.intel.bkp.crypto.curve;
 
-import com.intel.bkp.crypto.TestUtil;
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.CurveNameMappingException;
-import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
-import org.junit.jupiter.api.Assertions;
+import com.intel.bkp.test.KeyGenUtils;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CurveSpecTest {
 
@@ -50,34 +51,34 @@ class CurveSpecTest {
         final CurveSpec actual = CurveSpec.fromBcCurveTypeEc(CryptoConstants.EC_CURVE_SPEC_521);
 
         // then
-        Assertions.assertEquals(CurveSpec.C521, actual);
+        assertEquals(CurveSpec.C521, actual);
     }
 
     @Test
     void fromBcCurveTypeEc_WithNotExisting_ThrowsException() {
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> CurveSpec.fromBcCurveTypeEc("abc"));
+        assertThrows(IllegalArgumentException.class, () -> CurveSpec.fromBcCurveTypeEc("abc"));
     }
 
     @Test
-    void getCurveSpec_Success() throws KeystoreGenericException {
+    void getCurveSpec_Success() {
         // given
-        final KeyPair ec384Keys = TestUtil.genEcKeys();
+        final KeyPair ec384Keys = KeyGenUtils.genEc384();
 
         // when
         final CurveSpec curveSpec = CurveSpec.getCurveSpec(ec384Keys.getPublic());
 
         // then
-        Assertions.assertEquals(CurveSpec.C384, curveSpec);
+        assertEquals(CurveSpec.C384, curveSpec);
     }
 
     @Test
-    void getCurveSpec_WithRsaKey_ThrowsException() throws KeystoreGenericException {
+    void getCurveSpec_WithRsaKey_ThrowsException() {
         // given
-        final KeyPair rsaKeys = TestUtil.genRsaKeys();
+        final KeyPair rsaKeys = KeyGenUtils.genRsa3072();
 
         // when-then
-        Assertions.assertThrows(CurveNameMappingException.class,
+        assertThrows(CurveNameMappingException.class,
             () -> CurveSpec.getCurveSpec(rsaKeys.getPublic()));
     }
 }

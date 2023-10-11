@@ -33,10 +33,11 @@
 
 package com.intel.bkp.crypto.impl;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HashUtilsTest {
 
@@ -50,7 +51,7 @@ class HashUtilsTest {
         String fingerprint = HashUtils.generateFingerprint(input);
 
         // then
-        Assertions.assertEquals(exp, fingerprint);
+        assertEquals(exp, fingerprint);
     }
 
     @Test
@@ -63,7 +64,7 @@ class HashUtilsTest {
         String fingerprint = HashUtils.generateFingerprint(new String(input));
 
         // then
-        Assertions.assertEquals(exp, fingerprint);
+        assertEquals(exp, fingerprint);
     }
 
     @Test
@@ -76,7 +77,7 @@ class HashUtilsTest {
         String fingerprint = HashUtils.generateSha256Fingerprint(input);
 
         // then
-        Assertions.assertEquals(exp, fingerprint);
+        assertEquals(exp, fingerprint);
     }
 
     @Test
@@ -88,7 +89,7 @@ class HashUtilsTest {
         int msb32 = HashUtils.getIntForSha384(input);
 
         // then
-        Assertions.assertEquals(1538889800, msb32);
+        assertEquals(1538889800, msb32);
     }
 
     @Test
@@ -100,7 +101,7 @@ class HashUtilsTest {
         int msb32 = HashUtils.getIntForSha256(input);
 
         // then
-        Assertions.assertEquals(1438143096, msb32);
+        assertEquals(1438143096, msb32);
     }
 
     @Test
@@ -112,7 +113,7 @@ class HashUtilsTest {
         byte[] msb20 = HashUtils.getMSBytesForSha384(input, 20);
 
         // then
-        Assertions.assertArrayEquals(fromHex("768412320F7B0AA5812FCE428DC4706B3CAE50E0"), msb20);
+        assertArrayEquals(fromHex("768412320F7B0AA5812FCE428DC4706B3CAE50E0"), msb20);
     }
 
     @Test
@@ -124,6 +125,6 @@ class HashUtilsTest {
         byte[] msb12 = HashUtils.getMSBytesForSha384(input, 12);
 
         // then
-        Assertions.assertArrayEquals(fromHex("768412320F7B0AA5812FCE42"), msb12);
+        assertArrayEquals(fromHex("768412320F7B0AA5812FCE42"), msb12);
     }
 }

@@ -33,8 +33,11 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConverterHelperTest {
 
@@ -49,7 +52,7 @@ class ConverterHelperTest {
         Long result = ConverterHelper.convertTime(time, format);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -62,7 +65,7 @@ class ConverterHelperTest {
         Long result = ConverterHelper.convertTime(time, format);
 
         // then
-        Assertions.assertNull(result);
+        assertNull(result);
     }
 
     @Test
@@ -75,7 +78,7 @@ class ConverterHelperTest {
         Long result = ConverterHelper.convertTime(time, mismatchedFormat);
 
         // then
-        Assertions.assertNull(result);
+        assertNull(result);
     }
 
     @Test
@@ -85,6 +88,6 @@ class ConverterHelperTest {
         String invalidFormat = "yyyy-mm-DD blabla HH:mm:ss";
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> ConverterHelper.convertTime(time, invalidFormat));
+        assertThrows(IllegalArgumentException.class, () -> ConverterHelper.convertTime(time, invalidFormat));
     }
 }

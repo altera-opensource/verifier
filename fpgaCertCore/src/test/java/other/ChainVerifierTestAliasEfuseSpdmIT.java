@@ -34,8 +34,6 @@
 package other;
 
 import com.intel.bkp.crypto.x509.validation.ChainVerifier;
-import com.intel.bkp.fpgacerts.Utils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +44,8 @@ import java.util.Set;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_MULTI_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_TCB_INFO;
 import static com.intel.bkp.fpgacerts.model.Oid.TCG_DICE_UEID;
+import static com.intel.bkp.test.CertificateUtils.readCertificate;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ChainVerifierTestAliasEfuseSpdmIT {
 
@@ -65,14 +65,14 @@ public class ChainVerifierTestAliasEfuseSpdmIT {
     private final ChainVerifier sut = new ChainVerifier();
 
     @BeforeAll
-    static void init() throws Exception {
-        aliasCert = Utils.readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "alias_01458210996be470_spdm.cer");
-        firmwareCert = Utils.readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "firmware_01458210996be470_spdm.cer");
-        deviceIdEnrollmentCert = Utils.readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "deviceider_01458210996be470_spdm.cer");
-        deviceIdCert = Utils.readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "deviceId_01458210996be470_spdm.cer");
-        enrollmentCert = Utils.readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "M2284JP400295_enrol.der");
-        productFamilyCert = Utils.readCertificate(COMMON_FOLDER, "IPCS_agilex.cer");
-        rootCert = Utils.readCertificate(COMMON_FOLDER, "DICE_RootCA.cer");
+    static void init() {
+        aliasCert = readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "alias_01458210996be470_spdm.cer");
+        firmwareCert = readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "firmware_01458210996be470_spdm.cer");
+        deviceIdEnrollmentCert = readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "deviceider_01458210996be470_spdm.cer");
+        deviceIdCert = readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "deviceId_01458210996be470_spdm.cer");
+        enrollmentCert = readCertificate(ALIAS_EFUSE_SPDM_FOLDER, "M2284JP400295_enrol.der");
+        productFamilyCert = readCertificate(COMMON_FOLDER, "IPCS_agilex.cer");
+        rootCert = readCertificate(COMMON_FOLDER, "DICE_RootCA.cer");
     }
 
     @Test
@@ -101,7 +101,6 @@ public class ChainVerifierTestAliasEfuseSpdmIT {
             .verify();
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
-
 }

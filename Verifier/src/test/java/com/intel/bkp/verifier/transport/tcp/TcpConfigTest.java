@@ -33,8 +33,10 @@
 
 package com.intel.bkp.verifier.transport.tcp;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TcpConfigTest {
 
@@ -47,8 +49,8 @@ class TcpConfigTest {
         TcpConfig config = new TcpConfig(transportId);
 
         //then
-        Assertions.assertEquals(80, config.getPort());
-        Assertions.assertEquals("127.0.0.1", config.getHost());
+        assertEquals(80, config.getPort());
+        assertEquals("127.0.0.1", config.getHost());
     }
 
     @Test
@@ -60,8 +62,8 @@ class TcpConfigTest {
         TcpConfig config = new TcpConfig(transportId);
 
         //then
-        Assertions.assertEquals(80, config.getPort());
-        Assertions.assertEquals("127.0.0.1", config.getHost());
+        assertEquals(80, config.getPort());
+        assertEquals("127.0.0.1", config.getHost());
     }
 
     @Test
@@ -70,7 +72,7 @@ class TcpConfigTest {
         final String transportId = "host:127.0.0.1; something:80";
 
         //when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new TcpConfig(transportId));
+        assertThrows(IllegalArgumentException.class, () -> new TcpConfig(transportId));
     }
 
     @Test
@@ -79,7 +81,7 @@ class TcpConfigTest {
         final String transportId = "port:80";
 
         //when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new TcpConfig(transportId));
+        assertThrows(IllegalArgumentException.class, () -> new TcpConfig(transportId));
     }
 
     @Test
@@ -88,7 +90,7 @@ class TcpConfigTest {
         final String transportId = "host:127.0.0.1; port:eighty";
 
         //when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new TcpConfig(transportId));
+        assertThrows(IllegalArgumentException.class, () -> new TcpConfig(transportId));
     }
 
 }

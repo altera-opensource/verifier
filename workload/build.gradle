@@ -48,7 +48,7 @@ apply from: rootProject.file('gradle/common.gradle')
 
 def buildVersion = ext.getBuildVersion()
 
-group = 'com.intel.bkp'
+group = 'com.intel.bkp.workload'
 version = buildVersion
 description = ''
 
@@ -109,10 +109,16 @@ configurations {
     providedRuntime
 }
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 dependencies {
     implementation project(':Verifier')
 
     implementation libs.apache.commons.cli
+    implementation libs.apache.commons.codec
     implementation libs.slf4j.api
     implementation libs.bundles.logback
 

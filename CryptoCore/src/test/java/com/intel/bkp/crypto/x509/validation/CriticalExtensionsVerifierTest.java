@@ -33,7 +33,6 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,6 +41,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,7 +64,7 @@ class CriticalExtensionsVerifierTest {
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of());
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, knownOids));
+        assertTrue(sut.verify(certificate, knownOids));
     }
 
     @Test
@@ -73,7 +74,7 @@ class CriticalExtensionsVerifierTest {
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(OID_1, OID_2));
 
         // when-then
-        Assertions.assertTrue(sut.verify(certificate, knownOids));
+        assertTrue(sut.verify(certificate, knownOids));
     }
 
     @Test
@@ -83,6 +84,6 @@ class CriticalExtensionsVerifierTest {
         when(certificate.getCriticalExtensionOIDs()).thenReturn(Set.of(OID_3));
 
         // when-then
-        Assertions.assertFalse(sut.verify(certificate, knownOids));
+        assertFalse(sut.verify(certificate, knownOids));
     }
 }

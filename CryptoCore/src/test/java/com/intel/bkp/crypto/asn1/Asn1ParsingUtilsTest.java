@@ -33,7 +33,6 @@
 
 package com.intel.bkp.crypto.asn1;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,6 +42,8 @@ import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.extractR;
 import static com.intel.bkp.crypto.asn1.Asn1ParsingUtils.extractS;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class Asn1ParsingUtilsTest {
 
@@ -62,7 +63,7 @@ class Asn1ParsingUtilsTest {
         final byte[] actual = extractR(fromHex(EXPECTED_SIGNATURE));
 
         // then
-        Assertions.assertEquals(EXPECTED_R, toHex(actual));
+        assertEquals(EXPECTED_R, toHex(actual));
     }
 
     @Test
@@ -71,7 +72,7 @@ class Asn1ParsingUtilsTest {
         final byte[] actual = extractS(fromHex(EXPECTED_SIGNATURE));
 
         // then
-        Assertions.assertEquals(EXPECTED_S, toHex(actual));
+        assertEquals(EXPECTED_S, toHex(actual));
     }
 
     @Test
@@ -80,7 +81,7 @@ class Asn1ParsingUtilsTest {
         final byte[] signature = fromHex(EXPECTED_R + EXPECTED_S);
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> extractR(signature));
+        assertThrows(IllegalArgumentException.class, () -> extractR(signature));
     }
 
     @Test
@@ -89,7 +90,7 @@ class Asn1ParsingUtilsTest {
         final byte[] signature = fromHex(EXPECTED_R + EXPECTED_S);
 
         // when-then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> extractS(signature));
+        assertThrows(IllegalArgumentException.class, () -> extractS(signature));
     }
 
     @Test
@@ -98,6 +99,6 @@ class Asn1ParsingUtilsTest {
         final byte[] valid = convertToDerSignature(fromHex(EXPECTED_R), fromHex(EXPECTED_S));
 
         // then
-        Assertions.assertEquals(EXPECTED_SIGNATURE, toHex(valid));
+        assertEquals(EXPECTED_SIGNATURE, toHex(valid));
     }
 }

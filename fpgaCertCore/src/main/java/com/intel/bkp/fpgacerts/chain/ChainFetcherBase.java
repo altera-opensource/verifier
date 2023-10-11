@@ -48,7 +48,7 @@ import static com.intel.bkp.crypto.x509.utils.X509CertificateUtils.isSelfSigned;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ChainFetcherBase {
 
-    protected final ICertificateFetcher certificateFetcher;
+    protected final ICertificateFetcher<X509Certificate> certificateFetcher;
 
     protected abstract RuntimeException getFetchingFailureException(String url);
 

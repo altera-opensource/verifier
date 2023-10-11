@@ -33,10 +33,12 @@
 
 package com.intel.bkp.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HexValidatorTest {
 
@@ -52,7 +54,7 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid(DUMMY_HEX_4BYTES_LEN, ALLOWED_VALUES);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -61,7 +63,7 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid(DUMMY_HEX_8BYTES_LEN, ALLOWED_VALUES);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -70,7 +72,7 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid(DUMMY_HEX_12BYTES_LEN, ALLOWED_VALUES);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -79,7 +81,7 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid(DUMMY_DEVICE_ID, Long.BYTES);
 
         // then
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -88,7 +90,7 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid(DUMMY_DEVICE_ID, Integer.BYTES);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -97,7 +99,7 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid("", Integer.BYTES);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -106,6 +108,6 @@ class HexValidatorTest {
         final boolean result = HexValidator.isValid("Abc%!@", Integer.BYTES);
 
         // then
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 }

@@ -35,16 +35,15 @@ package com.intel.bkp.verifier.service;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
+import com.intel.bkp.command.responses.spdm.SpdmMeasurementResponse;
+import com.intel.bkp.command.responses.spdm.SpdmMeasurementResponseBuilder;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
-import com.intel.bkp.verifier.Utils;
-import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponse;
-import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponseBuilder;
-import com.intel.bkp.verifier.command.responses.attestation.SpdmMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
+import com.intel.bkp.verifier.protocol.spdm.service.SpdmMeasurementResponseProvider;
+import com.intel.bkp.verifier.protocol.spdm.service.SpdmMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.verifier.service.measurements.EvidenceVerifier;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -53,7 +52,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static com.intel.bkp.test.FileUtils.readFromResources;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class EvidenceVerifierSpdmTestIT {
@@ -74,30 +75,33 @@ public class EvidenceVerifierSpdmTestIT {
     private static String refMeasurementsAgilex;
     private static String refMeasurementsAgilexWithPrRegion;
     private static String refMeasurementsAgilexFuzz;
-    private static SpdmMeasurementResponse responseAgilex;
-    private static SpdmMeasurementResponse responseAgilexWithPrRegion;
+    private static SpdmMeasurementResponseProvider responseAgilex;
+    private static SpdmMeasurementResponseProvider responseAgilexWithPrRegion;
 
     private final SpdmMeasurementResponseToTcbInfoMapper measurementMapper =
         new SpdmMeasurementResponseToTcbInfoMapper();
-    private TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
+    private final TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
 
     private EvidenceVerifier sut = new EvidenceVerifier();
 
     @BeforeAll
     static void init() throws Exception {
         refMeasurementsAgilex = readEvidence(FILENAME_AGILEX_RIM);
-        responseAgilex = readResponse(FILENAME_AGILEX_RESPONSE);
         refMeasurementsAgilexWithPrRegion = readEvidence(FILENAME_AGILEX_RIM_WITH_PR_REGION);
-        responseAgilexWithPrRegion = readResponse(FILENAME_AGILEX_RESPONSE_WITH_PR_REGION);
         refMeasurementsAgilexFuzz = readEvidence(FILENAME_AGILEX_RIM_FUZZ);
+
+        responseAgilex =
+            new SpdmMeasurementResponseProvider(readResponse(FILENAME_AGILEX_RESPONSE));
+        responseAgilexWithPrRegion =
+            new SpdmMeasurementResponseProvider(readResponse(FILENAME_AGILEX_RESPONSE_WITH_PR_REGION));
     }
 
     private static String readEvidence(String filename) throws Exception {
-        return new String(Utils.readFromResources(TEST_FOLDER_INTEGRATION, filename));
+        return toHex(readFromResources(TEST_FOLDER_INTEGRATION, filename));
     }
 
     private static SpdmMeasurementResponse readResponse(String filename) throws Exception {
-        final byte[] response = Utils.readFromResources(TEST_FOLDER_INTEGRATION, filename);
+        final byte[] response = readFromResources(TEST_FOLDER_INTEGRATION, filename);
         return new SpdmMeasurementResponseBuilder()
             .parse(response)
             .build();
@@ -150,7 +154,7 @@ public class EvidenceVerifierSpdmTestIT {
         final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilexFuzz);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.FAIL, result);
+        assertEquals(VerifierExchangeResponse.FAIL, result);
     }
 
     @Test
@@ -162,7 +166,7 @@ public class EvidenceVerifierSpdmTestIT {
         final VerifierExchangeResponse result = sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilex);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK, result);
+        assertEquals(VerifierExchangeResponse.OK, result);
     }
 
     @Test
@@ -175,6 +179,6 @@ public class EvidenceVerifierSpdmTestIT {
             sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilexWithPrRegion);
 
         // then
-        Assertions.assertEquals(VerifierExchangeResponse.OK, result);
+        assertEquals(VerifierExchangeResponse.OK, result);
     }
 }

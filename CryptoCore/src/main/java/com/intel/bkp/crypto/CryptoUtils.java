@@ -35,7 +35,6 @@ package com.intel.bkp.crypto;
 
 import com.intel.bkp.crypto.constants.CryptoConstants;
 import com.intel.bkp.crypto.exceptions.EcdhKeyPairException;
-import com.intel.bkp.crypto.exceptions.InvalidSignatureException;
 import com.intel.bkp.crypto.exceptions.KeystoreGenericException;
 import com.intel.bkp.crypto.impl.AesUtils;
 import com.intel.bkp.crypto.impl.CertificateUtils;
@@ -56,7 +55,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPrivateKeySpec;
@@ -104,11 +102,7 @@ public abstract class CryptoUtils {
         return EcUtils.signEcData(privateKey, data, CryptoConstants.SHA384_WITH_ECDSA, bouncyCastleProvider);
     }
 
-    public static boolean sigVerifyBC(X509Certificate certificate, byte[] data, byte[] signature)
-        throws InvalidSignatureException {
-        return EcUtils.sigVerify(certificate, data, signature, CryptoConstants.SHA384_WITH_ECDSA, bouncyCastleProvider);
-    }
-
+    // :TODO - curve spec should be an enum with size
     public static PrivateKey toEcPrivateBC(byte[] privateKeyBytes, String algorithm)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
         return EcUtils.toPrivate(privateKeyBytes, algorithm, CryptoConstants.EC_CURVE_SPEC_384, bouncyCastleProvider);

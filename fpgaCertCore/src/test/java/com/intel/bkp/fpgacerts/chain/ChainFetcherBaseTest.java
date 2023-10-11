@@ -37,7 +37,6 @@ import com.intel.bkp.crypto.x509.utils.AuthorityInformationAccessUtils;
 import com.intel.bkp.crypto.x509.utils.X509CertificateUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +52,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -60,7 +62,7 @@ import static org.mockito.Mockito.when;
 class ChainFetcherBaseTest {
 
     @RequiredArgsConstructor
-    private static class CertificateFetcherTestImpl implements ICertificateFetcher {
+    private static class CertificateFetcherTestImpl implements ICertificateFetcher<X509Certificate> {
 
         private final Map<String, X509Certificate> certMap;
 
@@ -144,7 +146,7 @@ class ChainFetcherBaseTest {
         final var result = sut.fetchCertificateChain(" ");
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -153,7 +155,7 @@ class ChainFetcherBaseTest {
         final var result = sut.fetchCertificateChain((String) null);
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -162,7 +164,7 @@ class ChainFetcherBaseTest {
         final var result = sut.fetchCertificateChain((X509Certificate) null);
 
         // then
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -171,11 +173,11 @@ class ChainFetcherBaseTest {
         final String nonExistentUrl = "some not existent url";
 
         // when-then
-        final var exception = Assertions.assertThrows(RuntimeException.class,
+        final var exception = assertThrows(RuntimeException.class,
             () -> sut.fetchCertificateChain(nonExistentUrl));
 
         // then
-        Assertions.assertTrue(exception.getMessage().contains(nonExistentUrl));
+        assertTrue(exception.getMessage().contains(nonExistentUrl));
     }
 
     @Test
@@ -190,7 +192,7 @@ class ChainFetcherBaseTest {
         final var result = sut.fetchCertificateChain(CHILD_URL);
 
         // then
-        Assertions.assertIterableEquals(correctChain, result);
+        assertIterableEquals(correctChain, result);
     }
 
     @Test
@@ -205,7 +207,7 @@ class ChainFetcherBaseTest {
         final var result = sut.fetchCertificateChain(CHILD_URL);
 
         // then
-        Assertions.assertIterableEquals(correctChain, result);
+        assertIterableEquals(correctChain, result);
     }
 
     @Test
@@ -221,7 +223,7 @@ class ChainFetcherBaseTest {
         final var result = sut.fetchCertificateChain(child);
 
         // then
-        Assertions.assertIterableEquals(chainFromIntermediate, result);
+        assertIterableEquals(chainFromIntermediate, result);
     }
 
     @Test
@@ -231,11 +233,11 @@ class ChainFetcherBaseTest {
         mockNoIssuerUrl(child);
 
         // when-then
-        final var exception = Assertions.assertThrows(RuntimeException.class,
+        final var exception = assertThrows(RuntimeException.class,
             () -> sut.fetchCertificateChain(CHILD_URL));
 
         // then
-        Assertions.assertTrue(exception.getMessage().contains(SUBJECT));
+        assertTrue(exception.getMessage().contains(SUBJECT));
     }
 
     @Test
@@ -246,11 +248,11 @@ class ChainFetcherBaseTest {
         mockNoIssuerUrl(intermediate);
 
         // when-then
-        final var exception = Assertions.assertThrows(RuntimeException.class,
+        final var exception = assertThrows(RuntimeException.class,
             () -> sut.fetchCertificateChain(CHILD_URL));
 
         // then
-        Assertions.assertTrue(exception.getMessage().contains(SUBJECT));
+        assertTrue(exception.getMessage().contains(SUBJECT));
     }
 
     private void mockAsSelfSigned(X509Certificate cert) {

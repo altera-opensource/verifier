@@ -34,7 +34,6 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_CANCELLATION;
@@ -44,6 +43,7 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_PERMISSIO
 import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_X;
 import static com.intel.bkp.core.endianness.StructureField.PSG_PUB_KEY_SIZE_Y;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PsgPublicKeyEndiannessMapImplTest {
 
@@ -53,7 +53,7 @@ class PsgPublicKeyEndiannessMapImplTest {
         PsgPublicKeyEndiannessMapImpl sut = new PsgPublicKeyEndiannessMapImpl(EndiannessActor.SERVICE);
 
         // then
-        Assertions.assertEquals(0, sut.getSize());
+        assertEquals(0, sut.getSize());
     }
 
     @Test
@@ -62,12 +62,12 @@ class PsgPublicKeyEndiannessMapImplTest {
         PsgPublicKeyEndiannessMapImpl sut = new PsgPublicKeyEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_SIZE_X));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_SIZE_Y));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_CURVE_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_PERMISSIONS));
-        Assertions.assertEquals(CONVERT, sut.get(PSG_PUB_KEY_CANCELLATION));
-        Assertions.assertEquals(6, sut.getSize());
+        assertEquals(CONVERT, sut.get(PSG_PUB_KEY_MAGIC));
+        assertEquals(CONVERT, sut.get(PSG_PUB_KEY_SIZE_X));
+        assertEquals(CONVERT, sut.get(PSG_PUB_KEY_SIZE_Y));
+        assertEquals(CONVERT, sut.get(PSG_PUB_KEY_CURVE_MAGIC));
+        assertEquals(CONVERT, sut.get(PSG_PUB_KEY_PERMISSIONS));
+        assertEquals(CONVERT, sut.get(PSG_PUB_KEY_CANCELLATION));
+        assertEquals(6, sut.getSize());
     }
 }

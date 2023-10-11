@@ -33,6 +33,7 @@
 
 package com.intel.bkp.core.psgcertificate.enumerations;
 
+import com.intel.bkp.utils.HexConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -40,10 +41,10 @@ import java.util.EnumSet;
 
 @AllArgsConstructor
 public enum KeyWrappingType {
-    NOWRAP(0x00), // No-Wrap
-    INTERNAL(0x01), // Internal (For BBRAM or eFuse only)
-    IID(0x02), // IID PUF
-    INTEL(0x03); // Intel PUF
+    NOWRAP(0x00),
+    INTERNAL(0x01), // For BBRAM or eFuse only
+    IID_PUF(0x02), // == USER_IID PUF (Intrinsic ID PUF)
+    INTEL_PUF(0x03); // == UDS_IID PUF (efuse based, FM only) or INTEL PUF (SM only)
 
     @Getter
     private final Integer type;
@@ -54,5 +55,10 @@ public enum KeyWrappingType {
             .filter(type -> type.getType().byteValue() == value)
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
+    }
+
+    @Override
+    public String toString() {
+        return "%s (%s)".formatted(name(), HexConverter.toFormattedHex(getType()));
     }
 }

@@ -34,7 +34,6 @@
 package com.intel.bkp.core.endianness.maps;
 
 import com.intel.bkp.core.endianness.EndiannessActor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.core.endianness.StructureField.BLOCK0_DATA_LEN;
@@ -43,6 +42,7 @@ import static com.intel.bkp.core.endianness.StructureField.BLOCK0_LENGTH_OFFSET;
 import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SHA_LEN;
 import static com.intel.bkp.core.endianness.StructureField.BLOCK0_SIG_LEN;
 import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PsgBlock0EntryEndiannessMapImplTest {
 
@@ -52,7 +52,7 @@ class PsgBlock0EntryEndiannessMapImplTest {
         PsgBlock0EntryEndiannessMapImpl sut = new PsgBlock0EntryEndiannessMapImpl(EndiannessActor.SERVICE);
 
         // then
-        Assertions.assertEquals(0, sut.getSize());
+        assertEquals(0, sut.getSize());
     }
 
     @Test
@@ -61,11 +61,11 @@ class PsgBlock0EntryEndiannessMapImplTest {
         PsgBlock0EntryEndiannessMapImpl sut = new PsgBlock0EntryEndiannessMapImpl(EndiannessActor.FIRMWARE);
 
         // then
-        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_ENTRY_MAGIC));
-        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_LENGTH_OFFSET));
-        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_DATA_LEN));
-        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_SIG_LEN));
-        Assertions.assertEquals(CONVERT, sut.get(BLOCK0_SHA_LEN));
-        Assertions.assertEquals(5, sut.getSize());
+        assertEquals(CONVERT, sut.get(BLOCK0_ENTRY_MAGIC));
+        assertEquals(CONVERT, sut.get(BLOCK0_LENGTH_OFFSET));
+        assertEquals(CONVERT, sut.get(BLOCK0_DATA_LEN));
+        assertEquals(CONVERT, sut.get(BLOCK0_SIG_LEN));
+        assertEquals(CONVERT, sut.get(BLOCK0_SHA_LEN));
+        assertEquals(5, sut.getSize());
     }
 }

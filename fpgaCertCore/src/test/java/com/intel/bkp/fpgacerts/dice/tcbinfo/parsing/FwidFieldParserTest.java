@@ -37,7 +37,6 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getAsn1ObjectIdentifier;
@@ -46,6 +45,8 @@ import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getOctetString;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getSequence;
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.parsing.FieldParserTestUtils.getTaggedSequence;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FwidFieldParserTest {
 
@@ -69,7 +70,7 @@ class FwidFieldParserTest {
         final FwIdField result = sut.parse(taggedObj);
 
         // then
-        Assertions.assertEquals(EXPECTED, result);
+        assertEquals(EXPECTED, result);
     }
 
     @Test
@@ -84,8 +85,8 @@ class FwidFieldParserTest {
 
         // when-then
         final IllegalArgumentException exception =
-            Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
-        Assertions.assertEquals(expectedMessage, exception.getMessage());
+            assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
@@ -100,8 +101,8 @@ class FwidFieldParserTest {
 
         // when-then
         final IllegalArgumentException exception =
-            Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
-        Assertions.assertEquals(expectedMessage, exception.getMessage());
+            assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
@@ -112,8 +113,8 @@ class FwidFieldParserTest {
 
         // when-then
         final IllegalArgumentException exception =
-            Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
-        Assertions.assertEquals(expectedMessage, exception.getMessage());
+            assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
@@ -124,8 +125,8 @@ class FwidFieldParserTest {
 
         // when-then
         final IllegalArgumentException exception =
-            Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
-        Assertions.assertEquals(expectedMessage, exception.getMessage());
+            assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
@@ -136,7 +137,7 @@ class FwidFieldParserTest {
 
         // when-then
         final IllegalArgumentException exception =
-            Assertions.assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
-        Assertions.assertEquals(expectedMessage, exception.getMessage());
+            assertThrows(IllegalArgumentException.class, () -> sut.parse(taggedObj));
+        assertEquals(expectedMessage, exception.getMessage());
     }
 }

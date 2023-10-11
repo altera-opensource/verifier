@@ -33,14 +33,15 @@
 
 package com.intel.bkp.core.psgcertificate.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PsgInvalidSignatureExceptionTest {
 
     @Test
     void constructor_WithMessageAndException_Success() {
-        Assertions.assertThrows(PsgInvalidSignatureException.class, () -> {
+        assertThrows(PsgInvalidSignatureException.class, () -> {
             throw new PsgInvalidSignatureException("test", new Exception());
         });
     }

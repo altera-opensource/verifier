@@ -33,10 +33,9 @@
 
 package com.intel.bkp.fpgacerts.chain;
 
-import java.security.cert.X509Certificate;
 import java.util.Optional;
 
-public interface ICertificateFetcher {
+public interface ICertificateFetcher<T> {
 
-    Optional<X509Certificate> fetchCertificate(String url);
+    Optional<T> fetchCertificate(String url); // :TODO - rename this and interface to more generic to include zip
 }

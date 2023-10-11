@@ -33,9 +33,8 @@
 
 package com.intel.bkp.crypto.x509.validation;
 
-import com.intel.bkp.crypto.TestUtil;
+import com.intel.bkp.test.FileUtils;
 import org.bouncycastle.asn1.x509.Extension;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +45,8 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,7 +63,7 @@ class SubjectKeyIdentifierVerifierTest {
 
     @BeforeAll
     static void init() throws Exception {
-        firmwareCert = TestUtil.loadCertificate(FIRMWARE_CERT);
+        firmwareCert = FileUtils.loadCertificate(FIRMWARE_CERT);
     }
 
     @Test
@@ -74,7 +75,7 @@ class SubjectKeyIdentifierVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify();
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
     @Test
@@ -83,7 +84,7 @@ class SubjectKeyIdentifierVerifierTest {
         final boolean valid = sut.certificates(List.of(firmwareCert)).verify();
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
     @Test
@@ -95,7 +96,7 @@ class SubjectKeyIdentifierVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate)).verify();
 
         // then
-        Assertions.assertFalse(valid);
+        assertFalse(valid);
     }
 
     @Test
@@ -107,7 +108,7 @@ class SubjectKeyIdentifierVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate, firmwareCert)).verify();
 
         // then
-        Assertions.assertFalse(valid);
+        assertFalse(valid);
     }
 
     @Test
@@ -119,7 +120,7 @@ class SubjectKeyIdentifierVerifierTest {
         final boolean valid = sut.certificates(List.of(certificate, firmwareCert)).verify();
 
         // then
-        Assertions.assertTrue(valid);
+        assertTrue(valid);
     }
 
     private void mockCertificateHasNoSKI() {

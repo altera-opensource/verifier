@@ -35,9 +35,9 @@ package com.intel.bkp.fpgacerts.dice.ueid;
 
 import ch.qos.logback.classic.Level;
 import com.intel.bkp.fpgacerts.LoggerTestUtil;
-import com.intel.bkp.fpgacerts.Utils;
 import com.intel.bkp.fpgacerts.exceptions.UnknownFamilyIdException;
 import com.intel.bkp.fpgacerts.utils.BaseExtensionParser;
+import com.intel.bkp.test.CertificateUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,8 +77,8 @@ class UeidExtensionParserTest {
     private UeidExtensionParser sut;
 
     @BeforeAll
-    static void init() throws Exception {
-        firmwareCert = Utils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
+    static void init() {
+        firmwareCert = CertificateUtils.readCertificate(TEST_FOLDER, FIRMWARE_CERT);
     }
 
     @BeforeEach

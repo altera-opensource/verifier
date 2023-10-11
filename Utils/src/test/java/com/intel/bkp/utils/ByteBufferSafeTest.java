@@ -34,16 +34,18 @@
 package com.intel.bkp.utils;
 
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ByteBufferSafeTest {
 
@@ -56,7 +58,7 @@ public class ByteBufferSafeTest {
         ByteBufferSafe result = ByteBufferSafe.wrap(new byte[DATA_SIZE]);
 
         // then
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
     }
 
     @Test
@@ -66,7 +68,7 @@ public class ByteBufferSafeTest {
         ByteOrder order = buffer.order(ByteOrder.LITTLE_ENDIAN).order();
 
         // then
-        Assertions.assertEquals(ByteOrder.LITTLE_ENDIAN, order);
+        assertEquals(ByteOrder.LITTLE_ENDIAN, order);
     }
 
     @Test
@@ -76,7 +78,7 @@ public class ByteBufferSafeTest {
         ByteBufferSafe buffer = prepareBufferInt(data);
 
         // then
-        Assertions.assertArrayEquals(data, buffer.array());
+        assertArrayEquals(data, buffer.array());
     }
 
     @Test
@@ -90,7 +92,7 @@ public class ByteBufferSafeTest {
         short result = buffer.getShort();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -104,7 +106,7 @@ public class ByteBufferSafeTest {
         short result = buffer.getShort(ByteOrder.BIG_ENDIAN);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -118,7 +120,7 @@ public class ByteBufferSafeTest {
         short result = buffer.getShort(ByteOrder.LITTLE_ENDIAN);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -132,7 +134,7 @@ public class ByteBufferSafeTest {
         int result = buffer.getInt();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -146,7 +148,7 @@ public class ByteBufferSafeTest {
         int result = buffer.getInt(ByteOrder.BIG_ENDIAN);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -160,7 +162,7 @@ public class ByteBufferSafeTest {
         int result = buffer.getInt(ByteOrder.LITTLE_ENDIAN);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -174,7 +176,7 @@ public class ByteBufferSafeTest {
         long result = buffer.getLong();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -188,7 +190,7 @@ public class ByteBufferSafeTest {
         long result = buffer.getLong(ByteOrder.BIG_ENDIAN);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -203,7 +205,7 @@ public class ByteBufferSafeTest {
         long result = buffer.getLong(ByteOrder.LITTLE_ENDIAN);
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -216,7 +218,7 @@ public class ByteBufferSafeTest {
         byte result = buffer.getByte();
 
         // then
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -230,7 +232,7 @@ public class ByteBufferSafeTest {
         buffer.get(data);
 
         // then
-        Assertions.assertArrayEquals(expectedData, data);
+        assertArrayEquals(expectedData, data);
     }
 
     @Test
@@ -244,7 +246,7 @@ public class ByteBufferSafeTest {
         buffer.getAll(data);
 
         // then
-        Assertions.assertArrayEquals(expectedData, data);
+        assertArrayEquals(expectedData, data);
     }
 
     @Test
@@ -254,9 +256,7 @@ public class ByteBufferSafeTest {
         byte[] expectedData = new byte[] { 1, 2, 3, 4, 5, 6 };
         ByteBufferSafe buffer = prepareBufferInt(expectedData);
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.getAll(data);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.getAll(data));
     }
 
     @Test
@@ -266,9 +266,7 @@ public class ByteBufferSafeTest {
         byte[] expectedData = new byte[] { 1, 2 };
         ByteBufferSafe buffer = prepareBufferInt(expectedData);
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.getAll(data);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.getAll(data));
     }
 
     @Test
@@ -282,8 +280,8 @@ public class ByteBufferSafeTest {
         int result = buffer.findFirst(valueToFind);
 
         // then
-        Assertions.assertEquals(0, result);
-        Assertions.assertEquals(0, buffer.position());
+        assertEquals(0, result);
+        assertEquals(0, buffer.position());
     }
 
     @Test
@@ -297,8 +295,8 @@ public class ByteBufferSafeTest {
         int result = buffer.findFirst(valueToFind);
 
         // then
-        Assertions.assertEquals(Integer.BYTES, result);
-        Assertions.assertEquals(0, buffer.position());
+        assertEquals(Integer.BYTES, result);
+        assertEquals(0, buffer.position());
     }
 
     @Test
@@ -306,15 +304,15 @@ public class ByteBufferSafeTest {
         // given
         int shiftedBy = 1;
         int valueToFind = 5;
-        byte[] data = ByteBuffer.allocate(Integer.BYTES + shiftedBy).put(new byte[] { 1 }).putInt(valueToFind).array();
+        byte[] data = ByteBuffer.allocate(Integer.BYTES + shiftedBy).put(new byte[]{1}).putInt(valueToFind).array();
         ByteBufferSafe buffer = ByteBufferSafe.wrap(data);
 
         // when
         int result = buffer.findFirst(valueToFind);
 
         // then
-        Assertions.assertEquals(shiftedBy, result);
-        Assertions.assertEquals(0, buffer.position());
+        assertEquals(shiftedBy, result);
+        assertEquals(0, buffer.position());
     }
 
     @Test
@@ -323,15 +321,15 @@ public class ByteBufferSafeTest {
         int shiftedBy = 2;
         int valueToFind = 5;
         byte[] data =
-            ByteBuffer.allocate(Integer.BYTES + shiftedBy).put(new byte[] { 1, 2 }).putInt(valueToFind).array();
+            ByteBuffer.allocate(Integer.BYTES + shiftedBy).put(new byte[]{1, 2}).putInt(valueToFind).array();
         ByteBufferSafe buffer = ByteBufferSafe.wrap(data);
 
         // when
         int result = buffer.findFirst(valueToFind);
 
         // then
-        Assertions.assertEquals(shiftedBy, result);
-        Assertions.assertEquals(0, buffer.position());
+        assertEquals(shiftedBy, result);
+        assertEquals(0, buffer.position());
     }
 
     @Test
@@ -340,7 +338,7 @@ public class ByteBufferSafeTest {
         int shiftedBy = 3;
         int valueToFind = 5;
         byte[] data = ByteBuffer.allocate(Integer.BYTES + shiftedBy)
-            .put(new byte[] { 1, 2, 3 })
+            .put(new byte[]{1, 2, 3})
             .putInt(valueToFind)
             .array();
         ByteBufferSafe buffer = ByteBufferSafe.wrap(data);
@@ -349,8 +347,8 @@ public class ByteBufferSafeTest {
         int result = buffer.findFirst(valueToFind);
 
         // then
-        Assertions.assertEquals(shiftedBy, result);
-        Assertions.assertEquals(0, buffer.position());
+        assertEquals(shiftedBy, result);
+        assertEquals(0, buffer.position());
     }
 
     @Test
@@ -361,9 +359,7 @@ public class ByteBufferSafeTest {
         ByteBufferSafe buffer = ByteBufferSafe.wrap(data);
 
         // when
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.findFirst(valueToFind);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.findFirst(valueToFind));
     }
 
     @Test
@@ -376,7 +372,7 @@ public class ByteBufferSafeTest {
         buffer.position(newPosition);
 
         // then
-        Assertions.assertEquals(newPosition, buffer.position());
+        assertEquals(newPosition, buffer.position());
     }
 
     @Test
@@ -390,7 +386,7 @@ public class ByteBufferSafeTest {
         buffer.skip(bytesToSkip);
 
         // then
-        Assertions.assertEquals(bytesToSkip, buffer.position());
+        assertEquals(bytesToSkip, buffer.position());
     }
 
     @Test
@@ -401,9 +397,7 @@ public class ByteBufferSafeTest {
         buffer.position(0);
 
         // when
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.skip(bytesToSkip);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.skip(bytesToSkip));
     }
 
     @Test
@@ -416,7 +410,7 @@ public class ByteBufferSafeTest {
         int result = buffer.remaining();
 
         // then
-        Assertions.assertEquals(expectedData.length, result);
+        assertEquals(expectedData.length, result);
     }
 
     @Test
@@ -428,7 +422,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromShort(DATA_SIZE_SHORT);
 
         // then
-        Assertions.assertEquals(DATA_SIZE, result.length);
+        assertEquals(DATA_SIZE, result.length);
     }
 
     @Test
@@ -440,7 +434,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromInt(DATA_SIZE);
 
         // then
-        Assertions.assertEquals(DATA_SIZE, result.length);
+        assertEquals(DATA_SIZE, result.length);
     }
 
     @Test
@@ -452,7 +446,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromNextInt();
 
         // then
-        Assertions.assertEquals(DATA_SIZE, result.length);
+        assertEquals(DATA_SIZE, result.length);
     }
 
     @Test
@@ -464,7 +458,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromNextInt(ByteOrder.LITTLE_ENDIAN);
 
         // then
-        Assertions.assertEquals(DATA_SIZE, result.length);
+        assertEquals(DATA_SIZE, result.length);
     }
 
     @Test
@@ -476,7 +470,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromNextLong();
 
         // then
-        Assertions.assertEquals(DATA_SIZE, result.length);
+        assertEquals(DATA_SIZE, result.length);
     }
 
     @Test
@@ -488,7 +482,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromNextLong(ByteOrder.LITTLE_ENDIAN);
 
         // then
-        Assertions.assertEquals(DATA_SIZE, result.length);
+        assertEquals(DATA_SIZE, result.length);
     }
 
     @Test
@@ -498,7 +492,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromRemaining();
 
         // then
-        Assertions.assertEquals(DATA_SIZE + Integer.BYTES, result.length);
+        assertEquals(DATA_SIZE + Integer.BYTES, result.length);
     }
 
     @Test
@@ -511,7 +505,7 @@ public class ByteBufferSafeTest {
         byte[] result = buffer.arrayFromRemaining(offsetFromEnd);
 
         // then
-        Assertions.assertEquals(DATA_SIZE + Integer.BYTES - offsetFromEnd, result.length);
+        assertEquals(DATA_SIZE + Integer.BYTES - offsetFromEnd, result.length);
     }
 
     @Test
@@ -546,9 +540,7 @@ public class ByteBufferSafeTest {
         //given
         ByteBufferSafe buffer = prepareBufferInt();
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.verifyIfRemainingHasLen(-2);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfRemainingHasLen(-2));
     }
 
     @Test
@@ -556,9 +548,7 @@ public class ByteBufferSafeTest {
         //given
         ByteBufferSafe buffer = prepareBufferInt();
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.verifyIfRemainingHasLen(1000);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfRemainingHasLen(1000));
     }
 
     @Test
@@ -566,9 +556,7 @@ public class ByteBufferSafeTest {
         //given
         ByteBufferSafe buffer = prepareBufferInt();
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
-            buffer.verifyIfRemainingHasLen(Long.MAX_VALUE);
-        });
+        assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfRemainingHasLen(Long.MAX_VALUE));
     }
 
     @Test
@@ -576,12 +564,12 @@ public class ByteBufferSafeTest {
         // given
         ByteBufferSafe buffer = prepareBufferInt();
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfRemainingHasLen(-2));
+        assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfRemainingHasLen(-2));
     }
 
     @Test
     void verifyIfRemainingHasLen_WithLong_TooBigValue_Throws() {
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> {
+        assertThrows(ByteBufferSafeException.class, () -> {
             //given
             ByteBufferSafe buffer = prepareBufferInt();
 
@@ -595,7 +583,7 @@ public class ByteBufferSafeTest {
         //given
         ByteBufferSafe buffer = prepareBufferInt();
 
-        Assertions.assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfBufferHasPosition(-2));
+        assertThrows(ByteBufferSafeException.class, () -> buffer.verifyIfBufferHasPosition(-2));
     }
 
     @Test
@@ -603,7 +591,7 @@ public class ByteBufferSafeTest {
         //given
         ByteBufferSafe buffer = prepareBufferInt();
 
-        Assertions.assertThrows(ByteBufferSafeException.class,
+        assertThrows(ByteBufferSafeException.class,
             () -> buffer.verifyIfBufferHasPosition(DATA_SIZE + Integer.BYTES + 1));
     }
 
@@ -616,7 +604,7 @@ public class ByteBufferSafeTest {
         byte[] remaining = ByteBufferSafe.wrap(testData).skipInteger().getRemaining();
 
         // then
-        Assertions.assertEquals(testData.length - Integer.BYTES, remaining.length);
+        assertEquals(testData.length - Integer.BYTES, remaining.length);
     }
 
     @Test
@@ -629,11 +617,11 @@ public class ByteBufferSafeTest {
         bufferSafe.skipInteger();
         bufferSafe.mark(); // Mark position for reset
         bufferSafe.skipInteger().skipInteger();
-        Assertions.assertEquals(testDataLen - (Integer.BYTES * 3), bufferSafe.remaining());
+        assertEquals(testDataLen - (Integer.BYTES * 3), bufferSafe.remaining());
         bufferSafe.reset(); // Reset to marked position
-        Assertions.assertEquals(testDataLen - Integer.BYTES, bufferSafe.remaining());
+        assertEquals(testDataLen - Integer.BYTES, bufferSafe.remaining());
         bufferSafe.rewind(); // Reset to initial position
-        Assertions.assertEquals(testDataLen, bufferSafe.remaining());
+        assertEquals(testDataLen, bufferSafe.remaining());
     }
 
     private ByteBufferSafe prepareBufferShort() {
